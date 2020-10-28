@@ -1,0 +1,57 @@
+/*
+TODO make this pretty
+*/
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 300;
+  background: black;
+  color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 500;
+}
+
+ul,
+ol {
+  padding: 0 0 0 1.2em;
+}
+
+label {
+  display: block;
+}
+
+button {
+  cursor: 'pointer';
+}
+input,
+textarea {
+  padding: 4px 6px;
+  font-family: inherit;
+  background: #111;
+  border: 1px solid #555;
+  color: #fff;
+  width: 100%;
+}
+
+input:focus,
+textarea:focus {
+  outline: none;
+  border-color: #888;
+  background: #333;
+}
+
+a:link {
+  color: hsl(150, 60%, 60%);
+}
+a:visited {
+  color: hsl(150, 60%, 50%);
+}
