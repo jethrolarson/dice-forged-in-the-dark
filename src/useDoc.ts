@@ -1,5 +1,3 @@
-import { pipe } from 'fp-ts/lib/function'
-import * as O from 'fp-ts/lib/Option'
 import firebase from 'firebase/app'
 import { useEffect, useState } from 'react'
 import { useFirestore } from './useFirestore'

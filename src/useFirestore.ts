@@ -13,7 +13,7 @@ export const useFirestore = (): null | fireApp.firestore.Firestore => {
         projectId: 'forged-in-the-dice'
       })
 
-    setFirestore(fireApp.firestore())
+    setFirestore(fApp.firestore())
   }, [])
   return firestore
 }

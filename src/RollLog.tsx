@@ -1,6 +1,7 @@
 import React, { FC } from 'react'
 import { equals } from 'ramda'
 import { style, stylesheet, classes } from 'typestyle'
+import diceSprite from './dice.png'
 import { RollResult } from './GameModel'
 
 const styles = stylesheet({
@@ -16,7 +17,7 @@ const styles = stylesheet({
     }
   },
   dieResult: {
-    backgroundImage: 'url(dice.png)',
+    backgroundImage: `url(${diceSprite})`,
     appearance: 'none',
     display: 'inline-block',
     width: 36,

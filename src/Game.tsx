@@ -1,5 +1,6 @@
 import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import useFunState, { merge, not } from 'fun-state'
+import diceSprite from './dice.png'
 import { classes, style, stylesheet } from 'typestyle'
 import * as O from 'fp-ts/lib/Option'
 import { range, trim } from 'ramda'
@@ -91,7 +92,7 @@ const styles = stylesheet({
   dieButton: {
     marginRight: 2,
     cursor: 'pointer',
-    backgroundImage: 'url(dice.png)',
+    backgroundImage: `url(${diceSprite})`,
     appearance: 'none',
     opacity: 0.5,
     width: 50,
@@ -161,6 +162,7 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
           state.prop('rolls').set(snapshot.docs.map((d) => ({ ...(d.data() as RollResult), id: d.id })))
         )
     }
+    return undefined;
   }, [gdoc])
   const {
     rolls,
@@ -178,7 +180,9 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
   } = state.get()
   const scrollRef = useRef<HTMLDivElement>(null)
   // stay scrolled to the bottom
-  useLayoutEffect(() => scrollRef.current?.scrollTo({ top: 99999999999 }), [rolls])
+  useLayoutEffect(() => {
+    scrollRef.current && scrollRef.current.scrollTo({ top: 99999999999 })
+  }, [rolls])
 
   const roll = (n: number) => () => {
     if (gdoc) {

@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /games/{game} {
+      allow read;
+      allow delete: if false;
+      allow create, update: if request.auth != null
+    }
+    match /games/{game}/rolls/{roll} {
+      allow read;
+      allow create: if request.auth != null;
+      allow update: if false;
+    }
+  }
+}
