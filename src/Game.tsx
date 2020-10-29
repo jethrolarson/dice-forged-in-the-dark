@@ -13,7 +13,7 @@ import { GameState, GameView, initialGameState, RollResult } from './GameModel'
 import { useDoc } from './useDoc'
 import { RollLog } from './RollLog'
 
-const noop = () => {}
+const noop = (): void => {}
 
 const DataList: FC<{ id: string; values: string }> = ({ id, values }) => (
   <datalist id={id}>
@@ -32,11 +32,11 @@ const styles = stylesheet({
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    width: '100vw'
+    width: '100vw',
   },
   heading: {
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   title: {
     background: 'transparent',
@@ -50,9 +50,9 @@ const styles = stylesheet({
     $nest: {
       '&:focus': {
         borderColor: '#fff',
-        outline: 'none'
-      }
-    }
+        outline: 'none',
+      },
+    },
   },
 
   settingsButton: {
@@ -61,7 +61,7 @@ const styles = stylesheet({
     padding: 10,
     background: 'transparent',
     color: '#fff',
-    cursor: 'pointer'
+    cursor: 'pointer',
   },
   settings: {
     border: '1px solid #aaa',
@@ -72,7 +72,7 @@ const styles = stylesheet({
     display: 'grid',
     gridGap: 10,
 
-    alignContent: 'start'
+    alignContent: 'start',
   },
   log: {
     border: '1px solid #aaa',
@@ -81,13 +81,19 @@ const styles = stylesheet({
     flex: 1,
     flexDirection: 'column',
     display: 'flex',
-    overflowY: 'scroll'
+    overflowY: 'scroll',
+  },
+  rolls: {
+    marginTop: 'auto',
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
   },
   form: {
-    padding: 10
+    padding: 10,
   },
   diceButtons: {
-    gridArea: 'dice'
+    gridArea: 'dice',
   },
   dieButton: {
     marginRight: 2,
@@ -100,40 +106,41 @@ const styles = stylesheet({
     backgroundClip: 'padding-box',
     backgroundSize: '295.5px 50px',
     backgroundColor: 'transparent',
-    border: 'none'
+    border: 'none',
   },
   dieButtonOn: {
     opacity: 1,
-    transition: 'opacity 0.2s'
-  }
+    transition: 'opacity 0.2s',
+  },
 })
 
 export const gamePath = (path: string): O.Option<GameView> => {
-  const m = path.match(/^\/game\/([^/?]+)/)
+  const m = /^\/game\/([^/?]+)/.exec(path)
   return m && m.length > 0 ? O.some({ kind: 'GameView', id: m[1] }) : O.none
 }
 
 type FormElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
 
-const pipeVal = (f: (value: string) => unknown) => ({ currentTarget: { value } }: React.FormEvent<FormElement>) =>
-  f(value)
+const pipeVal = (f: (value: string) => unknown) => ({
+  currentTarget: { value },
+}: React.FormEvent<FormElement>): unknown => f(value)
 
-const rollDie = () => Math.floor(Math.random() * 6) + 1
+const rollDie = (): number => Math.floor(Math.random() * 6) + 1
 
-const saveEffectOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string) => {
-  if (gdoc) gdoc.set({ effectOptions: value }, { merge: true })
+const saveEffectOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
+  if (gdoc) gdoc.set({ effectOptions: value }, { merge: true }).catch(() => alert('save failed'))
 }, 2000)
-const savePositionOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string) => {
-  if (gdoc) gdoc.set({ positionOptions: value }, { merge: true })
-}, 2000)
-
-const saveRollTypeOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string) => {
-  if (gdoc) gdoc.set({ rollTypeOptions: value }, { merge: true })
+const savePositionOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
+  if (gdoc) gdoc.set({ positionOptions: value }, { merge: true }).catch(() => alert('save failed'))
 }, 2000)
 
-const deleteGame = (gdoc: firebase.firestore.DocumentReference) => () => {
+const saveRollTypeOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
+  if (gdoc) gdoc.set({ rollTypeOptions: value }, { merge: true }).catch(() => alert('save failed'))
+}, 2000)
+
+const deleteGame = (gdoc: firebase.firestore.DocumentReference) => (): void => {
   if (gdoc && window.confirm('Are you sure you want to delete this game permanently?')) {
-    gdoc.delete()
+    gdoc.delete().catch(() => alert('delete failed'))
     document.location.hash = '#'
   }
 }
@@ -143,14 +150,17 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
   const state = useFunState<GameState>({ ...initialGameState })
   useEffect(() => {
     if (gdoc) {
-      gdoc.get().then((snapshot) => {
-        if (!snapshot.exists) {
-          document.location.hash = '#not_found'
-        }
-        const gameIds = new Set(JSON.parse(localStorage.getItem('games') || '[]'))
-        gameIds.add(gameId)
-        localStorage.setItem('games', JSON.stringify(Array.from(gameIds)))
-      })
+      gdoc
+        .get()
+        .then((snapshot) => {
+          if (!snapshot.exists) {
+            document.location.hash = '#not_found'
+          }
+          const gameIds = new Set(JSON.parse(localStorage.getItem('games') ?? '[]'))
+          gameIds.add(gameId)
+          localStorage.setItem('games', JSON.stringify(Array.from(gameIds)))
+        })
+        .catch(() => alert('failed to load game'))
       gdoc.onSnapshot((ss) => {
         const data = ss.data()
         data && merge(state)(data)
@@ -159,10 +169,10 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
         .collection('rolls')
         .orderBy('date')
         .onSnapshot((snapshot) =>
-          state.prop('rolls').set(snapshot.docs.map((d) => ({ ...(d.data() as RollResult), id: d.id })))
+          state.prop('rolls').set(snapshot.docs.map((d) => ({ ...(d.data() as RollResult), id: d.id }))),
         )
     }
-    return undefined;
+    return undefined
   }, [gdoc])
   const {
     rolls,
@@ -176,32 +186,35 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
     effectOptions,
     rollType,
     rollTypeOptions,
-    hoveredDieButton
+    hoveredDieButton,
   } = state.get()
   const scrollRef = useRef<HTMLDivElement>(null)
   // stay scrolled to the bottom
   useLayoutEffect(() => {
-    scrollRef.current && scrollRef.current.scrollTo({ top: 99999999999 })
+    scrollRef.current?.scrollTo({ top: 99999999999 })
   }, [rolls])
 
-  const roll = (n: number) => () => {
+  const roll = (n: number) => (): void => {
     if (gdoc) {
-      gdoc.collection('rolls').add({
-        note,
-        rollType,
-        position,
-        effect,
-        username,
-        isZero: n === 0,
-        results: range(0, n === 0 ? 2 : n).map(rollDie),
-        date: Date.now()
-      })
+      gdoc
+        .collection('rolls')
+        .add({
+          note,
+          rollType,
+          position,
+          effect,
+          username,
+          isZero: n === 0,
+          results: range(0, n === 0 ? 2 : n).map(rollDie),
+          date: Date.now(),
+        })
+        .catch(() => alert('failed to add roll'))
       merge(state)({ note: '', rollType: '', position: '', effect: '' })
     }
   }
 
   const onTitleChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
-    if (gdoc) gdoc.set({ title: value }, { merge: true })
+    if (gdoc) gdoc.set({ title: value }, { merge: true }).catch(() => alert('failed to save'))
   }
 
   const onPositionOptionsChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
@@ -217,19 +230,21 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
     if (gdoc) saveRollTypeOptions(gdoc, value)
   }
 
-  const toggleSettings = () => state.prop('settingsOpen').mod(not)
+  const toggleSettings = (): void => state.prop('settingsOpen').mod(not)
   return (
     <form
       className={styles.Game}
-      onSubmit={(e) => {
+      onSubmit={(e): void => {
         e.preventDefault()
       }}>
       <div className={styles.heading}>
         <a href="#/">
+          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
           <Icon icon={chevronLeft} size={28} />
         </a>
         <input className={styles.title} type="text" aria-label="Game Name" value={title} onChange={onTitleChange} />
         <button className={styles.settingsButton} onClick={toggleSettings} title="Game Settings">
+          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
           <Icon icon={gears} size={28} />
         </button>
       </div>
@@ -262,7 +277,7 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
         <>
           <div ref={scrollRef} className={styles.log}>
             {rolls.length ? (
-              <ul className={style({ marginTop: 'auto', listStyle: 'none' })}>
+              <ul className={styles.rolls}>
                 {rolls.map((r) => (
                   <li key={`roll_${r.id}`}>
                     <RollLog result={r} />
@@ -278,7 +293,7 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
               className={style({
                 display: 'grid',
                 gridTemplateAreas: '"rollType position effect" "note note note" "dice dice player"',
-                gridGap: 10
+                gridGap: 10,
               })}>
               <label className={style({ gridArea: 'rollType' })}>
                 Roll Type <br />
@@ -325,23 +340,23 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
                   value={note}
                 />
               </label>
-              <div className={styles.diceButtons} onMouseLeave={() => state.prop('hoveredDieButton').set(-1)}>
+              <div className={styles.diceButtons} onMouseLeave={(): void => state.prop('hoveredDieButton').set(-1)}>
                 {range(0, 7).map((n: number) => (
                   <button
                     key={`btn${n}`}
                     title={`Roll ${n} ${n === 1 ? 'die' : 'dice'}`}
-                    onMouseEnter={() => state.prop('hoveredDieButton').set(n)}
+                    onMouseEnter={(): void => state.prop('hoveredDieButton').set(n)}
                     className={classes(
                       styles.dieButton,
                       style({
                         backgroundPositionX: -49 * (n === 0 ? 0 : n - 1),
                         ...(n === 0
                           ? {
-                              filter: 'invert(100%)'
+                              filter: 'invert(100%)',
                             }
-                          : {})
+                          : {}),
                       }),
-                      hoveredDieButton >= n ? styles.dieButtonOn : undefined
+                      hoveredDieButton >= n ? styles.dieButtonOn : undefined,
                     )}
                     type="button"
                     onClick={roll(n)}

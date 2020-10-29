@@ -1,19 +1,11 @@
 import { useEffect, useState } from 'react'
-import fireApp from 'firebase/app'
-require('@firebase/firestore')
+import type fireApp from 'firebase/app'
+import { initFirebase } from './initFirebase'
 
 export const useFirestore = (): null | fireApp.firestore.Firestore => {
-  let [firestore, setFirestore] = useState<fireApp.firestore.Firestore | null>(null)
+  const [firestore, setFirestore] = useState<fireApp.firestore.Firestore | null>(null)
   useEffect(() => {
-    const fApp =
-      fireApp.apps[0] ||
-      fireApp.initializeApp({
-        appId: 'forged-in-the-dice',
-        apiKey: 'AIzaSyB8UlvItF7MjSxWcTY65sVSwQLNsgBykjU',
-        projectId: 'forged-in-the-dice'
-      })
-
-    setFirestore(fApp.firestore())
+    setFirestore(initFirebase().firestore())
   }, [])
   return firestore
 }

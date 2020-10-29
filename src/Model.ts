@@ -1,8 +1,9 @@
 import { GameView } from './GameModel'
+import { LoginView } from './LoginModel'
 
-export type AppState = {
+export interface AppState {
   view: View
-  games: { id: string; title: string }[]
+  games: Array<{ id: string; title: string }>
 }
 
 export interface Error404View {
@@ -10,7 +11,7 @@ export interface Error404View {
 }
 
 export const error404View: Error404View = {
-  kind: 'Error404View'
+  kind: 'Error404View',
 }
 
 export interface DefaultView {
@@ -18,12 +19,12 @@ export interface DefaultView {
 }
 
 export const defaultView: DefaultView = {
-  kind: 'DefaultView'
+  kind: 'DefaultView',
 }
 
-export type View = Error404View | DefaultView | GameView
+export type View = Error404View | DefaultView | GameView | LoginView
 
 export const initialState = (view: View): AppState => ({
   view,
-  games: []
+  games: [],
 })

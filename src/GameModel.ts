@@ -39,7 +39,7 @@ export const initialPersistedState: PersistedState = {
   positionOptions: 'Controlled,Risky,Desperate',
   effectOptions: 'None,Limited,Standard,Great,Extreme',
   rollTypeOptions:
-    'Attune,Command,Consort,Finesse,Hunt,Prowl,Skirmish,Study,Survey,Sway,Tinker,Wreck,Insight,Prowess,Resolve,Fortune'
+    'Attune,Command,Consort,Finesse,Hunt,Prowl,Skirmish,Study,Survey,Sway,Tinker,Wreck,Insight,Prowess,Resolve,Fortune',
 }
 
 export const initialGameState: GameState = {
@@ -50,5 +50,5 @@ export const initialGameState: GameState = {
   effect: '',
   username: 'anonymous',
   settingsOpen: false,
-  hoveredDieButton: -1
+  hoveredDieButton: -1,
 }

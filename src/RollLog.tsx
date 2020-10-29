@@ -5,16 +5,33 @@ import diceSprite from './dice.png'
 import { RollResult } from './GameModel'
 
 const styles = stylesheet({
-  result: {
-    position: 'relative',
+  RollLog: {
     listStyle: 'none',
+    display: 'grid',
+    gridGap: 10,
+    gridTemplateAreas: '"name time " "action position" "action effect" "dice result" "note note"',
+    gridTemplateColumns: '1fr 1fr',
     padding: '10px',
     borderTop: '1px solid #aaa',
     $nest: {
       'li:first-child &': {
-        border: '0'
-      }
-    }
+        border: '0',
+      },
+    },
+  },
+  time: {
+    textAlign: 'right',
+    color: '#aaa',
+    gridArea: 'time',
+    fontSize: 12,
+  },
+  name: {
+    gridArea: 'name',
+  },
+  dice: {
+    display: 'flex',
+    alignItems: 'center',
+    gridArea: 'dice',
   },
   dieResult: {
     backgroundImage: `url(${diceSprite})`,
@@ -26,17 +43,25 @@ const styles = stylesheet({
     backgroundSize: '214px 36px',
     borderRadius: 6,
     margin: '0 2px',
-    backgroundBlendMode: 'multiply'
+    backgroundBlendMode: 'multiply',
+  },
+  effect: {
+    gridArea: 'effect',
+  },
+  position: {
+    gridArea: 'position',
   },
   rollType: {
-    position: 'absolute',
-    pointerEvents: 'none',
-    right: 20,
-    bottom: 0,
+    gridArea: 'action',
     fontWeight: 500,
-    fontSize: 50,
-    color: '#333'
-  }
+    fontSize: 30,
+  },
+  result: {
+    gridArea: 'result',
+  },
+  note: {
+    gridArea: 'note',
+  },
 })
 
 type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
@@ -75,9 +100,9 @@ const RollMessage: FC<{ result: RollValuation }> = ({ result }) => {
   }
 }
 
-const isToday = (ms: number) => new Date(ms).toDateString() === new Date().toDateString()
+const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
 
-const dieColor = (excluded: boolean, highest: boolean, valuation: RollValuation, value: number) => {
+const dieColor = (excluded: boolean, highest: boolean, valuation: RollValuation, value: number): string => {
   if (!excluded) {
     if (value === 6) return 'green'
     if (highest) {
@@ -90,10 +115,9 @@ const dieColor = (excluded: boolean, highest: boolean, valuation: RollValuation,
 const ResultDie: FC<{
   value: number
   highest: boolean
-  index: number
   excluded: boolean
   rollValuation: RollValuation
-}> = ({ value, index, highest, excluded, rollValuation }) => {
+}> = ({ value, highest, excluded, rollValuation }) => {
   return (
     <span
       title={excluded ? 'excluded ' : value.toString()}
@@ -104,10 +128,10 @@ const ResultDie: FC<{
           backgroundColor: dieColor(excluded, highest, rollValuation, value),
           ...(excluded
             ? {
-                filter: 'invert(100%)'
+                filter: 'invert(100%)',
               }
-            : {})
-        })
+            : {}),
+        }),
       )}>
       d
     </span>
@@ -116,47 +140,47 @@ const ResultDie: FC<{
 
 const highestIndexes = (results: RollResult['results']): [number, number] => {
   if (results.length === 1) return [0, -1]
-  return results
-    .slice(1)
-    .reduce(
-      ([fst, snd], d, i) =>
-        d > results[fst] ? [i + 1, fst] : d > (snd >= 0 ? results[snd] : 0) ? [fst, i + 1] : [fst, snd],
-      [0, -1]
-    )
+  return results.slice(1).reduce(
+    ([fst, snd], d, i) => {
+      if (d > results[fst]) return [i + 1, fst]
+      if (d > (snd >= 0 ? results[snd] : 0)) return [fst, i + 1]
+      return [fst, snd]
+    },
+    [0, -1],
+  )
 }
 
 export const RollLog: FC<{ result: RollResult }> = ({
-  result: { isZero, note, results, position, effect, date, username, rollType }
+  result: { isZero, note, results, position, effect, date, username, rollType },
 }) => {
   const valuation = valuate(isZero, results)
   const [highest, secondHighest] = highestIndexes(results)
   const excludedIndex = isZero ? highest : -1
   return (
-    <div className={styles.result}>
-      <em className={style({ float: 'right', color: '#aaa' })}>
+    <div className={styles.RollLog}>
+      <em className={styles.time}>
         {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
       </em>
-      {username}
-      <div>
-        {position && `${position} Position`}
-        <br />
-        {effect && `${effect} Effect`}
-      </div>
-      <div className={style({ display: 'flex', alignItems: 'center' })}>
+      <span className={styles.name}>{username}</span>
+
+      <div className={styles.rollType}>{rollType}</div>
+      <div className={styles.position}>{position && `${position} Position`}</div>
+      <div className={styles.effect}>{effect && `${effect} Effect`}</div>
+      <div className={styles.dice}>
         {results.map((d, i) => (
           <ResultDie
             key={`result_${i}`}
             value={d}
-            index={i}
             rollValuation={valuation}
             highest={(isZero ? secondHighest : highest) === i}
             excluded={excludedIndex === i}
           />
         ))}
       </div>
-      <RollMessage result={valuation} />
-      <div>{note}</div>
-      <div className={styles.rollType}>{rollType}</div>
+      <div className={styles.result}>
+        <RollMessage result={valuation} />
+      </div>
+      <div className={styles.note}>{note}</div>
     </div>
   )
 }

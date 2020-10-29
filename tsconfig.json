@@ -6,8 +6,9 @@
       "es6",
       "dom"
     ],
+    "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
-    "jsx": "preserve",
+    "jsx": "react",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

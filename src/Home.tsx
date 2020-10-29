@@ -5,8 +5,10 @@ import { useFirestore } from './useFirestore'
 import { style } from 'typestyle'
 import useFunState, { FunState } from 'fun-state'
 
+type GameState = PersistedState & { id: string }
+
 interface HomeState {
-  games: (PersistedState & { id: string })[]
+  games: GameState[]
   gameName: string
   creating: boolean
 }
@@ -14,39 +16,47 @@ interface HomeState {
 const createGame = (
   title: string,
   gamesDoc: fireApp.firestore.CollectionReference,
-  state: FunState<HomeState>
-) => () => {
+  state: FunState<HomeState>,
+) => (): void => {
   state.prop('creating').set(true)
-  gamesDoc.add({ ...initialGameState, title }).then((value) => {
-    window.location.hash = `#/game/${value.id}`
-    state.prop('creating').set(false)
-  })
+  gamesDoc
+    .add({ ...initialGameState, title })
+    .then((value) => {
+      window.location.hash = `#/game/${value.id}`
+      state.prop('creating').set(false)
+    })
+    .catch(() => alert('failed to create game'))
 }
 
 // FIXME Copied from Game.tsx
 type FormElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-const pipeVal = (f: (value: string) => unknown) => ({ currentTarget: { value } }: React.FormEvent<FormElement>) =>
-  f(value)
+const pipeVal = (f: (value: string) => unknown) => ({
+  currentTarget: { value },
+}: React.FormEvent<FormElement>): unknown => f(value)
 
 export const Home: FC<{}> = () => {
   const state = useFunState<HomeState>({
     games: [],
     gameName: '',
-    creating: false
+    creating: false,
   })
   const firestore = useFirestore()
 
   useEffect(() => {
     if (firestore) {
-      const gameIds: string[] = JSON.parse(localStorage.getItem('games') || '[]')
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const gameIds: string[] = JSON.parse(localStorage.getItem('games') ?? '[]')
       Promise.all(
-        gameIds.map((id) =>
-          firestore
-            .doc(`games/${id}`)
-            .get()
-            .then((game) => ({ id: game.id, ...(game.data() as PersistedState) }))
-        )
-      ).then(state.prop('games').set)
+        gameIds.map(
+          (id): Promise<GameState> =>
+            firestore
+              .doc(`games/${id}`)
+              .get()
+              .then((game) => ({ id: game.id, ...(game.data() as PersistedState) })),
+        ),
+      )
+        .then(state.prop('games').set)
+        .catch(() => alert('failed to load games'))
     }
     return undefined
   }, [firestore])

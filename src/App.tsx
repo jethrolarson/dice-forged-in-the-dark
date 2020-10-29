@@ -4,21 +4,21 @@ import { AppState, initialState, View } from './Model'
 import { Game } from './Game'
 import { route } from './Router'
 import { Home } from './Home'
-
-require('@firebase/firestore')
+import { Login } from './Login'
+import '@firebase/firestore'
 
 const updateView = (): View => route(window.location.hash.slice(1))
 
 /** App components should be the only things that instantiate state */
-export const App: FC<{ storedState: Partial<AppState> }> = ({ storedState }) => {
-  const state = useFunState<AppState>({ ...initialState(updateView()), ...storedState })
+export const App: FC<{}> = () => {
+  const state = useFunState<AppState>(initialState(updateView()))
 
   useEffect(() => {
-    const onHashChange = () => {
+    const onHashChange = (): void => {
       state.prop('view').set(updateView())
     }
     window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+    return (): void => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
   const { view } = state.get()
@@ -28,6 +28,8 @@ export const App: FC<{ storedState: Partial<AppState> }> = ({ storedState }) => 
       return <Home />
     case 'GameView':
       return <Game gameId={view.id} />
+    case 'LoginView':
+      return <Login />
     case 'Error404View':
       return <p>Error 404</p>
   }
