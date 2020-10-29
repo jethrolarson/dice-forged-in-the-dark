@@ -13,6 +13,23 @@ import { GameState, GameView, initialGameState, RollResult } from './GameModel'
 import { useDoc } from './useDoc'
 import { RollLog } from './RollLog'
 
+const getRollSound = ((): (() => Promise<HTMLAudioElement>) => {
+  let loadingAudio = false
+  let diceAudioEl: HTMLAudioElement
+  return (): Promise<HTMLAudioElement> => {
+    diceAudioEl = new Audio('dice_roll.mp3')
+    return new Promise<HTMLAudioElement>((resolve) => {
+      if (!loadingAudio) {
+        loadingAudio = true
+        diceAudioEl.addEventListener('canplaythrough', () => {
+          resolve(diceAudioEl)
+        })
+      }
+      return resolve(diceAudioEl)
+    })
+  }
+})()
+
 const noop = (): void => {}
 
 const DataList: FC<{ id: string; values: string }> = ({ id, values }) => (
@@ -34,6 +51,8 @@ const styles = stylesheet({
     height: '100vh',
     maxWidth: 600,
     margin: '0 auto',
+    background: 'radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%))',
+    backgroundRepeat: 'no-repeat',
   },
   heading: {
     display: 'flex',
@@ -61,7 +80,7 @@ const styles = stylesheet({
     border: 'none',
     padding: 10,
     background: 'transparent',
-    color: '#fff',
+    color: '#2b635e',
     cursor: 'pointer',
   },
   settings: {
@@ -77,7 +96,7 @@ const styles = stylesheet({
   },
   log: {
     border: '1px solid #aaa',
-    background: '#111',
+    background: 'hsla(0, 0, 40%, 0.4)',
     borderWidth: '1px 0',
     flex: 1,
     flexDirection: 'column',
@@ -182,6 +201,9 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
         })
       gdoc.onSnapshot((ss) => {
         const data = ss.data()
+        window.document.title =
+          (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
+          ' - Dice Forged in the Dark'
         data && merge(state)(data)
       })
       return gdoc
@@ -231,6 +253,8 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
           console.error(e)
           alert('failed to add roll')
         })
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      getRollSound().then((audio) => audio.play())
       merge(state)({ note: '', rollType: '', position: '', effect: '' })
     }
   }

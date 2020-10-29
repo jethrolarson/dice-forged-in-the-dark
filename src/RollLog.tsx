@@ -12,7 +12,7 @@ const styles = stylesheet({
     gridTemplateAreas: '"name time " "action position" "action effect" "dice result" "note note"',
     gridTemplateColumns: '1fr 1fr',
     padding: '10px',
-    borderTop: '1px solid #aaa',
+    borderTop: '1px solid #92d2d0',
     $nest: {
       'li:first-child &': {
         border: '0',
@@ -89,12 +89,7 @@ const RollMessage: FC<{ result: RollValuation }> = ({ result }) => {
     case 'Success':
       return <h1>Success!</h1>
     case 'MixedSuccess':
-      return (
-        <>
-          <h1>Mixed Success!</h1>
-          But there are consequences...
-        </>
-      )
+      return <h1>Mixed Success!</h1>
     case 'Miss':
       return <h1>Miss!</h1>
   }
