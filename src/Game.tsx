@@ -32,7 +32,8 @@ const styles = stylesheet({
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    width: '100vw',
+    maxWidth: 600,
+    margin: '0 auto',
   },
   heading: {
     display: 'flex',
@@ -128,19 +129,34 @@ const pipeVal = (f: (value: string) => unknown) => ({
 const rollDie = (): number => Math.floor(Math.random() * 6) + 1
 
 const saveEffectOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
-  if (gdoc) gdoc.set({ effectOptions: value }, { merge: true }).catch(() => alert('save failed'))
+  if (gdoc)
+    gdoc.set({ effectOptions: value }, { merge: true }).catch((e) => {
+      console.error(e)
+      alert('save failed')
+    })
 }, 2000)
 const savePositionOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
-  if (gdoc) gdoc.set({ positionOptions: value }, { merge: true }).catch(() => alert('save failed'))
+  if (gdoc)
+    gdoc.set({ positionOptions: value }, { merge: true }).catch((e) => {
+      console.error(e)
+      alert('save failed')
+    })
 }, 2000)
 
 const saveRollTypeOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
-  if (gdoc) gdoc.set({ rollTypeOptions: value }, { merge: true }).catch(() => alert('save failed'))
+  if (gdoc)
+    gdoc.set({ rollTypeOptions: value }, { merge: true }).catch((e) => {
+      console.error(e)
+      alert('save failed')
+    })
 }, 2000)
 
 const deleteGame = (gdoc: firebase.firestore.DocumentReference) => (): void => {
   if (gdoc && window.confirm('Are you sure you want to delete this game permanently?')) {
-    gdoc.delete().catch(() => alert('delete failed'))
+    gdoc.delete().catch((e) => {
+      console.error(e)
+      alert('delete failed')
+    })
     document.location.hash = '#'
   }
 }
@@ -160,7 +176,10 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
           gameIds.add(gameId)
           localStorage.setItem('games', JSON.stringify(Array.from(gameIds)))
         })
-        .catch(() => alert('failed to load game'))
+        .catch((e) => {
+          console.error(e)
+          alert('failed to load game')
+        })
       gdoc.onSnapshot((ss) => {
         const data = ss.data()
         data && merge(state)(data)
@@ -208,13 +227,20 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
           results: range(0, n === 0 ? 2 : n).map(rollDie),
           date: Date.now(),
         })
-        .catch(() => alert('failed to add roll'))
+        .catch((e) => {
+          console.error(e)
+          alert('failed to add roll')
+        })
       merge(state)({ note: '', rollType: '', position: '', effect: '' })
     }
   }
 
   const onTitleChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
-    if (gdoc) gdoc.set({ title: value }, { merge: true }).catch(() => alert('failed to save'))
+    if (gdoc)
+      gdoc.set({ title: value }, { merge: true }).catch((e) => {
+        console.error(e)
+        alert('failed to save')
+      })
   }
 
   const onPositionOptionsChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {

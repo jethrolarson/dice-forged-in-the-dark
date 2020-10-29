@@ -25,7 +25,10 @@ const createGame = (
       window.location.hash = `#/game/${value.id}`
       state.prop('creating').set(false)
     })
-    .catch(() => alert('failed to create game'))
+    .catch((e) => {
+      console.error(e)
+      alert('failed to create game')
+    })
 }
 
 // FIXME Copied from Game.tsx
@@ -56,7 +59,10 @@ export const Home: FC<{}> = () => {
         ),
       )
         .then(state.prop('games').set)
-        .catch(() => alert('failed to load games'))
+        .catch((e) => {
+          console.error(e)
+          alert('failed to load games')
+        })
     }
     return undefined
   }, [firestore])
