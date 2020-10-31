@@ -11,6 +11,7 @@ import { gears } from 'react-icons-kit/fa/gears'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { GameState, GameView, initialGameState, RollResult } from './GameModel'
 import { useDoc } from './useDoc'
+import { borderColor } from './colors'
 import { RollLog } from './RollLog'
 
 const getRollSound = ((): (() => Promise<HTMLAudioElement>) => {
@@ -61,7 +62,6 @@ const styles = stylesheet({
   title: {
     background: 'transparent',
     verticalAlign: 'bottom',
-    color: '#fff',
     fontSize: 30,
     appearance: 'none',
     border: '2px solid transparent',
@@ -82,9 +82,14 @@ const styles = stylesheet({
     background: 'transparent',
     color: '#2b635e',
     cursor: 'pointer',
+    $nest: {
+      '&:hover': {
+        color: 'hsl(170, 80%, 90%)',
+      },
+    },
   },
   settings: {
-    border: '1px solid #aaa',
+    border: `1px solid ${borderColor}`,
     background: '#111',
     borderWidth: '1px 0',
     padding: '0 35px 35px',
@@ -95,7 +100,7 @@ const styles = stylesheet({
     alignContent: 'start',
   },
   log: {
-    border: '1px solid #aaa',
+    border: `1px solid ${borderColor}`,
     background: 'hsla(0, 0, 40%, 0.4)',
     borderWidth: '1px 0',
     flex: 1,

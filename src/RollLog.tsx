@@ -3,35 +3,51 @@ import { equals } from 'ramda'
 import { style, stylesheet, classes } from 'typestyle'
 import diceSprite from './dice.png'
 import { RollResult } from './GameModel'
+import { borderColor } from './colors'
 
 const styles = stylesheet({
   RollLog: {
     listStyle: 'none',
-    display: 'grid',
-    gridGap: 10,
-    gridTemplateAreas: '"name time " "action position" "action effect" "dice result" "note note"',
-    gridTemplateColumns: '1fr 1fr',
     padding: '10px',
-    borderTop: '1px solid #92d2d0',
-    $nest: {
-      'li:first-child &': {
-        border: '0',
-      },
-    },
+    position: 'relative',
+    height: 240,
+    margin: 10,
+  },
+  metaWrap: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  meta: {
+    border: `1px solid ${borderColor}`,
+    marginLeft: 80,
+    padding: 10,
+    height: 160,
+  },
+  displacer: {
+    float: 'left',
+    shapeOutside: 'circle(50% at -10px 70px)',
+    width: 200,
+    height: 200,
   },
   time: {
     textAlign: 'right',
-    color: '#aaa',
-    gridArea: 'time',
+    color: 'hsl(170, 50%, 46%)',
+    gridArea: 'result',
     fontSize: 12,
   },
-  name: {
-    gridArea: 'name',
-  },
+  name: {},
   dice: {
     display: 'flex',
     alignItems: 'center',
-    gridArea: 'dice',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    border: `2px solid ${borderColor}`,
+    backgroundColor: '#102629',
+    borderRadius: 300,
+    width: 180,
+    height: 180,
+    padding: 28,
   },
   dieResult: {
     backgroundImage: `url(${diceSprite})`,
@@ -45,23 +61,34 @@ const styles = stylesheet({
     margin: '0 2px',
     backgroundBlendMode: 'multiply',
   },
-  effect: {
-    gridArea: 'effect',
-  },
-  position: {
-    gridArea: 'position',
-  },
+  effect: {},
+  position: {},
   rollType: {
-    gridArea: 'action',
-    fontWeight: 500,
     fontSize: 30,
   },
   result: {
-    gridArea: 'result',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    zIndex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    $nest: {
+      h1: {
+        textAlign: 'center',
+        display: 'inline-block',
+        background: `${borderColor}`,
+        marginTop: -20,
+        marginBottom: 4,
+        color: 'hsl(200, 60%, 8%)',
+        textTransform: 'uppercase',
+        padding: '4px 8px',
+        lineHeight: '1',
+      },
+    },
   },
-  note: {
-    gridArea: 'note',
-  },
+  note: {},
 })
 
 type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
@@ -85,13 +112,13 @@ const valuate = (isZero: boolean, results: number[]): RollValuation => {
 const RollMessage: FC<{ result: RollValuation }> = ({ result }) => {
   switch (result) {
     case 'Crit':
-      return <h1>Crit!</h1>
+      return <h1>Crit</h1>
     case 'Success':
-      return <h1>Success!</h1>
+      return <h1>Success</h1>
     case 'MixedSuccess':
-      return <h1>Mixed Success!</h1>
+      return <h1>Mixed</h1>
     case 'Miss':
-      return <h1>Miss!</h1>
+      return <h1>Fail</h1>
   }
 }
 
@@ -153,29 +180,33 @@ export const RollLog: FC<{ result: RollResult }> = ({
   const excludedIndex = isZero ? highest : -1
   return (
     <div className={styles.RollLog}>
-      <em className={styles.time}>
-        {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
-      </em>
-      <span className={styles.name}>{username}</span>
-
-      <div className={styles.rollType}>{rollType}</div>
-      <div className={styles.position}>{position && `${position} Position`}</div>
-      <div className={styles.effect}>{effect && `${effect} Effect`}</div>
-      <div className={styles.dice}>
-        {results.map((d, i) => (
-          <ResultDie
-            key={`result_${i}`}
-            value={d}
-            rollValuation={valuation}
-            highest={(isZero ? secondHighest : highest) === i}
-            excluded={excludedIndex === i}
-          />
-        ))}
-      </div>
       <div className={styles.result}>
+        <div className={styles.dice}>
+          {results.map((d, i) => (
+            <ResultDie
+              key={`result_${i}`}
+              value={d}
+              rollValuation={valuation}
+              highest={(isZero ? secondHighest : highest) === i}
+              excluded={excludedIndex === i}
+            />
+          ))}
+        </div>
         <RollMessage result={valuation} />
+        <em className={styles.time}>
+          {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
+        </em>
       </div>
-      <div className={styles.note}>{note}</div>
+      <div className={styles.metaWrap}>
+        <div className={styles.meta}>
+          <div className={styles.displacer}></div>
+          <span className={styles.name}>{username}</span>
+          <div className={styles.rollType}>{rollType}</div>
+          <div className={styles.position}>{position && `${position} Position`}</div>
+          <div className={styles.effect}>{effect && `${effect} Effect`}</div>
+          <div className={styles.note}>{note}</div>
+        </div>
+      </div>
     </div>
   )
 }
