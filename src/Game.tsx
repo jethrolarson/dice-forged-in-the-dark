@@ -1,6 +1,5 @@
 import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import useFunState, { merge, not } from 'fun-state'
-import diceSprite from './dice.png'
 import { classes, style, stylesheet } from 'typestyle'
 import * as O from 'fp-ts/lib/Option'
 import { range, trim } from 'ramda'
@@ -13,6 +12,8 @@ import { GameState, GameView, initialGameState, RollResult } from './GameModel'
 import { useDoc } from './useDoc'
 import { borderColor } from './colors'
 import { RollLog } from './RollLog'
+import { Die } from './Die'
+import { color } from 'csx'
 
 const getRollSound = ((): (() => Promise<HTMLAudioElement>) => {
   let loadingAudio = false
@@ -50,7 +51,7 @@ const styles = stylesheet({
     display: 'flex',
     flexDirection: 'column',
     height: '100vh',
-    maxWidth: 600,
+    maxWidth: 375,
     margin: '0 auto',
     background: 'radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%))',
     backgroundRepeat: 'no-repeat',
@@ -118,18 +119,15 @@ const styles = stylesheet({
     padding: 10,
   },
   diceButtons: {
+    display: 'flex',
+    justifyContent: 'space-between',
     gridArea: 'dice',
   },
   dieButton: {
-    marginRight: 2,
     cursor: 'pointer',
-    backgroundImage: `url(${diceSprite})`,
     appearance: 'none',
-    opacity: 0.5,
-    width: 50,
-    height: 50,
-    backgroundClip: 'padding-box',
-    backgroundSize: '295.5px 50px',
+    opacity: 0.6,
+    padding: 0,
     backgroundColor: 'transparent',
     border: 'none',
   },
@@ -347,7 +345,8 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
             <div
               className={style({
                 display: 'grid',
-                gridTemplateAreas: '"rollType position effect" "note note note" "dice dice player"',
+                gridTemplateAreas:
+                  '"rollType position effect" "note note note" "player player player" "dice dice dice"',
                 gridGap: 10,
               })}>
               <label className={style({ gridArea: 'rollType' })}>
@@ -401,21 +400,16 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
                     key={`btn${n}`}
                     title={`Roll ${n} ${n === 1 ? 'die' : 'dice'}`}
                     onMouseEnter={(): void => state.prop('hoveredDieButton').set(n)}
-                    className={classes(
-                      styles.dieButton,
-                      style({
-                        backgroundPositionX: -49 * (n === 0 ? 0 : n - 1),
-                        ...(n === 0
-                          ? {
-                              filter: 'invert(100%)',
-                            }
-                          : {}),
-                      }),
-                      hoveredDieButton >= n ? styles.dieButtonOn : undefined,
-                    )}
+                    className={classes(styles.dieButton, hoveredDieButton >= n ? styles.dieButtonOn : undefined)}
                     type="button"
-                    onClick={roll(n)}
-                  />
+                    onClick={roll(n)}>
+                    <Die
+                      value={n === 0 ? 1 : n}
+                      dieColor={color(n === 0 ? '#000' : '#fff')}
+                      dotColor={color(n === 0 ? '#fff' : '#000')}
+                      size={44}
+                    />
+                  </button>
                 ))}
               </div>
             </div>

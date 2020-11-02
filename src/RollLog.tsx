@@ -1,17 +1,20 @@
 import React, { FC } from 'react'
 import { equals } from 'ramda'
-import { style, stylesheet, classes } from 'typestyle'
+import { classes, style, stylesheet } from 'typestyle'
 import diceSprite from './dice.png'
 import { RollResult } from './GameModel'
 import { borderColor } from './colors'
+import { Die } from './Die'
+import { color, ColorHelper } from 'csx'
+
+const circleSize = 140
 
 const styles = stylesheet({
   RollLog: {
     listStyle: 'none',
-    padding: '10px',
     position: 'relative',
-    height: 240,
-    margin: 10,
+    margin: '24px 12px',
+    fontSize: 12,
   },
   metaWrap: {
     display: 'flex',
@@ -20,34 +23,42 @@ const styles = stylesheet({
   },
   meta: {
     border: `1px solid ${borderColor}`,
-    marginLeft: 80,
-    padding: 10,
-    height: 160,
+    marginLeft: circleSize / 2 + 2,
+    padding: 6,
+    height: circleSize,
+    borderRadius: '0 8px 8px 0',
   },
   displacer: {
     float: 'left',
-    shapeOutside: 'circle(50% at -10px 70px)',
-    width: 200,
-    height: 200,
+    shapeOutside: `circle(50% at -5px ${(circleSize - 14) / 2}px)`,
+    width: circleSize + 6,
+    height: circleSize + 6,
   },
   time: {
     textAlign: 'right',
     color: 'hsl(170, 50%, 46%)',
-    gridArea: 'result',
-    fontSize: 12,
+    fontSize: 10,
+    display: 'block',
+    margin: '4px 16px',
   },
   name: {},
   dice: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    alignContent: 'center',
     flexWrap: 'wrap',
     border: `2px solid ${borderColor}`,
-    backgroundColor: '#102629',
+    background: '#112d33',
     borderRadius: 300,
-    width: 180,
-    height: 180,
-    padding: 28,
+    width: circleSize,
+    height: circleSize,
+    padding: 14,
+    $nest: {
+      '&>*': {
+        margin: 3,
+      },
+    },
   },
   dieResult: {
     backgroundImage: `url(${diceSprite})`,
@@ -61,10 +72,10 @@ const styles = stylesheet({
     margin: '0 2px',
     backgroundBlendMode: 'multiply',
   },
-  effect: {},
-  position: {},
+  effect: { fontWeight: 500 },
+  position: { fontWeight: 500 },
   rollType: {
-    fontSize: 30,
+    fontSize: 24,
   },
   result: {
     position: 'absolute',
@@ -74,21 +85,23 @@ const styles = stylesheet({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    $nest: {
-      h1: {
-        textAlign: 'center',
-        display: 'inline-block',
-        background: `${borderColor}`,
-        marginTop: -20,
-        marginBottom: 4,
-        color: 'hsl(200, 60%, 8%)',
-        textTransform: 'uppercase',
-        padding: '4px 8px',
-        lineHeight: '1',
-      },
-    },
+    alignContent: 'center',
   },
-  note: {},
+  resultLabel: {
+    textAlign: 'center',
+    display: 'inline-block',
+    marginTop: -20,
+    marginBottom: 4,
+    color: 'hsl(200, 60%, 8%)',
+    textTransform: 'uppercase',
+    padding: '4px 8px',
+    lineHeight: '1',
+    borderRadius: 1.5,
+  },
+  note: {
+    marginTop: 2,
+    fontStyle: 'italic',
+  },
 })
 
 type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
@@ -112,53 +125,47 @@ const valuate = (isZero: boolean, results: number[]): RollValuation => {
 const RollMessage: FC<{ result: RollValuation }> = ({ result }) => {
   switch (result) {
     case 'Crit':
-      return <h1>Crit</h1>
+      return <h1 className={classes(styles.resultLabel, style({ background: '#fff940' }))}>Crit</h1>
     case 'Success':
-      return <h1>Success</h1>
+      return <h1 className={classes(styles.resultLabel, style({ background: '#49d08b' }))}>Success</h1>
     case 'MixedSuccess':
-      return <h1>Mixed</h1>
+      return <h1 className={classes(styles.resultLabel, style({ background: '#ffa547' }))}>Mixed</h1>
     case 'Miss':
-      return <h1>Fail</h1>
+      return (
+        <h1 className={classes(styles.resultLabel, style({ background: 'hsl(0, 60%, 50%)', color: '#fff' }))}>Fail</h1>
+      )
   }
 }
 
 const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
 
-const dieColor = (excluded: boolean, highest: boolean, valuation: RollValuation, value: number): string => {
-  if (!excluded) {
-    if (value === 6) return 'green'
-    if (highest) {
-      return valuation === 'MixedSuccess' ? 'hsl(56, 90%, 70%)' : 'hsl(0, 60%, 50%)'
-    }
+const dieColor = (
+  excluded: boolean,
+  highest: boolean,
+  valuation: RollValuation,
+  value: number,
+): { dieColor: ColorHelper; dotColor: ColorHelper; border?: boolean; glow?: boolean } => {
+  if (excluded) {
+    return { dieColor: color('hsla(0, 0%, 0%, 0)'), dotColor: color('hsl(0, 60%, 50%)'), border: true }
   }
-  return 'transparent'
+  if (value === 6) return { dieColor: color('#49d08b'), dotColor: color('#000'), glow: true }
+  if (highest) {
+    return valuation === 'MixedSuccess'
+      ? { dieColor: color('#ffa547'), dotColor: color('#000'), glow: true }
+      : { dieColor: color('hsl(0, 60%, 50%)'), dotColor: color('#fff'), glow: true }
+  }
+  return { dieColor: color('hsla(0, 0%, 0%, 0)'), dotColor: color(borderColor), border: true }
 }
 
 const ResultDie: FC<{
   value: number
+  size: number
   highest: boolean
   excluded: boolean
   rollValuation: RollValuation
-}> = ({ value, highest, excluded, rollValuation }) => {
-  return (
-    <span
-      title={excluded ? 'excluded ' : value.toString()}
-      className={classes(
-        styles.dieResult,
-        style({
-          backgroundPositionX: -35.6 * (value - 1),
-          backgroundColor: dieColor(excluded, highest, rollValuation, value),
-          ...(excluded
-            ? {
-                filter: 'invert(100%)',
-              }
-            : {}),
-        }),
-      )}>
-      d
-    </span>
-  )
-}
+}> = ({ value, size, highest, excluded, rollValuation }) => (
+  <Die value={value} size={size} {...dieColor(excluded, highest, rollValuation, value)} />
+)
 
 const highestIndexes = (results: RollResult['results']): [number, number] => {
   if (results.length === 1) return [0, -1]
@@ -185,6 +192,7 @@ export const RollLog: FC<{ result: RollResult }> = ({
           {results.map((d, i) => (
             <ResultDie
               key={`result_${i}`}
+              size={results.length > 4 ? 30 : results.length === 1 ? 50 : 36}
               value={d}
               rollValuation={valuation}
               highest={(isZero ? secondHighest : highest) === i}
@@ -193,20 +201,20 @@ export const RollLog: FC<{ result: RollResult }> = ({
           ))}
         </div>
         <RollMessage result={valuation} />
-        <em className={styles.time}>
-          {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
-        </em>
       </div>
       <div className={styles.metaWrap}>
         <div className={styles.meta}>
           <div className={styles.displacer}></div>
-          <span className={styles.name}>{username}</span>
+          <span className={styles.name}>{username} rolls:</span>
           <div className={styles.rollType}>{rollType}</div>
           <div className={styles.position}>{position && `${position} Position`}</div>
           <div className={styles.effect}>{effect && `${effect} Effect`}</div>
-          <div className={styles.note}>{note}</div>
+          {note && <div className={styles.note}>&ldquo;{note}&rdquo;</div>}
         </div>
       </div>
+      <em className={styles.time}>
+        {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
+      </em>
     </div>
   )
 }
