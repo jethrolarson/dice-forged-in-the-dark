@@ -350,8 +350,8 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
                 gridGap: 10,
               })}>
               <label className={style({ gridArea: 'rollType' })}>
-                Roll Type <br />
                 <input
+                  placeholder="Roll Type"
                   type="text"
                   name="rolltype"
                   list="rollTypeList"
@@ -361,35 +361,40 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
                 <DataList id="rollTypeList" values={rollTypeOptions} />
               </label>
               <label className={style({ gridArea: 'position' })}>
-                Position <br />
                 <input
                   type="text"
                   name="position"
                   list="positionList"
+                  placeholder="Position"
                   value={position}
                   onChange={pipeVal(state.prop('position').set)}
                 />
                 <DataList id="positionList" values={positionOptions} />
               </label>
               <label className={style({ gridArea: 'effect' })}>
-                Effect <br />
                 <input
                   type="text"
                   name="effect"
                   list="effectList"
+                  placeholder="Effect"
                   value={effect}
                   onChange={pipeVal(state.prop('effect').set)}
                 />
                 <DataList id="effectList" values={effectOptions} />
               </label>
               <label className={style({ gridArea: 'player' })}>
-                Player <br />
-                <input type="text" name="username" value={username} onChange={pipeVal(state.prop('username').set)} />
+                <input
+                  placeholder="Character"
+                  type="text"
+                  name="username"
+                  value={username}
+                  onChange={pipeVal(state.prop('username').set)}
+                />
               </label>
               <label className={style({ gridArea: 'note' })}>
-                <div>{'Note '}</div>
                 <textarea
-                  className={style({ width: '100%', height: 60 })}
+                  placeholder="Note"
+                  className={style({ width: '100%', height: 44, display: 'block' })}
                   onChange={pipeVal(state.prop('note').set)}
                   value={note}
                 />

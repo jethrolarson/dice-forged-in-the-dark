@@ -47,8 +47,12 @@ textarea {
 input:focus,
 textarea:focus {
   outline: none;
-  border-color: #888;
-  background: #333;
+  border-color: #92d2d0;
+  background: #204c4e;
+}
+input::-webkit-input-placeholder,
+textarea::-webkit-input-placeholder{
+  color: hsl(170deg 21% 51%);
 }
 
 a:link {
