@@ -3,6 +3,11 @@ export interface GameView {
   id: string
 }
 
+export interface GameSettingsView {
+  kind: 'GameSettingsView'
+  id: string
+}
+
 export interface RollResult {
   username: string
   position: string

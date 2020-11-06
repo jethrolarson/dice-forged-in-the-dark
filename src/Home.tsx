@@ -89,7 +89,7 @@ export const Home: FC<{}> = () => {
           onChange={pipeVal(state.prop('gameName').set)}
         />{' '}
         <button
-          disabled={creating}
+          disabled={gameName.length === 0 || creating}
           className={style({ flexShrink: 0 })}
           onClick={createGame(gameName, firestore.collection('games'), state)}>
           Create Game

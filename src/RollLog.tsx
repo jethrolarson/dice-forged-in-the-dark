@@ -24,15 +24,14 @@ const styles = stylesheet({
   meta: {
     border: `1px solid ${borderColor}`,
     marginLeft: circleSize / 2 + 2,
-    padding: 6,
-    height: circleSize,
+    minHeight: circleSize,
     borderRadius: '0 8px 8px 0',
   },
   displacer: {
     float: 'left',
-    shapeOutside: `circle(50% at -5px ${(circleSize - 14) / 2}px)`,
-    width: circleSize + 6,
-    height: circleSize + 6,
+    shapeOutside: `ellipse(71px 50% at 6px 70px)`,
+    width: circleSize,
+    height: circleSize,
   },
   time: {
     textAlign: 'right',
@@ -41,7 +40,9 @@ const styles = stylesheet({
     display: 'block',
     margin: '4px 16px',
   },
-  name: {},
+  name: {
+    marginTop: 6,
+  },
   dice: {
     display: 'flex',
     alignItems: 'center',
@@ -49,7 +50,7 @@ const styles = stylesheet({
     alignContent: 'center',
     flexWrap: 'wrap',
     border: `2px solid ${borderColor}`,
-    background: '#112d33',
+    background: 'radial-gradient(#112d33 51%, hsl(174deg 53% 32%))',
     borderRadius: 300,
     width: circleSize,
     height: circleSize,
@@ -101,6 +102,7 @@ const styles = stylesheet({
   note: {
     marginTop: 2,
     fontStyle: 'italic',
+    marginBottom: 6,
   },
 })
 
@@ -144,15 +146,16 @@ const dieColor = (
   highest: boolean,
   valuation: RollValuation,
   value: number,
-): { dieColor: ColorHelper; dotColor: ColorHelper; border?: boolean; glow?: boolean } => {
+  isLast: boolean,
+): { dieColor: ColorHelper; dotColor: ColorHelper; border?: boolean; glow?: boolean; pulse?: boolean } => {
   if (excluded) {
     return { dieColor: color('hsla(0, 0%, 0%, 0)'), dotColor: color('hsl(0, 60%, 50%)'), border: true }
   }
-  if (value === 6) return { dieColor: color('#49d08b'), dotColor: color('#000'), glow: true }
+  if (value === 6) return { dieColor: color('#49d08b'), dotColor: color('#000'), pulse: isLast }
   if (highest) {
     return valuation === 'MixedSuccess'
-      ? { dieColor: color('#ffa547'), dotColor: color('#000'), glow: true }
-      : { dieColor: color('hsl(0, 60%, 50%)'), dotColor: color('#fff'), glow: true }
+      ? { dieColor: color('#ffa547'), dotColor: color('#000'), pulse: isLast }
+      : { dieColor: color('hsl(0, 60%, 50%)'), dotColor: color('#fff'), pulse: isLast }
   }
   return { dieColor: color('hsla(0, 0%, 0%, 0)'), dotColor: color(borderColor), border: true }
 }
@@ -163,8 +166,9 @@ const ResultDie: FC<{
   highest: boolean
   excluded: boolean
   rollValuation: RollValuation
-}> = ({ value, size, highest, excluded, rollValuation }) => (
-  <Die value={value} size={size} {...dieColor(excluded, highest, rollValuation, value)} />
+  isLast: boolean
+}> = ({ value, size, highest, excluded, rollValuation, isLast }) => (
+  <Die value={value} size={size} {...dieColor(excluded, highest, rollValuation, value, isLast)} />
 )
 
 const highestIndexes = (results: RollResult['results']): [number, number] => {
@@ -179,8 +183,9 @@ const highestIndexes = (results: RollResult['results']): [number, number] => {
   )
 }
 
-export const RollLog: FC<{ result: RollResult }> = ({
+export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({
   result: { isZero, note, results, position, effect, date, username, rollType },
+  isLast,
 }) => {
   const valuation = valuate(isZero, results)
   const [highest, secondHighest] = highestIndexes(results)
@@ -197,6 +202,7 @@ export const RollLog: FC<{ result: RollResult }> = ({
               rollValuation={valuation}
               highest={(isZero ? secondHighest : highest) === i}
               excluded={excludedIndex === i}
+              isLast={isLast}
             />
           ))}
         </div>

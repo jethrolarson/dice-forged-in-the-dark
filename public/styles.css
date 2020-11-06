@@ -33,6 +33,35 @@ label {
 
 button {
   cursor: 'pointer';
+  outline: none;
+  border: 2px solid;
+  border-color: #92d2d0;
+  background: transparent;
+  color: #92d2d0;
+  padding: 4px 6px;
+  font-family: inherit;
+  cursor: pointer;
+}
+button:hover,
+button:focus{
+  outline: none;
+  background-color: #92d2d0;
+  color: #201c29;
+}
+button:disabled {
+  cursor: not-allowed;
+  color: #9daead;
+  border-color: #9daead;
+}
+button.dangerous {
+  color: hsl(0, 60%, 50%);
+  border-color: hsl(0, 60%, 50%);
+  text-transform: uppercase;
+}
+button.dangerous:hover,
+button.dangerous:focus{
+  background-color: hsl(0, 60%, 50%);
+  color: #201c29;
 }
 input,
 textarea {
@@ -55,7 +84,7 @@ textarea::-webkit-input-placeholder{
   color: hsl(170deg 21% 51%);
 }
 
-a:link {
+a {
   color: hsl(150, 60%, 60%);
 }
 a:visited {
@@ -68,10 +97,9 @@ a:visited {
   height: 12px;
 }
 *::-webkit-scrollbar-track {
-  background: linear-gradient(90deg,#201c29,#201c29 1px,#100e17 0,#100e17);
+  background: linear-gradient(90deg,#201c29,#201c29 1px,hsl(191deg 50% 5%) 0,hsl(191deg 50% 5%));
 }
 *::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg,#2c9a92,#10626d);
-  border-radius: 30px;
   box-shadow: inset 0px 1px 1px hsla(0,0%,100%,.25), inset -1px -1px 1px rgba(0,0,0,.25);
 }
