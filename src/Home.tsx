@@ -4,6 +4,7 @@ import fireApp from 'firebase/app'
 import { useFirestore } from './useFirestore'
 import { style } from 'typestyle'
 import useFunState, { FunState } from 'fun-state'
+import { pipeVal } from './common'
 
 type GameState = PersistedState & { id: string }
 
@@ -30,12 +31,6 @@ const createGame = (
       alert('failed to create game')
     })
 }
-
-// FIXME Copied from Game.tsx
-type FormElement = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-const pipeVal = (f: (value: string) => unknown) => ({
-  currentTarget: { value },
-}: React.FormEvent<FormElement>): unknown => f(value)
 
 export const Home: FC<{}> = () => {
   const state = useFunState<HomeState>({

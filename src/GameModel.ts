@@ -8,30 +8,34 @@ export interface GameSettingsView {
   id: string
 }
 
-export interface RollResult {
+interface LogItemCommon {
   username: string
+  note: string
+  date: number
+  id: string
+}
+
+export interface RollResult extends LogItemCommon {
+  kind: 'Roll'
   position: string
   effect: string
   results: number[]
   isZero: boolean
-  note: string
-  date: number
-  id: string
   rollType: string
 }
 
+export interface Message extends LogItemCommon {
+  kind: 'Message'
+}
+
+type LogItem = RollResult | Message
+
 export interface GameState extends PersistedState {
-  rollType: string
-  note: string
-  position: string
-  effect: string
-  username: string
-  settingsOpen: boolean
-  hoveredDieButton: number
+  mode: 'Roll' | 'Message'
 }
 
 export interface PersistedState {
-  rolls: RollResult[]
+  rolls: LogItem[]
   title: string
   positionOptions: string
   effectOptions: string
@@ -49,11 +53,5 @@ export const initialPersistedState: PersistedState = {
 
 export const initialGameState: GameState = {
   ...initialPersistedState,
-  note: '',
-  rollType: '',
-  position: '',
-  effect: '',
-  username: 'anonymous',
-  settingsOpen: false,
-  hoveredDieButton: -1,
+  mode: 'Roll',
 }

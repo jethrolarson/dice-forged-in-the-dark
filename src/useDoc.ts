@@ -2,7 +2,7 @@ import firebase from 'firebase/app'
 import { useEffect, useState } from 'react'
 import { useFirestore } from './useFirestore'
 
-type DocRef = firebase.firestore.DocumentReference<firebase.firestore.DocumentData>
+export type DocRef = firebase.firestore.DocumentReference<firebase.firestore.DocumentData>
 
 export const useDoc = (path: string): DocRef | null => {
   const fs = useFirestore()
