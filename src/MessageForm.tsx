@@ -10,7 +10,7 @@ interface MessageFormState {
 }
 
 export const MessageForm: FC<{ gdoc: DocRef | null }> = ({ gdoc }) => {
-  const state = useFunState<MessageFormState>({ note: '', username: 'anonymous' })
+  const state = useFunState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
   const postMessage: React.FormEventHandler<HTMLFormElement> = (e): void => {
     e.preventDefault()
@@ -39,6 +39,15 @@ export const MessageForm: FC<{ gdoc: DocRef | null }> = ({ gdoc }) => {
         gridGap: 10,
         margin: 10,
       })}>
+      <label className={style({ gridArea: 'note' })}>
+        <textarea
+          required={true}
+          placeholder="Note"
+          className={style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' })}
+          onChange={pipeVal(state.prop('note').set)}
+          value={note}
+        />
+      </label>
       <label className={style({ gridArea: 'player' })}>
         <input
           required={true}
@@ -47,15 +56,6 @@ export const MessageForm: FC<{ gdoc: DocRef | null }> = ({ gdoc }) => {
           name="username"
           value={username}
           onChange={pipeVal(state.prop('username').set)}
-        />
-      </label>
-      <label className={style({ gridArea: 'note' })}>
-        <textarea
-          required={true}
-          placeholder="Note"
-          className={style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' })}
-          onChange={pipeVal(state.prop('note').set)}
-          value={note}
         />
       </label>
       <button type="submit" disabled={note === '' || username === ''}>

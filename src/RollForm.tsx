@@ -86,7 +86,7 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
     rollType: '',
     position: '',
     effect: '',
-    username: 'anonymous',
+    username: '',
     hoveredDieButton: -1,
   })
   const { note, rollType, position, effect, username, hoveredDieButton } = s.get()
