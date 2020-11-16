@@ -35,7 +35,7 @@ export const MessageForm: FC<{ gdoc: DocRef | null }> = ({ gdoc }) => {
       onSubmit={postMessage}
       className={style({
         display: 'grid',
-        gridTemplateAreas: '"player" "note"',
+        gridTemplateAreas: '"note" "player"',
         gridGap: 10,
         margin: 10,
       })}>
