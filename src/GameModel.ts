@@ -28,7 +28,7 @@ export interface Message extends LogItemCommon {
   kind: 'Message'
 }
 
-type LogItem = RollResult | Message
+export type LogItem = RollResult | Message
 
 export interface GameState extends PersistedState {
   mode: 'Roll' | 'Message'

@@ -103,7 +103,7 @@ export const Die: FC<DieProps> = ({ value, dotColor, dieColor, border, size = 60
         pulse ? { $nest: { '&::after': { animationName: pulseAnimation } } } : {},
       ),
     )}>
-    {dots[value - 1].map((d, j) => (
+    {dots[value - 1]?.map((d, j) => (
       <span
         key={j}
         className={

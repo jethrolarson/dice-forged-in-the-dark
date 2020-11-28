@@ -40,23 +40,6 @@ const styles = stylesheet({
 
 const rollDie = (): number => Math.floor(Math.random() * 6) + 1
 
-const getRollSound = ((): (() => Promise<HTMLAudioElement>) => {
-  let loadingAudio = false
-  let diceAudioEl: HTMLAudioElement
-  return (): Promise<HTMLAudioElement> => {
-    diceAudioEl = new Audio('dice_roll.mp3')
-    return new Promise<HTMLAudioElement>((resolve) => {
-      if (!loadingAudio) {
-        loadingAudio = true
-        diceAudioEl.addEventListener('canplaythrough', () => {
-          resolve(diceAudioEl)
-        })
-      }
-      return resolve(diceAudioEl)
-    })
-  }
-})()
-
 const DataList: FC<{ id: string; values: string }> = ({ id, values }) => (
   <datalist id={id}>
     {values
@@ -110,8 +93,6 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
           console.error(e)
           alert('failed to add roll')
         })
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      getRollSound().then((audio) => audio.play())
       merge(s)({ note: '', rollType: '', position: '', effect: '' })
     }
   }

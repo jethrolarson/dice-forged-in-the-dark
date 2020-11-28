@@ -5,7 +5,7 @@ import * as O from 'fp-ts/lib/Option'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
-import { GameState, GameView, initialGameState, RollResult } from './GameModel'
+import { GameState, GameView, initialGameState, LogItem } from './GameModel'
 import { useDoc } from './useDoc'
 import { borderColor } from './colors'
 import { RollLog } from './RollLog'
@@ -13,6 +13,8 @@ import { RollForm } from './RollForm'
 import { MessageForm } from './MessageForm'
 import { important } from 'csx'
 import { RollMessage } from './RollMessage'
+import { getRollSound, getWarnSound, getWinSound, getCritSound } from './sounds'
+import { valuate } from './RollValuation'
 
 const styles = stylesheet({
   Game: {
@@ -92,7 +94,27 @@ const styles = stylesheet({
 
 export const gamePath = (path: string): O.Option<GameView> => {
   const m = /^\/game\/([^/?]+)/.exec(path)
-  return m && m.length > 0 ? O.some({ kind: 'GameView', id: m[1] }) : O.none
+  return m && m.length > 0 && m[1] ? O.some({ kind: 'GameView', id: m[1] }) : O.none
+}
+
+const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
+
+const onNewLogItem = (item: LogItem): Promise<unknown> => {
+  if (item.kind === 'Message') {
+    return getRollSound().then((sound) => sound.play())
+  } else {
+    const valuation = valuate(item)
+    switch (valuation) {
+      case 'Miss':
+        return getWarnSound().then((sound) => sound.play())
+      case 'MixedSuccess':
+        return getRollSound().then((sound) => sound.play())
+      case 'Success':
+        return getWinSound().then((sound) => sound.play())
+      case 'Crit':
+        return getCritSound().then((sound) => sound.play())
+    }
+  }
 }
 
 export const Game: FC<{ gameId: string }> = ({ gameId }) => {
@@ -125,7 +147,20 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
         .collection('rolls')
         .orderBy('date')
         .onSnapshot((snapshot) =>
-          state.prop('rolls').set(snapshot.docs.map((d) => ({ ...(d.data() as RollResult), id: d.id }))),
+          state.prop('rolls').mod((oldRolls) => {
+            const newRolls = snapshot.docs.map((d): LogItem => ({ ...(d.data() as LogItem), id: d.id }))
+            const latestRoll = newRolls[newRolls.length - 1]
+            const latestOldRoll = oldRolls[oldRolls.length - 1]
+            if (
+              latestRoll &&
+              latestOldRoll &&
+              latestOldRoll.id !== latestRoll.id &&
+              inLastTenSeconds(latestRoll.date)
+            ) {
+              void onNewLogItem(latestRoll)
+            }
+            return newRolls
+          }),
         )
     }
     return undefined

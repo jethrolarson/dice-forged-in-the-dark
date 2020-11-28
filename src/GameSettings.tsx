@@ -76,7 +76,7 @@ const deleteGame = (gdoc: firebase.firestore.DocumentReference) => (): void => {
 
 export const gameSettingsPath = (path: string): O.Option<GameSettingsView> => {
   const m = /^\/game-settings\/([^/?]+)/.exec(path)
-  return m && m.length > 0 ? O.some({ kind: 'GameSettingsView', id: m[1] }) : O.none
+  return m && m.length > 0 && m[1] ? O.some({ kind: 'GameSettingsView', id: m[1] }) : O.none
 }
 
 export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {

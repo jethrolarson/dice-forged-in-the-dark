@@ -1,11 +1,11 @@
 import React, { FC } from 'react'
-import { equals } from 'ramda'
 import { classes, style, stylesheet } from 'typestyle'
 import diceSprite from './dice.png'
 import { RollResult } from './GameModel'
 import { borderColor } from './colors'
 import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
+import { RollValuation, valuate } from './RollValuation'
 
 const circleSize = 140
 
@@ -106,24 +106,6 @@ const styles = stylesheet({
   },
 })
 
-type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
-
-const valuate = (isZero: boolean, results: number[]): RollValuation => {
-  const successes = results.filter(equals(6)).length
-  const winThreshold = isZero ? 2 : 1
-  if (successes > winThreshold) {
-    return 'Crit'
-  }
-  if (successes >= winThreshold) {
-    return 'Success'
-  }
-  const mixed = results.filter((d) => d > 3).length
-  if (mixed >= winThreshold) {
-    return 'MixedSuccess'
-  }
-  return 'Miss'
-}
-
 const RollMessage: FC<{ result: RollValuation }> = ({ result }) => {
   switch (result) {
     case 'Crit':
@@ -173,21 +155,19 @@ const ResultDie: FC<{
 
 const highestIndexes = (results: RollResult['results']): [number, number] => {
   if (results.length === 1) return [0, -1]
-  return results.slice(1).reduce(
+  return results.slice(1).reduce<[number, number]>(
     ([fst, snd], d, i) => {
-      if (d > results[fst]) return [i + 1, fst]
-      if (d > (snd >= 0 ? results[snd] : 0)) return [fst, i + 1]
+      if (d > (results[fst] ?? 0)) return [i + 1, fst]
+      if (d > (snd >= 0 ? results[snd] ?? 0 : 0)) return [fst, i + 1]
       return [fst, snd]
     },
     [0, -1],
   )
 }
 
-export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({
-  result: { isZero, note, results, position, effect, date, username, rollType },
-  isLast,
-}) => {
-  const valuation = valuate(isZero, results)
+export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({ result, isLast }) => {
+  const { isZero, note, results, position, effect, date, username, rollType } = result
+  const valuation = valuate(result)
   const [highest, secondHighest] = highestIndexes(results)
   const excludedIndex = isZero ? highest : -1
   return (
