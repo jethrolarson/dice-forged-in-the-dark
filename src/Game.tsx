@@ -13,7 +13,7 @@ import { RollForm } from './RollForm'
 import { MessageForm } from './MessageForm'
 import { important } from 'csx'
 import { RollMessage } from './RollMessage'
-import { getRollSound, getWarnSound, getWinSound, getCritSound } from './sounds'
+import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from './sounds'
 import { valuate } from './RollValuation'
 
 const styles = stylesheet({
@@ -101,7 +101,7 @@ const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
 
 const onNewLogItem = (item: LogItem): Promise<unknown> => {
   if (item.kind === 'Message') {
-    return getRollSound().then((sound) => sound.play())
+    return getMessageSound().then((sound) => sound.play())
   } else {
     const valuation = valuate(item)
     switch (valuation) {
