@@ -1,4 +1,4 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 import { style } from 'typestyle'
 import { borderColor } from './colors'
 import { Message } from './GameModel'

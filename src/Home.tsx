@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react'
+import { FC, useEffect } from 'react'
 import { initialGameState, PersistedState } from './GameModel'
 import fireApp from 'firebase/app'
 import { useFirestore } from './useFirestore'

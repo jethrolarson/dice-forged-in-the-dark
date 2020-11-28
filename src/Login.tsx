@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react'
+import { FC, useEffect } from 'react'
 import { initFirebase } from './initFirebase'
 import * as firebaseui from 'firebaseui'
 import firebase from 'firebase/app'
