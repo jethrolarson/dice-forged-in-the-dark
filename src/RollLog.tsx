@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
 import diceSprite from './dice.png'
-import { RollResult } from './GameModel'
+import { RollResult } from './Models/GameModel'
 import { borderColor } from './colors'
 import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
@@ -73,8 +73,7 @@ const styles = stylesheet({
     margin: '0 2px',
     backgroundBlendMode: 'multiply',
   },
-  effect: { fontWeight: 500 },
-  position: { fontWeight: 500 },
+  line: { fontWeight: 500 },
   rollType: {
     fontSize: 24,
   },
@@ -166,10 +165,20 @@ const highestIndexes = (results: RollResult['results']): [number, number] => {
 }
 
 export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({ result, isLast }) => {
-  const { isZero, note, results, position, effect, date, username, rollType } = result
+  const { isZero, note, results, position, effect, date, username, rollType, lines } = result
   const valuation = valuate(result)
   const [highest, secondHighest] = highestIndexes(results)
   const excludedIndex = isZero ? highest : -1
+  let title: string
+  let moreLines: string[]
+  if (lines?.length) {
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    title = lines[0] || rollType
+    moreLines = lines.slice(1)
+  } else {
+    title = rollType
+    moreLines = [position ?? '', effect ?? '']
+  }
   return (
     <div className={styles.RollLog}>
       <div className={styles.result}>
@@ -192,9 +201,12 @@ export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({ result, i
         <div className={styles.meta}>
           <div className={styles.displacer}></div>
           <span className={styles.name}>{username} rolls:</span>
-          <div className={styles.rollType}>{rollType}</div>
-          <div className={styles.position}>{position && `${position} Position`}</div>
-          <div className={styles.effect}>{effect && `${effect} Effect`}</div>
+          <div className={styles.rollType}>{title}</div>
+          {moreLines.map((line, i) => (
+            <div className={styles.line} key={`line${i}`}>
+              {line}
+            </div>
+          ))}
           {note && <div className={styles.note}>&ldquo;{note}&rdquo;</div>}
         </div>
       </div>

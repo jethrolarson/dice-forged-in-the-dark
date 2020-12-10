@@ -5,9 +5,10 @@ import { range, trim } from 'ramda'
 import { color, important } from 'csx'
 import { Die } from './Die'
 import { borderColor } from './colors'
-import { GameState } from './GameModel'
+import { GameState } from './Models/GameModel'
 import { DocRef } from './useDoc'
 import { pipeVal } from './common'
+import { index } from 'accessor-ts'
 
 const styles = stylesheet({
   form: {
@@ -15,7 +16,7 @@ const styles = stylesheet({
   },
   formGrid: {
     display: 'grid',
-    gridTemplateAreas: '"rollType position effect" "note note note" "player player player" "dice dice dice"',
+    gridTemplateAreas: '"roll roll roll" "roll roll roll" "note note note" "player player player" "dice dice dice"',
     gridTemplateColumns: '1fr 1fr 1fr',
     gridGap: 10,
   },
@@ -55,24 +56,22 @@ const DataList: FC<{ id: string; values: string }> = ({ id, values }) => (
 interface RollFormState {
   rollType: string
   note: string
-  position: string
-  effect: string
+  rollState: string[]
   username: string
   hoveredDieButton: number
 }
 
 export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> = ({ state, gdoc }) => {
-  const { positionOptions, effectOptions, rollTypeOptions } = state.get()
+  const { rollConfig } = state.get()
 
   const s = useFunState<RollFormState>({
     note: '',
+    rollState: ['', '', '', ''],
     rollType: '',
-    position: '',
-    effect: '',
     username: '',
     hoveredDieButton: -1,
   })
-  const { note, rollType, position, effect, username, hoveredDieButton } = s.get()
+  const { note, rollType, username, hoveredDieButton, rollState } = s.get()
 
   const roll = (n: number) => (): void => {
     if (gdoc) {
@@ -81,8 +80,7 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
         .add({
           note,
           rollType,
-          position,
-          effect,
+          lines: rollState,
           username,
           isZero: n === 0,
           results: range(0, n === 0 ? 2 : n).map(rollDie),
@@ -93,9 +91,10 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
           console.error(e)
           alert('failed to add roll')
         })
-      merge(s)({ note: '', rollType: '', position: '', effect: '' })
+      merge(s)({ note: '', rollType: '', rollState: ['', '', '', ''] })
     }
   }
+  const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
   return (
     <form
       className={styles.form}
@@ -103,39 +102,25 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
         e.preventDefault()
       }}>
       <div className={styles.formGrid}>
-        <label className={style({ gridArea: 'rollType' })}>
-          <input
-            placeholder="Roll Type"
-            type="text"
-            name="rolltype"
-            list="rollTypeList"
-            value={rollType}
-            onChange={pipeVal(s.prop('rollType').set)}
-          />
-          <DataList id="rollTypeList" values={rollTypeOptions} />
-        </label>
-        <label className={style({ gridArea: 'position' })}>
-          <input
-            type="text"
-            name="position"
-            list="positionList"
-            placeholder="Position"
-            value={position}
-            onChange={pipeVal(s.prop('position').set)}
-          />
-          <DataList id="positionList" values={positionOptions} />
-        </label>
-        <label className={style({ gridArea: 'effect' })}>
-          <input
-            type="text"
-            name="effect"
-            list="effectList"
-            placeholder="Effect"
-            value={effect}
-            onChange={pipeVal(s.prop('effect').set)}
-          />
-          <DataList id="effectList" values={effectOptions} />
-        </label>
+        {currentConfig
+          ? currentConfig.optionGroups.map((og, i) => (
+              <label key={`optGroup${og.name}`}>
+                <input
+                  placeholder={og.name}
+                  type="text"
+                  name={og.name}
+                  list={`list${i}`}
+                  value={s.prop('rollState').focus(index(i)).get()}
+                  onChange={pipeVal(s.prop('rollState').focus(index(i)).set)}
+                />
+                <DataList id={`list${i}`} values={og.rollOptions.join(',')} />
+              </label>
+            ))
+          : rollConfig.rollTypes.map((rt) => (
+              <button key={rt.name} onClick={(): void => s.prop('rollType').set(rt.name)}>
+                {rt.name}{' '}
+              </button>
+            ))}
         <label className={style({ gridArea: 'player' })}>
           <input
             placeholder="Character"

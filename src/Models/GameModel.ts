@@ -1,3 +1,5 @@
+import { initialRollConfig, RollConfig } from './RollConfig'
+
 export interface GameView {
   kind: 'GameView'
   id: string
@@ -17,8 +19,11 @@ interface LogItemCommon {
 
 export interface RollResult extends LogItemCommon {
   kind: 'Roll'
-  position: string
-  effect: string
+  lines?: string[]
+  /** @deprecated */
+  position?: string
+  /** @deprecated */
+  effect?: string
   results: number[]
   isZero: boolean
   rollType: string
@@ -37,18 +42,13 @@ export interface GameState extends PersistedState {
 export interface PersistedState {
   rolls: LogItem[]
   title: string
-  positionOptions: string
-  effectOptions: string
-  rollTypeOptions: string
+  rollConfig: RollConfig
 }
 
 export const initialPersistedState: PersistedState = {
   rolls: [],
   title: '',
-  positionOptions: 'Controlled,Risky,Desperate',
-  effectOptions: 'None,Limited,Standard,Great,Extreme',
-  rollTypeOptions:
-    'Attune,Command,Consort,Finesse,Hunt,Prowl,Skirmish,Study,Survey,Sway,Tinker,Wreck,Insight,Prowess,Resolve,Fortune',
+  rollConfig: initialRollConfig,
 }
 
 export const initialGameState: GameState = {

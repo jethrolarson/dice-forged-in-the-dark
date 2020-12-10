@@ -1,5 +1,5 @@
 import { equals } from 'ramda'
-import { RollResult } from './GameModel'
+import { RollResult } from './Models/GameModel'
 
 export type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
 

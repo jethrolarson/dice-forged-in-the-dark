@@ -15,6 +15,7 @@ module.exports = {
     'object-shorthand': 2,
     '@typescript-eslint/strict-boolean-expressions': 0,
     '@typescript-eslint/promise-function-async': 0,
+    '@typescript-eslint/unbound-method': 1,
     '@typescript-eslint/explicit-function-return-type': [
       2,
       { allowTypedFunctionExpressions: true, allowHigherOrderFunctions: true },

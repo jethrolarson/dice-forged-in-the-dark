@@ -1,5 +1,5 @@
 import { FC, useEffect } from 'react'
-import { initialGameState, PersistedState } from './GameModel'
+import { initialGameState, PersistedState } from './Models/GameModel'
 import fireApp from 'firebase/app'
 import { useFirestore } from './useFirestore'
 import { style } from 'typestyle'

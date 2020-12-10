@@ -6,8 +6,12 @@ import useFunState, { merge } from 'fun-state'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import * as O from 'fp-ts/lib/Option'
+import * as E from 'fp-ts/lib/Either'
 import { useDoc } from './useDoc'
-import { PersistedState, initialPersistedState, GameSettingsView } from './GameModel'
+import { PersistedState, initialPersistedState, GameSettingsView } from './Models/GameModel'
+import { initialRollConfig, nocturneRollConfig, parseRollConfig, RollConfig } from './Models/RollConfig'
+import { pipe } from 'fp-ts/lib/function'
+import { PathReporter } from 'io-ts/PathReporter'
 
 const styles = stylesheet({
   GameSettings: {
@@ -30,27 +34,17 @@ const styles = stylesheet({
       },
     },
   },
+  rollConfig: {
+    height: 600,
+  },
+  error: { color: 'red' },
 })
 
 const noop = (): void => {}
-const saveEffectOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
-  if (gdoc)
-    gdoc.set({ effectOptions: value }, { merge: true }).catch((e) => {
-      console.error(e)
-      alert('save failed')
-    })
-}, 2000)
-const savePositionOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
-  if (gdoc)
-    gdoc.set({ positionOptions: value }, { merge: true }).catch((e) => {
-      console.error(e)
-      alert('save failed')
-    })
-}, 2000)
 
-const saveRollTypeOptions = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
+const saveRollConfig = debounce((gdoc: firebase.firestore.DocumentReference, rollConfig: RollConfig): void => {
   if (gdoc)
-    gdoc.set({ rollTypeOptions: value }, { merge: true }).catch((e) => {
+    gdoc.set({ rollConfig }, { merge: true }).catch((e) => {
       console.error(e)
       alert('save failed')
     })
@@ -79,10 +73,16 @@ export const gameSettingsPath = (path: string): O.Option<GameSettingsView> => {
   return m && m.length > 0 && m[1] ? O.some({ kind: 'GameSettingsView', id: m[1] }) : O.none
 }
 
+type GameSettingsState = PersistedState & { rollConfigText: string; rollConfigError: string }
+
 export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
   const gdoc = useDoc(`games/${gameId}`)
-  const state = useFunState<PersistedState>({ ...initialPersistedState })
-  const { positionOptions, effectOptions, rollTypeOptions, title } = state.get()
+  const state = useFunState<GameSettingsState>({
+    ...initialPersistedState,
+    rollConfigText: '',
+    rollConfigError: '',
+  })
+  const { rollConfigText, title, rollConfigError } = state.get()
   useEffect(() => {
     if (gdoc) {
       gdoc.onSnapshot((ss) => {
@@ -90,22 +90,28 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
         window.document.title =
           (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
           ' - Dice Forged in the Dark'
-        data && merge(state)(data)
+        if (data) {
+          data.rollConfigText = JSON.stringify(data?.rollConfig || initialRollConfig, null, 2)
+          merge(state)(data)
+        }
       })
     }
   }, [gdoc])
-  const onPositionOptionsChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
-    state.prop('positionOptions').set(value)
-    if (gdoc) savePositionOptions(gdoc, value)
+  const updateConfig = (value: string): void => {
+    state.prop('rollConfigText').set(value)
+    if (gdoc)
+      pipe(
+        parseRollConfig(value),
+        E.map((config: RollConfig) => {
+          state.prop('rollConfigError').set('')
+          saveRollConfig(gdoc, config)
+          return config
+        }),
+        (result) => state.prop('rollConfigError').set(PathReporter.report(result).join('')),
+      )
   }
-  const onEffectOptionsChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
-    state.prop('effectOptions').set(value)
-    if (gdoc) saveEffectOptions(gdoc, value)
-  }
-  const onRollTypeOptionsChange: React.ChangeEventHandler<HTMLTextAreaElement> = ({ currentTarget: { value } }) => {
-    state.prop('rollTypeOptions').set(value)
-    if (gdoc) saveRollTypeOptions(gdoc, value)
-  }
+  const onRollConfigChange: React.ChangeEventHandler<HTMLTextAreaElement> = ({ currentTarget: { value } }) =>
+    updateConfig(value)
   const onTitleChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
     state.prop('title').set(value)
     if (gdoc) saveTitle(gdoc, value)
@@ -126,21 +132,23 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
       </label>
       <label>
         {' '}
-        Role Type Options
+        Role Config
         <br />
-        <textarea value={rollTypeOptions} onChange={onRollTypeOptionsChange} />
-      </label>
-      <label>
-        {' '}
-        Position Options
-        <br />
-        <input type="text" value={positionOptions} onChange={onPositionOptionsChange} width={300} />
-      </label>
-      <label>
-        {' '}
-        Effect Options
-        <br />
-        <input type="text" value={effectOptions} onChange={onEffectOptionsChange} width={200} />
+        <textarea value={rollConfigText} onChange={onRollConfigChange} className={styles.rollConfig} />
+        {rollConfigError && <div className={styles.error}>{rollConfigError}</div>}
+        <button
+          onClick={(): void => {
+            confirm('reset your roll config to defaults?') && updateConfig(JSON.stringify(initialRollConfig, null, 2))
+          }}>
+          Blades in the Dark
+        </button>
+        <button
+          onClick={(): void => {
+            confirm('reset your roll config to A Nocturne?') &&
+              updateConfig(JSON.stringify(nocturneRollConfig, null, 2))
+          }}>
+          A Nocturne
+        </button>
       </label>
       <div>
         <button className="dangerous" onClick={gdoc ? deleteGame(gdoc) : noop}>
