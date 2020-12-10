@@ -8,7 +8,9 @@ import { borderColor } from './colors'
 import { GameState } from './Models/GameModel'
 import { DocRef } from './useDoc'
 import { pipeVal } from './common'
+import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { index } from 'accessor-ts'
+import Icon from 'react-icons-kit'
 
 const styles = stylesheet({
   form: {
@@ -72,7 +74,7 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
     hoveredDieButton: -1,
   })
   const { note, rollType, username, hoveredDieButton, rollState } = s.get()
-
+  const reset = (): void => merge(s)({ note: '', rollType: '', rollState: ['', '', '', ''] })
   const roll = (n: number) => (): void => {
     if (gdoc) {
       gdoc
@@ -91,7 +93,7 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
           console.error(e)
           alert('failed to add roll')
         })
-      merge(s)({ note: '', rollType: '', rollState: ['', '', '', ''] })
+      reset()
     }
   }
   const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
@@ -102,8 +104,21 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
         e.preventDefault()
       }}>
       <div className={styles.formGrid}>
-        {currentConfig
-          ? currentConfig.optionGroups.map((og, i) => (
+        {currentConfig ? (
+          <>
+            <h3 className={style({ gridColumn: '1/4' })}>
+              <a
+                href="#/"
+                onClick={(e): void => {
+                  e.preventDefault()
+                  reset()
+                }}>
+                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+                <Icon icon={chevronLeft} size={18} />
+              </a>
+              {currentConfig.name}
+            </h3>
+            {currentConfig.optionGroups.map((og, i) => (
               <label key={`optGroup${og.name}`}>
                 <input
                   placeholder={og.name}
@@ -115,12 +130,15 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
                 />
                 <DataList id={`list${i}`} values={og.rollOptions.join(',')} />
               </label>
-            ))
-          : rollConfig.rollTypes.map((rt) => (
-              <button key={rt.name} onClick={(): void => s.prop('rollType').set(rt.name)}>
-                {rt.name}{' '}
-              </button>
             ))}
+          </>
+        ) : (
+          rollConfig.rollTypes.map((rt) => (
+            <button key={rt.name} onClick={(): void => s.prop('rollType').set(rt.name)}>
+              {rt.name}{' '}
+            </button>
+          ))
+        )}
         <label className={style({ gridArea: 'player' })}>
           <input
             placeholder="Character"
