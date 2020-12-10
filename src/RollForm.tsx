@@ -14,7 +14,7 @@ import Icon from 'react-icons-kit'
 
 const styles = stylesheet({
   form: {
-    padding: 10,
+    padding: '2px 10px 20px',
   },
   formGrid: {
     display: 'grid',
@@ -118,11 +118,11 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
                 reset()
               }}>
               {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-              <Icon icon={chevronLeft} size={18} />
+              <Icon icon={chevronLeft} size={18} className={style({ $nest: { svg: { margin: '-2px 2px 0 0' } } })} />
             </a>
-            {currentConfig.name}
+            {currentConfig.name} Roll
           </h3>
-          {currentConfig.optionGroups.map((og, i) => (
+          {currentConfig?.optionGroups?.map((og, i) => (
             <label key={`optGroup${og.name}`}>
               <input
                 placeholder={og.name}
@@ -132,7 +132,7 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
                 value={s.prop('rollState').focus(index(i)).get()}
                 onChange={pipeVal(s.prop('rollState').focus(index(i)).set)}
               />
-              <DataList id={`list${i}`} values={og.rollOptions.join(',')} />
+              {og.rollOptions && <DataList id={`list${i}`} values={og.rollOptions.join(',')} />}
             </label>
           ))}
           <label className={style({ gridArea: 'player' })}>

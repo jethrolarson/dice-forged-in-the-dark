@@ -2,17 +2,25 @@ import { flow } from 'fp-ts/lib/function'
 import * as E from 'fp-ts/lib/Either'
 import * as T from 'io-ts'
 
-export const RollOptionGroupC = T.type({
-  name: T.string,
-  rollOptions: T.array(T.string),
-})
+export const RollOptionGroupC = T.intersection([
+  T.type({
+    name: T.string,
+  }),
+  T.partial({
+    rollOptions: T.array(T.string),
+  }),
+])
 
 export type RollOptionGroup = T.TypeOf<typeof RollOptionGroupC>
 
-export const RollTypeC = T.type({
-  name: T.string,
-  optionGroups: T.array(RollOptionGroupC),
-})
+export const RollTypeC = T.intersection([
+  T.type({
+    name: T.string,
+  }),
+  T.partial({
+    optionGroups: T.array(RollOptionGroupC),
+  }),
+])
 
 export type RollType = T.TypeOf<typeof RollTypeC>
 
@@ -33,32 +41,27 @@ export const parseRollConfig = flow((str: string): E.Either<T.Errors, unknown> =
 
 const fortune = {
   name: 'Fortune',
-  optionGroups: [],
 }
 
 const engagement = {
   name: 'Engagement',
-  optionGroups: [],
 }
 
 const healing = {
   name: 'Healing',
-  optionGroups: [],
 }
+
 const other = {
   name: 'Other',
   optionGroups: [
     {
       name: 'Roll Type',
-      rollOptions: [],
     },
     {
       name: '',
-      rollOptions: [],
     },
     {
       name: '',
-      rollOptions: [],
     },
   ],
 }
