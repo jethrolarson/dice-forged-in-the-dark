@@ -22,6 +22,11 @@ const styles = stylesheet({
     gridTemplateColumns: '1fr 1fr 1fr',
     gridGap: 10,
   },
+  rollTypes: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gridGap: 10,
+  },
   diceButtons: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -103,82 +108,82 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
       onSubmit={(e): void => {
         e.preventDefault()
       }}>
-      <div className={styles.formGrid}>
-        {currentConfig ? (
-          <>
-            <h3 className={style({ gridColumn: '1/4' })}>
-              <a
-                href="#/"
-                onClick={(e): void => {
-                  e.preventDefault()
-                  reset()
-                }}>
-                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                <Icon icon={chevronLeft} size={18} />
-              </a>
-              {currentConfig.name}
-            </h3>
-            {currentConfig.optionGroups.map((og, i) => (
-              <label key={`optGroup${og.name}`}>
-                <input
-                  placeholder={og.name}
-                  type="text"
-                  name={og.name}
-                  list={`list${i}`}
-                  value={s.prop('rollState').focus(index(i)).get()}
-                  onChange={pipeVal(s.prop('rollState').focus(index(i)).set)}
+      {currentConfig ? (
+        <div className={styles.formGrid}>
+          <h3 className={style({ gridColumn: '1/4' })}>
+            <a
+              href="#/"
+              onClick={(e): void => {
+                e.preventDefault()
+                reset()
+              }}>
+              {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+              <Icon icon={chevronLeft} size={18} />
+            </a>
+            {currentConfig.name}
+          </h3>
+          {currentConfig.optionGroups.map((og, i) => (
+            <label key={`optGroup${og.name}`}>
+              <input
+                placeholder={og.name}
+                type="text"
+                name={og.name}
+                list={`list${i}`}
+                value={s.prop('rollState').focus(index(i)).get()}
+                onChange={pipeVal(s.prop('rollState').focus(index(i)).set)}
+              />
+              <DataList id={`list${i}`} values={og.rollOptions.join(',')} />
+            </label>
+          ))}
+          <label className={style({ gridArea: 'player' })}>
+            <input
+              placeholder="Character"
+              type="text"
+              name="username"
+              value={username}
+              onChange={pipeVal(s.prop('username').set)}
+            />
+          </label>
+          <label className={style({ gridArea: 'note' })}>
+            <textarea
+              placeholder="Note"
+              className={style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' })}
+              onChange={pipeVal(s.prop('note').set)}
+              value={note}
+            />
+          </label>
+          <div className={styles.diceButtons} onMouseLeave={(): void => s.prop('hoveredDieButton').set(-1)}>
+            {range(0, 7).map((n: number) => (
+              <button
+                key={`btn${n}`}
+                disabled={rollType === ''}
+                title={`Roll ${n} ${n === 1 ? 'die' : 'dice'}`}
+                onMouseEnter={(): void => s.prop('hoveredDieButton').set(n)}
+                className={classes(styles.dieButton, hoveredDieButton >= n ? styles.dieButtonOn : undefined)}
+                type="button"
+                onClick={roll(n)}>
+                <Die
+                  value={n === 0 ? 1 : n}
+                  dieColor={color(n === 0 ? '#000' : borderColor)}
+                  border={n === 0}
+                  glow={hoveredDieButton === n}
+                  pulse={hoveredDieButton === n}
+                  dotColor={color(n === 0 ? borderColor : '#000')}
+                  size={44}
                 />
-                <DataList id={`list${i}`} values={og.rollOptions.join(',')} />
-              </label>
+              </button>
             ))}
-          </>
-        ) : (
-          rollConfig.rollTypes.map((rt) => (
+          </div>
+        </div>
+      ) : (
+        <div className={styles.rollTypes}>
+          {rollConfig.rollTypes.map((rt) => (
             <button key={rt.name} onClick={(): void => s.prop('rollType').set(rt.name)}>
               {rt.name}{' '}
             </button>
-          ))
-        )}
-        <label className={style({ gridArea: 'player' })}>
-          <input
-            placeholder="Character"
-            type="text"
-            name="username"
-            value={username}
-            onChange={pipeVal(s.prop('username').set)}
-          />
-        </label>
-        <label className={style({ gridArea: 'note' })}>
-          <textarea
-            placeholder="Note"
-            className={style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' })}
-            onChange={pipeVal(s.prop('note').set)}
-            value={note}
-          />
-        </label>
-        <div className={styles.diceButtons} onMouseLeave={(): void => s.prop('hoveredDieButton').set(-1)}>
-          {range(0, 7).map((n: number) => (
-            <button
-              key={`btn${n}`}
-              disabled={rollType === ''}
-              title={`Roll ${n} ${n === 1 ? 'die' : 'dice'}`}
-              onMouseEnter={(): void => s.prop('hoveredDieButton').set(n)}
-              className={classes(styles.dieButton, hoveredDieButton >= n ? styles.dieButtonOn : undefined)}
-              type="button"
-              onClick={roll(n)}>
-              <Die
-                value={n === 0 ? 1 : n}
-                dieColor={color(n === 0 ? '#000' : borderColor)}
-                border={n === 0}
-                glow={hoveredDieButton === n}
-                pulse={hoveredDieButton === n}
-                dotColor={color(n === 0 ? borderColor : '#000')}
-                size={44}
-              />
-            </button>
           ))}
         </div>
-      </div>
+      )}
     </form>
   )
 }

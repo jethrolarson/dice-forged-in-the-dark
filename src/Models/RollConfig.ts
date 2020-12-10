@@ -31,6 +31,38 @@ export const parseRollConfig = flow((str: string): E.Either<T.Errors, unknown> =
   }
 }, E.chain(RollConfigC.decode))
 
+const fortune = {
+  name: 'Fortune',
+  optionGroups: [],
+}
+
+const engagement = {
+  name: 'Engagement',
+  optionGroups: [],
+}
+
+const healing = {
+  name: 'Healing',
+  optionGroups: [],
+}
+const other = {
+  name: 'Other',
+  optionGroups: [
+    {
+      name: 'Roll Type',
+      rollOptions: [],
+    },
+    {
+      name: '',
+      rollOptions: [],
+    },
+    {
+      name: '',
+      rollOptions: [],
+    },
+  ],
+}
+
 export const initialRollConfig: RollConfig = {
   rollTypes: [
     {
@@ -67,27 +99,10 @@ export const initialRollConfig: RollConfig = {
         },
       ],
     },
-    {
-      name: 'Fortune',
-      optionGroups: [],
-    },
-    {
-      name: 'Engagement',
-      optionGroups: [],
-    },
-    {
-      name: 'Healing',
-      optionGroups: [],
-    },
-    {
-      name: 'Other',
-      optionGroups: [
-        {
-          name: 'Roll Type',
-          rollOptions: [],
-        },
-      ],
-    },
+    fortune,
+    engagement,
+    healing,
+    other,
   ],
 }
 
@@ -126,26 +141,9 @@ export const nocturneRollConfig: RollConfig = {
         },
       ],
     },
-    {
-      name: 'Fortune',
-      optionGroups: [],
-    },
-    {
-      name: 'Engagement',
-      optionGroups: [],
-    },
-    {
-      name: 'Healing',
-      optionGroups: [],
-    },
-    {
-      name: 'Other',
-      optionGroups: [
-        {
-          name: 'Roll Type',
-          rollOptions: [],
-        },
-      ],
-    },
+    fortune,
+    engagement,
+    healing,
+    other,
   ],
 }
