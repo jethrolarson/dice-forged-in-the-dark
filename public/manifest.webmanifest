@@ -1,0 +1,15 @@
+{
+  "background_color": "hsl(170, 80%, 15%)",
+  "description": "Dice app for forged-in-the-dark games",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "forged_icon.png",
+      "sizes": "108x108",
+      "type": "image/png"
+    }
+  ],
+  "name": "Forged in the Dice",
+  "short_name": "Dice",
+  "start_url": "/index.html"
+}
