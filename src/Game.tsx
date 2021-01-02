@@ -8,13 +8,13 @@ import { gears } from 'react-icons-kit/fa/gears'
 import { GameState, GameView, initialGameState, LogItem } from './Models/GameModel'
 import { useDoc } from './useDoc'
 import { borderColor } from './colors'
-import { RollLog } from './RollLog'
+import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm'
 import { MessageForm } from './MessageForm'
 import { important } from 'csx'
 import { RollMessage } from './RollMessage'
 import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from './sounds'
-import { valuate } from './RollValuation'
+import { valuateActionRoll } from './RollValuation'
 
 const styles = stylesheet({
   Game: {
@@ -103,7 +103,7 @@ const onNewLogItem = (item: LogItem): Promise<unknown> => {
   if (item.kind === 'Message') {
     return getMessageSound().then((sound) => sound.play())
   } else {
-    const valuation = valuate(item)
+    const valuation = valuateActionRoll(item)
     switch (valuation) {
       case 'Miss':
         return getWarnSound().then((sound) => sound.play())
@@ -194,7 +194,7 @@ export const Game: FC<{ gameId: string }> = ({ gameId }) => {
                 {r.kind === 'Message' ? (
                   <RollMessage result={r} />
                 ) : (
-                  <RollLog result={r} isLast={i === rolls.length - 1} />
+                  <RollLogItem result={r} isLast={i === rolls.length - 1} />
                 )}
               </li>
             ))}

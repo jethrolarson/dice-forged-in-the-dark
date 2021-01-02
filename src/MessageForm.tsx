@@ -2,7 +2,8 @@ import React, { FC } from 'react'
 import useFunState from 'fun-state'
 import { style } from 'typestyle'
 import { DocRef } from './useDoc'
-import { pipeVal } from './common'
+import { TextInput } from './TextInput'
+import { Textarea } from './Textarea'
 
 interface MessageFormState {
   note: string
@@ -40,22 +41,24 @@ export const MessageForm: FC<{ gdoc: DocRef | null }> = ({ gdoc }) => {
         margin: 10,
       })}>
       <label className={style({ gridArea: 'note' })}>
-        <textarea
-          required={true}
-          placeholder="Note"
-          className={style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' })}
-          onChange={pipeVal(state.prop('note').set)}
-          value={note}
+        <Textarea
+          passThroughProps={{
+            required: true,
+            placeholder: 'Note',
+            className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
+          }}
+          state={state.prop('note')}
         />
       </label>
       <label className={style({ gridArea: 'player' })}>
-        <input
-          required={true}
-          placeholder="Character"
-          type="text"
-          name="username"
-          value={username}
-          onChange={pipeVal(state.prop('username').set)}
+        <TextInput
+          passThroughProps={{
+            required: true,
+            placeholder: 'Character',
+            type: 'text',
+            name: 'username',
+          }}
+          state={state.prop('username')}
         />
       </label>
       <button type="submit" disabled={note === '' || username === ''}>

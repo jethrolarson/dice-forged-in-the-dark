@@ -4,7 +4,7 @@ import fireApp from 'firebase/app'
 import { useFirestore } from './useFirestore'
 import { style } from 'typestyle'
 import useFunState, { FunState } from 'fun-state'
-import { pipeVal } from './common'
+import { TextInput } from './TextInput'
 
 type GameState = PersistedState & { id: string }
 
@@ -75,13 +75,14 @@ export const Home: FC<{}> = () => {
         ))}
       </ul>
       <div className={style({ display: 'flex', justifyContent: 'flex-start' })}>
-        <input
-          placeholder="Game name"
-          disabled={creating}
-          type="text"
-          name="game_name"
-          value={gameName}
-          onChange={pipeVal(state.prop('gameName').set)}
+        <TextInput
+          passThroughProps={{
+            placeholder: 'Game name',
+            disabled: creating,
+            type: 'text',
+            name: 'game_name',
+          }}
+          state={state.prop('gameName')}
         />{' '}
         <button
           disabled={gameName.length === 0 || creating}

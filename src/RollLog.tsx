@@ -5,7 +5,7 @@ import { RollResult } from './Models/GameModel'
 import { borderColor } from './colors'
 import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
-import { RollValuation, valuate } from './RollValuation'
+import { RollValuation, valuationMap } from './RollValuation'
 
 const circleSize = 140
 
@@ -105,19 +105,22 @@ const styles = stylesheet({
   },
 })
 
-const RollMessage: FC<{ result: RollValuation }> = ({ result }) => {
+const RollMessage: FC<{ result: RollValuation; label: string }> = ({ result, label }) => {
+  let _style
   switch (result) {
     case 'Crit':
-      return <h1 className={classes(styles.resultLabel, style({ background: '#fff940' }))}>Crit</h1>
+      _style = style({ background: '#fff940' })
+      break
     case 'Success':
-      return <h1 className={classes(styles.resultLabel, style({ background: '#49d08b' }))}>Success</h1>
+      _style = style({ background: '#49d08b' })
+      break
     case 'MixedSuccess':
-      return <h1 className={classes(styles.resultLabel, style({ background: '#ffa547' }))}>Mixed</h1>
+      _style = style({ background: '#ffa547' })
+      break
     case 'Miss':
-      return (
-        <h1 className={classes(styles.resultLabel, style({ background: 'hsl(0, 60%, 50%)', color: '#fff' }))}>Fail</h1>
-      )
+      _style = style({ background: 'hsl(0, 60%, 50%)', color: '#fff' })
   }
+  return <h1 className={classes(styles.resultLabel, _style)}>{label}</h1>
 }
 
 const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
@@ -164,9 +167,11 @@ const highestIndexes = (results: RollResult['results']): [number, number] => {
   )
 }
 
-export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({ result, isLast }) => {
+export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ result, isLast }) => {
   const { isZero, note, results, position, effect, date, username, rollType, lines } = result
-  const valuation = valuate(result)
+  const valuationMapItem = valuationMap[result.valuationType ?? 'Action']
+  const valuation = valuationMapItem.valuation(result)
+  const valuationLabel = valuationMapItem.label(result, valuation)
   const [highest, secondHighest] = highestIndexes(results)
   const excludedIndex = isZero ? highest : -1
   let title: string
@@ -195,7 +200,7 @@ export const RollLog: FC<{ result: RollResult; isLast: boolean }> = ({ result, i
             />
           ))}
         </div>
-        <RollMessage result={valuation} />
+        <RollMessage result={valuation} label={valuationLabel} />
       </div>
       <div className={styles.metaWrap}>
         <div className={styles.meta}>

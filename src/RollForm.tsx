@@ -5,12 +5,15 @@ import { range, trim } from 'ramda'
 import { color, important } from 'csx'
 import { Die } from './Die'
 import { borderColor } from './colors'
-import { GameState } from './Models/GameModel'
+import { GameState, RollResult } from './Models/GameModel'
 import { DocRef } from './useDoc'
 import { pipeVal } from './common'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { index } from 'accessor-ts'
 import Icon from 'react-icons-kit'
+import { ValuationType } from './Models/RollConfig'
+import { Textarea } from './Textarea'
+import { TextInput } from './TextInput'
 
 const styles = stylesheet({
   form: {
@@ -18,7 +21,8 @@ const styles = stylesheet({
   },
   formGrid: {
     display: 'grid',
-    gridTemplateAreas: '"roll roll roll" "roll roll roll" "note note note" "player player player" "dice dice dice"',
+    gridTemplateAreas:
+      '"roll roll roll" "roll roll roll" "note note note" "player valuation valuation" "dice dice dice"',
     gridTemplateColumns: '1fr 1fr 1fr',
     gridGap: 10,
   },
@@ -66,6 +70,7 @@ interface RollFormState {
   rollState: string[]
   username: string
   hoveredDieButton: number
+  valuationType: ValuationType
 }
 
 export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> = ({ state, gdoc }) => {
@@ -77,23 +82,28 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
     rollType: '',
     username: '',
     hoveredDieButton: -1,
+    valuationType: 'Action',
   })
-  const { note, rollType, username, hoveredDieButton, rollState } = s.get()
+  const { note, rollType, username, hoveredDieButton, rollState, valuationType } = s.get()
   const reset = (): void => merge(s)({ note: '', rollType: '', rollState: ['', '', '', ''] })
+
+  const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
   const roll = (n: number) => (): void => {
     if (gdoc) {
+      const roll: Omit<RollResult, 'id'> = {
+        note,
+        rollType,
+        lines: rollState,
+        username,
+        isZero: n === 0,
+        results: range(0, n === 0 ? 2 : n).map(rollDie),
+        date: Date.now(),
+        kind: 'Roll',
+        valuationType,
+      }
       gdoc
         .collection('rolls')
-        .add({
-          note,
-          rollType,
-          lines: rollState,
-          username,
-          isZero: n === 0,
-          results: range(0, n === 0 ? 2 : n).map(rollDie),
-          date: Date.now(),
-          kind: 'Roll',
-        })
+        .add(roll)
         .catch((e) => {
           console.error(e)
           alert('failed to add roll')
@@ -101,7 +111,6 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
       reset()
     }
   }
-  const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
   return (
     <form
       className={styles.form}
@@ -123,33 +132,50 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
             {currentConfig.name} Roll
           </h3>
           {currentConfig?.optionGroups?.map((og, i) => (
-            <label key={`optGroup${og.name}`}>
-              <input
-                placeholder={og.name}
-                type="text"
-                name={og.name}
-                list={`list${i}`}
-                value={s.prop('rollState').focus(index(i)).get()}
-                onChange={pipeVal(s.prop('rollState').focus(index(i)).set)}
+            <label key={`optGroup${og.name}${i}`}>
+              <TextInput
+                passThroughProps={{
+                  placeholder: og.name,
+                  type: 'text',
+                  name: og.name,
+                  list: `list${i}`,
+                }}
+                state={s.prop('rollState').focus(index(i))}
               />
               {og.rollOptions && <DataList id={`list${i}`} values={og.rollOptions.join(',')} />}
             </label>
           ))}
+          {currentConfig?.valuationType === 'Ask' && (
+            <label className={style({ gridArea: 'valuation' })}>
+              Valuation:{' '}
+              <select
+                onChange={pipeVal((val) => s.prop('valuationType').set(val as ValuationType))}
+                value={valuationType}>
+                <option key="Action">Action</option>
+                <option key="Resist">Resist</option>
+                <option key="Sum">Sum</option>
+                <option key="Highest">Highest</option>
+                <option key="Lowest">Lowest</option>
+              </select>
+            </label>
+          )}
           <label className={style({ gridArea: 'player' })}>
-            <input
-              placeholder="Character"
-              type="text"
-              name="username"
-              value={username}
-              onChange={pipeVal(s.prop('username').set)}
+            <TextInput
+              passThroughProps={{
+                placeholder: 'Character',
+                type: 'text',
+                name: 'username',
+              }}
+              state={s.prop('username')}
             />
           </label>
           <label className={style({ gridArea: 'note' })}>
-            <textarea
-              placeholder="Note"
-              className={style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' })}
-              onChange={pipeVal(s.prop('note').set)}
-              value={note}
+            <Textarea
+              passThroughProps={{
+                placeholder: 'Note',
+                className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
+              }}
+              state={s.prop('note')}
             />
           </label>
           <div className={styles.diceButtons} onMouseLeave={(): void => s.prop('hoveredDieButton').set(-1)}>
@@ -178,7 +204,15 @@ export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> =
       ) : (
         <div className={styles.rollTypes}>
           {rollConfig.rollTypes.map((rt) => (
-            <button key={rt.name} onClick={(): void => s.prop('rollType').set(rt.name)}>
+            <button
+              key={rt.name}
+              onClick={(): void => {
+                s.prop('rollType').set(rt.name)
+                const vt = rollConfig.rollTypes.find(({ name }) => name === rt.name)?.valuationType
+                if (vt) {
+                  s.prop('valuationType').set(vt === 'Ask' ? 'Action' : vt)
+                }
+              }}>
               {rt.name}{' '}
             </button>
           ))}

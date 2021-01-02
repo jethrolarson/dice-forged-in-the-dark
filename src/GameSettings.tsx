@@ -1,6 +1,5 @@
 import React, { FC, useEffect } from 'react'
 import firebase from 'firebase/app'
-import debounce from 'lodash.debounce'
 import { stylesheet } from 'typestyle'
 import useFunState, { merge } from 'fun-state'
 import Icon from 'react-icons-kit'
@@ -9,9 +8,12 @@ import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
 import { useDoc } from './useDoc'
 import { PersistedState, initialPersistedState, GameSettingsView } from './Models/GameModel'
-import { initialRollConfig, nocturneRollConfig, parseRollConfig, RollConfig } from './Models/RollConfig'
+import { parseRollConfig, RollConfig } from './Models/RollConfig'
 import { pipe } from 'fp-ts/lib/function'
 import { PathReporter } from 'io-ts/PathReporter'
+import { bladesInTheDarkConfig, presets } from './Models/rollConfigPresets'
+import { TextInput } from './TextInput'
+import { Textarea } from './Textarea'
 
 const styles = stylesheet({
   GameSettings: {
@@ -34,29 +36,23 @@ const styles = stylesheet({
       },
     },
   },
+  rollConfigLabel: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    $nest: {
+      button: {
+        marginLeft: 5,
+      },
+    },
+  },
   rollConfig: {
     height: 600,
   },
   error: { color: 'red' },
+  footer: { display: 'flex', justifyContent: 'space-between' },
 })
 
 const noop = (): void => {}
-
-const saveRollConfig = debounce((gdoc: firebase.firestore.DocumentReference, rollConfig: RollConfig): void => {
-  if (gdoc)
-    gdoc.set({ rollConfig }, { merge: true }).catch((e) => {
-      console.error(e)
-      alert('save failed')
-    })
-}, 2000)
-
-const saveTitle = debounce((gdoc: firebase.firestore.DocumentReference, value: string): void => {
-  if (gdoc)
-    gdoc.set({ title: value }, { merge: true }).catch((e) => {
-      console.error(e)
-      alert('save failed')
-    })
-}, 2000)
 
 const deleteGame = (gdoc: firebase.firestore.DocumentReference) => (): void => {
   if (gdoc && window.confirm('Are you sure you want to delete this game permanently?')) {
@@ -82,7 +78,7 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
     rollConfigText: '',
     rollConfigError: '',
   })
-  const { rollConfigText, title, rollConfigError } = state.get()
+  const { rollConfigText, rollConfigError, title } = state.get()
   useEffect(() => {
     if (gdoc) {
       gdoc.onSnapshot((ss) => {
@@ -91,30 +87,31 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
           (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
           ' - Dice Forged in the Dark'
         if (data) {
-          data.rollConfigText = JSON.stringify(data?.rollConfig || initialRollConfig, null, 2)
+          data.rollConfigText = JSON.stringify(data?.rollConfig || bladesInTheDarkConfig, null, 2)
           merge(state)(data)
         }
       })
     }
   }, [gdoc])
-  const updateConfig = (value: string): void => {
-    state.prop('rollConfigText').set(value)
+  const saveSettings = (): void => {
     if (gdoc)
       pipe(
-        parseRollConfig(value),
-        E.map((config: RollConfig) => {
+        parseRollConfig(rollConfigText),
+        E.map((rollConfig: RollConfig) => {
           state.prop('rollConfigError').set('')
-          saveRollConfig(gdoc, config)
-          return config
+          gdoc
+            .set({ rollConfig, title }, { merge: true })
+            .then(() => {
+              document.location.hash = `#/game/${gameId}`
+            })
+            .catch((e) => {
+              console.error(e)
+              alert('save failed')
+            })
+          return rollConfig
         }),
         (result) => state.prop('rollConfigError').set(PathReporter.report(result).join('')),
       )
-  }
-  const onRollConfigChange: React.ChangeEventHandler<HTMLTextAreaElement> = ({ currentTarget: { value } }) =>
-    updateConfig(value)
-  const onTitleChange: React.ChangeEventHandler<HTMLInputElement> = ({ currentTarget: { value } }) => {
-    state.prop('title').set(value)
-    if (gdoc) saveTitle(gdoc, value)
   }
 
   return (
@@ -128,29 +125,31 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
       </div>
       <label>
         Game Name <br />
-        <input type="text" aria-label="Game Name" value={title} onChange={onTitleChange} />
+        <TextInput passThroughProps={{ 'aria-label': 'Game Name' }} state={state.prop('title')} />
       </label>
       <label>
         {' '}
-        Role Config
-        <br />
-        <textarea value={rollConfigText} onChange={onRollConfigChange} className={styles.rollConfig} />
+        <div className={styles.rollConfigLabel}>
+          Roll Config
+          <span>
+            Load Preset:
+            {presets.map((preset) => (
+              <button
+                key={preset.system}
+                onClick={(): void => {
+                  confirm(`Replace your config with ${preset.system ?? 'default'}? This can not be undone.`) &&
+                    state.prop('rollConfigText').set(JSON.stringify(preset, null, 2))
+                }}>
+                {preset.system ?? 'Other'}
+              </button>
+            ))}
+          </span>
+        </div>
+        <Textarea passThroughProps={{ className: styles.rollConfig }} state={state.prop('rollConfigText')} />
         {rollConfigError && <div className={styles.error}>{rollConfigError}</div>}
-        <button
-          onClick={(): void => {
-            confirm('reset your roll config to defaults?') && updateConfig(JSON.stringify(initialRollConfig, null, 2))
-          }}>
-          Blades in the Dark
-        </button>
-        <button
-          onClick={(): void => {
-            confirm('reset your roll config to A Nocturne?') &&
-              updateConfig(JSON.stringify(nocturneRollConfig, null, 2))
-          }}>
-          A Nocturne
-        </button>
       </label>
-      <div>
+      <div className={styles.footer}>
+        <button onClick={gdoc ? saveSettings : noop}>Save Settings</button>
         <button className="dangerous" onClick={gdoc ? deleteGame(gdoc) : noop}>
           Delete Game
         </button>

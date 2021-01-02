@@ -1,4 +1,5 @@
-import { initialRollConfig, RollConfig } from './RollConfig'
+import { RollConfig, ValuationType } from './RollConfig'
+import { bladesInTheDarkConfig } from './rollConfigPresets'
 
 export interface GameView {
   kind: 'GameView'
@@ -27,6 +28,7 @@ export interface RollResult extends LogItemCommon {
   results: number[]
   isZero: boolean
   rollType: string
+  valuationType: ValuationType
 }
 
 export interface Message extends LogItemCommon {
@@ -48,7 +50,7 @@ export interface PersistedState {
 export const initialPersistedState: PersistedState = {
   rolls: [],
   title: '',
-  rollConfig: initialRollConfig,
+  rollConfig: bladesInTheDarkConfig,
 }
 
 export const initialGameState: GameState = {
