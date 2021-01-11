@@ -112,10 +112,11 @@ const onNewLogItem = (item: LogItem): Promise<unknown> => {
   }
 }
 
-export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdoc: DocRef }> = ({
+export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdoc: DocRef; uid: string }> = ({
   initialState,
   gameId,
   gdoc,
+  uid,
 }) => {
   const state = useFunState<LoadedGameState>(initialState)
   const { rolls, title, mode } = state.get()
@@ -188,7 +189,7 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
           Message
         </button>
       </nav>
-      {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} /> : <MessageForm gdoc={gdoc} />}
+      {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} uid={uid} /> : <MessageForm gdoc={gdoc} />}
     </div>
   )
 }

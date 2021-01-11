@@ -8,6 +8,7 @@ export const RollOptionGroupC = T.intersection([
   }),
   T.partial({
     rollOptions: T.array(T.string),
+    fixedOptions: T.boolean,
   }),
 ])
 

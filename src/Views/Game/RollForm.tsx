@@ -14,6 +14,7 @@ import Icon from 'react-icons-kit'
 import { ValuationType } from '../../Models/RollConfig'
 import { Textarea } from '../../components/Textarea'
 import { TextInput } from '../../components/TextInput'
+import { ButtonSelect } from '../../components/ButtonSelect'
 
 const styles = stylesheet({
   form: {
@@ -73,7 +74,11 @@ interface RollFormState {
   valuationType: ValuationType
 }
 
-export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | null }> = ({ state, gdoc }) => {
+export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | null; uid: string }> = ({
+  state,
+  gdoc,
+  uid,
+}) => {
   const { rollConfig } = state.get()
 
   const s = useFunState<RollFormState>({
@@ -100,6 +105,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | nul
         date: Date.now(),
         kind: 'Roll',
         valuationType,
+        uid,
       }
       gdoc
         .collection('rolls')
@@ -131,20 +137,28 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | nul
             </a>
             {currentConfig.name} Roll
           </h3>
-          {currentConfig?.optionGroups?.map((og, i) => (
-            <label key={`optGroup${og.name}${i}`}>
-              <TextInput
-                passThroughProps={{
-                  placeholder: og.name,
-                  type: 'text',
-                  name: og.name,
-                  list: `list${i}`,
-                }}
+          {currentConfig?.optionGroups?.map((og, i) =>
+            og.fixedOptions && og.rollOptions ? (
+              <ButtonSelect
                 state={s.prop('rollState').focus(index(i))}
+                options={og.rollOptions}
+                className={style({ gridColumn: '1/4' })}
               />
-              {og.rollOptions && <DataList id={`list${i}`} values={og.rollOptions.join(',')} />}
-            </label>
-          ))}
+            ) : (
+              <label key={`optGroup${og.name}${i}`}>
+                <TextInput
+                  passThroughProps={{
+                    placeholder: og.name,
+                    type: 'text',
+                    name: og.name,
+                    list: `list${i}`,
+                  }}
+                  state={s.prop('rollState').focus(index(i))}
+                />
+                {og.rollOptions && <DataList id={`list${i}`} values={og.rollOptions.join(',')} />}
+              </label>
+            ),
+          )}
           {currentConfig?.valuationType === 'Ask' && (
             <label className={style({ gridArea: 'valuation' })}>
               Valuation:{' '}

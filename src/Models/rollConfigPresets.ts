@@ -55,6 +55,7 @@ export const bladesInTheDarkConfig: RollConfig = {
             'Tinker',
             'Wreck',
           ],
+          fixedOptions: true,
         },
         { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate'] },
         { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme'] },
@@ -67,6 +68,7 @@ export const bladesInTheDarkConfig: RollConfig = {
         {
           name: 'Attribute',
           rollOptions: ['Insight', 'Prowess', 'Resolve'],
+          fixedOptions: true,
         },
       ],
     },
@@ -100,9 +102,10 @@ export const nocturneRollConfig: RollConfig = {
             'Scan',
             'Hack',
           ],
+          fixedOptions: true,
         },
-        { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate', 'Dire'] },
-        { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme', 'Transcendant'] },
+        { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate'] },
+        { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme'] },
       ],
     },
     {
@@ -112,6 +115,7 @@ export const nocturneRollConfig: RollConfig = {
         {
           name: 'Attribute',
           rollOptions: ['Guts', 'Savvy', 'Systems'],
+          fixedOptions: true,
         },
       ],
     },

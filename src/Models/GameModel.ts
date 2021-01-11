@@ -16,6 +16,7 @@ interface LogItemCommon {
   note: string
   date: number
   id: string
+  uid: string
 }
 
 export interface RollResult extends LogItemCommon {

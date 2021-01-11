@@ -13,6 +13,7 @@ import { LoadedGame } from './LoadedGame'
 import { useUser } from '../../hooks/useAuthState'
 import { User } from '../../Models/User'
 import { initFirebase } from '../../initFirebase'
+import { Login } from '../Login/Login'
 
 export const gamePath = (path: string): O.Option<GameView> => {
   const m = /^\/game\/([^/?]+)/.exec(path)
@@ -64,7 +65,7 @@ export const GameWithUID: FC<{ gameId: string; uid: string }> = ({ gameId, uid }
   if (gdoc) {
     switch (gameState.kind) {
       case 'LoadedGameState':
-        return <LoadedGame initialState={gameState} gameId={gameId} gdoc={gdoc} />
+        return <LoadedGame initialState={gameState} gameId={gameId} gdoc={gdoc} uid={uid} />
       case 'MissingGameState':
         return <h1>Game not found. Check the url</h1>
       case 'LoadingGameState':
@@ -77,5 +78,11 @@ export const GameWithUID: FC<{ gameId: string; uid: string }> = ({ gameId, uid }
 export const Game: FC<{ gameId: string }> = ({ gameId }) => {
   initFirebase()
   const user = useUser()
-  return user ? <GameWithUID gameId={gameId} uid={user.uid} /> : <div>User Not Loaded</div>
+  return user ? (
+    <GameWithUID gameId={gameId} uid={user.uid} />
+  ) : (
+    <div>
+      <Login />
+    </div>
+  )
 }
