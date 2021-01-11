@@ -37,23 +37,49 @@ export interface Message extends LogItemCommon {
 
 export type LogItem = RollResult | Message
 
-export interface GameState extends PersistedState {
+export interface LoadedGameState extends PersistedState {
+  readonly kind: 'LoadedGameState'
   mode: 'Roll' | 'Message'
 }
+
+export interface LoadingGameState {
+  readonly kind: 'LoadingGameState'
+}
+
+export interface MissingGameState {
+  readonly kind: 'MissingGameState'
+}
+
+export interface ErrorGameState {
+  readonly kind: 'ErrorGameState'
+}
+
+export const missingGameState: MissingGameState = { kind: 'MissingGameState' }
+
+export type GameState = LoadedGameState | LoadingGameState | MissingGameState | ErrorGameState
 
 export interface PersistedState {
   rolls: LogItem[]
   title: string
   rollConfig: RollConfig
+  owners: string[]
+  players: string[]
 }
 
-export const initialPersistedState: PersistedState = {
+export const initialPersistedState = (creatorId: string): PersistedState => ({
   rolls: [],
   title: '',
   rollConfig: bladesInTheDarkConfig,
-}
+  owners: [creatorId],
+  players: [],
+})
 
-export const initialGameState: GameState = {
-  ...initialPersistedState,
+export const initialLoadedGameState = (persistedState: PersistedState): LoadedGameState => ({
+  kind: 'LoadedGameState',
+  ...persistedState,
   mode: 'Roll',
+})
+
+export const initialGameState: LoadingGameState = {
+  kind: 'LoadingGameState',
 }

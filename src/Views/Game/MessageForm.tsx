@@ -1,9 +1,9 @@
 import React, { FC } from 'react'
 import useFunState from 'fun-state'
 import { style } from 'typestyle'
-import { DocRef } from './useDoc'
-import { TextInput } from './TextInput'
-import { Textarea } from './Textarea'
+import { DocRef } from '../../hooks/useDoc'
+import { TextInput } from '../../components/TextInput'
+import { Textarea } from '../../components/Textarea'
 
 interface MessageFormState {
   note: string

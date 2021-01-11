@@ -1,7 +1,7 @@
 import { constant } from 'fp-ts/lib/function'
 import { equals, max, min, sum } from 'ramda'
-import { RollResult } from './Models/GameModel'
-import { ValuationType } from './Models/RollConfig'
+import { RollResult } from '../../Models/GameModel'
+import { ValuationType } from '../../Models/RollConfig'
 
 export type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
 

@@ -1,6 +1,6 @@
 import { FunState } from 'fun-state'
 import React, { FC } from 'react'
-import { pipeVal } from './common'
+import { pipeVal } from '../common'
 
 export const TextInput: FC<{
   state: FunState<string>

@@ -1,11 +1,11 @@
 import React, { FC, useEffect } from 'react'
 import useFunState from 'fun-state'
-import { AppState, initialState, View } from './Model'
-import { Game } from './Game'
+import { AppState, initialState, View } from './Models/Model'
+import { Game } from './Views/Game/Game'
 import { route } from './Router'
-import { Home } from './Home'
-import { Login } from './Login'
-import { GameSettings } from './GameSettings'
+import { Home } from './Views/Home'
+import { Login } from './Views/Login/Login'
+import { GameSettings } from './Views/GameSettings/GameSettings'
 import '@firebase/firestore'
 
 const updateView = (): View => route(window.location.hash.slice(1))

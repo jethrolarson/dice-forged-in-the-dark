@@ -8,7 +8,16 @@ export const initFirebase = (): fireApp.app.App => {
       appId: 'forged-in-the-dice',
       apiKey: 'AIzaSyB8UlvItF7MjSxWcTY65sVSwQLNsgBykjU',
       projectId: 'forged-in-the-dice',
-      authDomain: 'localhost',
+      authDomain: 'forged-in-the-dice.web.app',
     })
   )
+}
+
+let auth: fireApp.auth.Auth
+
+export const initAuth = (): fireApp.auth.Auth => {
+  if (!auth) {
+    auth = fireApp.auth()
+  }
+  return auth
 }

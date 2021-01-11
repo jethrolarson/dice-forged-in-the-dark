@@ -1,19 +1,26 @@
-import React, { FC, useEffect } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import firebase from 'firebase/app'
 import { stylesheet } from 'typestyle'
-import useFunState, { merge } from 'fun-state'
+import useFunState from 'fun-state'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
-import { useDoc } from './useDoc'
-import { PersistedState, initialPersistedState, GameSettingsView } from './Models/GameModel'
-import { parseRollConfig, RollConfig } from './Models/RollConfig'
+import { DocRef, useDoc } from '../../hooks/useDoc'
+import {
+  PersistedState,
+  GameSettingsView,
+  LoadedGameState,
+  initialGameState,
+  GameState,
+  initialLoadedGameState,
+} from '../../Models/GameModel'
+import { parseRollConfig, RollConfig } from '../../Models/RollConfig'
 import { pipe } from 'fp-ts/lib/function'
 import { PathReporter } from 'io-ts/PathReporter'
-import { bladesInTheDarkConfig, presets } from './Models/rollConfigPresets'
-import { TextInput } from './TextInput'
-import { Textarea } from './Textarea'
+import { bladesInTheDarkConfig, presets } from '../../Models/rollConfigPresets'
+import { TextInput } from '../../components/TextInput'
+import { Textarea } from '../../components/Textarea'
 
 const styles = stylesheet({
   GameSettings: {
@@ -71,48 +78,32 @@ export const gameSettingsPath = (path: string): O.Option<GameSettingsView> => {
 
 type GameSettingsState = PersistedState & { rollConfigText: string; rollConfigError: string }
 
-export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
-  const gdoc = useDoc(`games/${gameId}`)
-  const state = useFunState<GameSettingsState>({
-    ...initialPersistedState,
-    rollConfigText: '',
-    rollConfigError: '',
-  })
+export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettingsState; gdoc: DocRef }> = ({
+  gameId,
+  initialState,
+  gdoc,
+}) => {
+  const state = useFunState<GameSettingsState>(initialState)
   const { rollConfigText, rollConfigError, title } = state.get()
-  useEffect(() => {
-    if (gdoc) {
-      gdoc.onSnapshot((ss) => {
-        const data = ss.data()
-        window.document.title =
-          (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
-          ' - Dice Forged in the Dark'
-        if (data) {
-          data.rollConfigText = JSON.stringify(data?.rollConfig || bladesInTheDarkConfig, null, 2)
-          merge(state)(data)
-        }
-      })
-    }
-  }, [gdoc])
-  const saveSettings = (): void => {
-    if (gdoc)
-      pipe(
-        parseRollConfig(rollConfigText),
-        E.map((rollConfig: RollConfig) => {
-          state.prop('rollConfigError').set('')
-          gdoc
-            .set({ rollConfig, title }, { merge: true })
-            .then(() => {
-              document.location.hash = `#/game/${gameId}`
-            })
-            .catch((e) => {
-              console.error(e)
-              alert('save failed')
-            })
-          return rollConfig
-        }),
-        (result) => state.prop('rollConfigError').set(PathReporter.report(result).join('')),
-      )
-  }
+
+  const saveSettings = (): void =>
+    pipe(
+      parseRollConfig(rollConfigText),
+      E.map((rollConfig: RollConfig) => {
+        state.prop('rollConfigError').set('')
+        gdoc
+          .set({ rollConfig, title }, { merge: true })
+          .then(() => {
+            document.location.hash = `#/game/${gameId}`
+          })
+          .catch((e) => {
+            console.error(e)
+            alert('save failed')
+          })
+        return rollConfig
+      }),
+      (result) => state.prop('rollConfigError').set(PathReporter.report(result).join('')),
+    )
 
   return (
     <div className={styles.GameSettings}>
@@ -156,4 +147,48 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
       </div>
     </div>
   )
+}
+
+const setRollConfig = (gs: LoadedGameState): GameSettingsState => {
+  const rollConfigText = JSON.stringify(gs.rollConfig || bladesInTheDarkConfig, null, 2)
+  return { ...gs, rollConfigText, rollConfigError: '' }
+}
+
+export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
+  const gdoc = useDoc(`games/${gameId}`)
+  const [gameState, setGameState] = useState<GameState>(initialGameState)
+  useEffect(() => {
+    if (gdoc) {
+      gdoc
+        .get()
+        .then((ss) => {
+          const data = ss.data()
+          window.document.title =
+            (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
+            ' - Dice Forged in the Dark'
+          if (data) {
+            setGameState(initialLoadedGameState(data as PersistedState))
+          }
+        })
+        .catch((err) => {
+          console.error(err)
+          setGameState({ kind: 'ErrorGameState' })
+        })
+    }
+  }, [gdoc])
+
+  if (gdoc) {
+    switch (gameState.kind) {
+      case 'LoadedGameState':
+        return <LoadedGameSettings initialState={setRollConfig(gameState)} gameId={gameId} gdoc={gdoc} />
+      case 'MissingGameState':
+        return <h1>Game not found. Check the url</h1>
+      case 'LoadingGameState':
+        return <div>Game Loading</div>
+      case 'ErrorGameState':
+        return <h1>Error loading game. Try refreshing the page. Check console if you care why.</h1>
+    }
+  } else {
+    return <div>Doc Loading</div>
+  }
 }

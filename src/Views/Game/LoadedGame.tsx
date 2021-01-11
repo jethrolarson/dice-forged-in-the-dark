@@ -1,19 +1,19 @@
-import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import useFunState, { merge } from 'fun-state'
+import { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import { stylesheet } from 'typestyle'
-import * as O from 'fp-ts/lib/Option'
+import { important } from 'csx'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
-import { GameState, GameView, initialGameState, LogItem } from './Models/GameModel'
-import { useDoc } from './useDoc'
-import { borderColor } from './colors'
+
+import { LoadedGameState, LogItem } from '../../Models/GameModel'
+import { borderColor } from '../../colors'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm'
 import { MessageForm } from './MessageForm'
-import { important } from 'csx'
 import { RollMessage } from './RollMessage'
-import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from './sounds'
+import { DocRef } from '../../hooks/useDoc'
+import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
 
 const styles = stylesheet({
@@ -92,11 +92,6 @@ const styles = stylesheet({
   },
 })
 
-export const gamePath = (path: string): O.Option<GameView> => {
-  const m = /^\/game\/([^/?]+)/.exec(path)
-  return m && m.length > 0 && m[1] ? O.some({ kind: 'GameView', id: m[1] }) : O.none
-}
-
 const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
 
 const onNewLogItem = (item: LogItem): Promise<unknown> => {
@@ -117,57 +112,39 @@ const onNewLogItem = (item: LogItem): Promise<unknown> => {
   }
 }
 
-export const Game: FC<{ gameId: string }> = ({ gameId }) => {
-  const gdoc = useDoc(`games/${gameId}`)
-  const state = useFunState<GameState>({ ...initialGameState })
-  useEffect(() => {
-    if (gdoc) {
-      gdoc
-        .get()
-        .then((snapshot) => {
-          if (!snapshot.exists) {
-            document.location.hash = '#not_found'
-          }
-          const gameIds = new Set(JSON.parse(localStorage.getItem('games') ?? '[]'))
-          gameIds.add(gameId)
-          localStorage.setItem('games', JSON.stringify(Array.from(gameIds)))
-        })
-        .catch((e) => {
-          console.error(e)
-          alert('failed to load game')
-        })
-      gdoc.onSnapshot((ss) => {
-        const data = ss.data()
-        window.document.title =
-          (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
-          ' - Dice Forged in the Dark'
-        data && merge(state)(data)
-      })
-      return gdoc
-        .collection('rolls')
-        .orderBy('date')
-        .onSnapshot((snapshot) =>
-          state.prop('rolls').mod((oldRolls) => {
-            const newRolls = snapshot.docs.map((d): LogItem => ({ ...(d.data() as LogItem), id: d.id }))
-            const latestRoll = newRolls[newRolls.length - 1]
-            const latestOldRoll = oldRolls[oldRolls.length - 1]
-            if (
-              latestRoll &&
-              latestOldRoll &&
-              latestOldRoll.id !== latestRoll.id &&
-              inLastTenSeconds(latestRoll.date)
-            ) {
-              void onNewLogItem(latestRoll)
-            }
-            return newRolls
-          }),
-        )
-    }
-    return undefined
-  }, [gdoc])
+export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdoc: DocRef }> = ({
+  initialState,
+  gameId,
+  gdoc,
+}) => {
+  const state = useFunState<LoadedGameState>(initialState)
   const { rolls, title, mode } = state.get()
-  const setMode = (mode: GameState['mode']) => (): void => state.prop('mode').set(mode)
+  const setMode = (mode: LoadedGameState['mode']) => (): void => state.prop('mode').set(mode)
   const scrollRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    gdoc.onSnapshot((ss) => {
+      const data = ss.data()
+      window.document.title =
+        (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
+        ' - Dice Forged in the Dark'
+      data && merge(state)(data)
+    })
+    return gdoc
+      .collection('rolls')
+      .orderBy('date')
+      .onSnapshot((snapshot) =>
+        state.prop('rolls').mod((oldRolls) => {
+          const newRolls = snapshot.docs.map((d): LogItem => ({ ...(d.data() as LogItem), id: d.id }))
+          const latestRoll = newRolls[newRolls.length - 1]
+          const latestOldRoll = oldRolls[oldRolls.length - 1]
+          if (latestRoll && latestOldRoll && latestOldRoll.id !== latestRoll.id && inLastTenSeconds(latestRoll.date)) {
+            void onNewLogItem(latestRoll)
+          }
+          return newRolls
+        }),
+      )
+  }, [gdoc])
+
   // stay scrolled to the bottom
   useLayoutEffect(() => {
     scrollRef.current?.scrollTo({ top: 99999999999 })

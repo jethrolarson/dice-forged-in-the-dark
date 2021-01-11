@@ -1,5 +1,5 @@
-import { GameSettingsView, GameView } from './Models/GameModel'
-import { LoginView } from './LoginModel'
+import { GameSettingsView, GameView } from './GameModel'
+import { LoginView } from '../Views/Login/LoginModel'
 
 export interface AppState {
   view: View

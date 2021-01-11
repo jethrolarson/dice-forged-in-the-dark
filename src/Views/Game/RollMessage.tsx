@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { style } from 'typestyle'
-import { borderColor } from './colors'
-import { Message } from './Models/GameModel'
+import { borderColor } from '../../colors'
+import { Message } from '../../Models/GameModel'
 
 export const RollMessage: FC<{ result: Message }> = ({ result: { username, note } }) => {
   return (

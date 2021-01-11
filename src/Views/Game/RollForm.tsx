@@ -4,16 +4,16 @@ import { classes, style, stylesheet } from 'typestyle'
 import { range, trim } from 'ramda'
 import { color, important } from 'csx'
 import { Die } from './Die'
-import { borderColor } from './colors'
-import { GameState, RollResult } from './Models/GameModel'
-import { DocRef } from './useDoc'
-import { pipeVal } from './common'
+import { borderColor } from '../../colors'
+import { LoadedGameState, RollResult } from '../../Models/GameModel'
+import { DocRef } from '../../hooks/useDoc'
+import { pipeVal } from '../../common'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { index } from 'accessor-ts'
 import Icon from 'react-icons-kit'
-import { ValuationType } from './Models/RollConfig'
-import { Textarea } from './Textarea'
-import { TextInput } from './TextInput'
+import { ValuationType } from '../../Models/RollConfig'
+import { Textarea } from '../../components/Textarea'
+import { TextInput } from '../../components/TextInput'
 
 const styles = stylesheet({
   form: {
@@ -73,7 +73,7 @@ interface RollFormState {
   valuationType: ValuationType
 }
 
-export const RollForm: FC<{ state: FunState<GameState>; gdoc: DocRef | null }> = ({ state, gdoc }) => {
+export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | null }> = ({ state, gdoc }) => {
   const { rollConfig } = state.get()
 
   const s = useFunState<RollFormState>({

@@ -27,10 +27,10 @@ export type ValuationType = T.TypeOf<typeof ValuationTypeC>
 export const RollTypeC = T.intersection([
   T.type({
     name: T.string,
+    valuationType: ValuationTypeC,
   }),
   T.partial({
     optionGroups: T.array(RollOptionGroupC),
-    valuationType: ValuationTypeC,
   }),
 ])
 

@@ -1,9 +1,9 @@
-import { gamePath } from './Game'
+import { gamePath } from './Views/Game/Game'
 import * as O from 'fp-ts/lib/Option'
 import { constant, pipe } from 'fp-ts/lib/function'
-import { DefaultView, defaultView, View, error404View } from './Model'
-import { loginPath } from './LoginModel'
-import { gameSettingsPath } from './GameSettings'
+import { DefaultView, defaultView, View, error404View } from './Models/Model'
+import { loginPath } from './Views/Login/LoginModel'
+import { gameSettingsPath } from './Views/GameSettings/GameSettings'
 
 const rootPath = (path: string): O.Option<DefaultView> => (path === '/' || path === '' ? O.some(defaultView) : O.none)
 

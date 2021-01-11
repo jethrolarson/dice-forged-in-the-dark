@@ -2,14 +2,17 @@ import { RollConfig, RollType } from './RollConfig'
 
 const fortune: RollType = {
   name: 'Fortune',
+  valuationType: 'Action',
 }
 
 const engagement: RollType = {
   name: 'Engagement',
+  valuationType: 'Action',
 }
 
 const healing: RollType = {
   name: 'Healing',
+  valuationType: 'Action',
 }
 
 const other: RollType = {
@@ -33,6 +36,7 @@ export const bladesInTheDarkConfig: RollConfig = {
   rollTypes: [
     {
       name: 'Action',
+      valuationType: 'Action',
       optionGroups: [
         {
           name: 'Action',
@@ -78,6 +82,7 @@ export const nocturneRollConfig: RollConfig = {
   rollTypes: [
     {
       name: 'Action',
+      valuationType: 'Action',
       optionGroups: [
         {
           name: 'Action',
