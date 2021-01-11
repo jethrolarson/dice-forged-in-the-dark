@@ -15,6 +15,11 @@ const healing: RollType = {
   valuationType: 'Action',
 }
 
+const acquire: RollType = {
+  name: 'Acquire',
+  valuationType: 'Action',
+}
+
 const other: RollType = {
   name: 'Other',
   valuationType: 'Ask',
@@ -74,6 +79,7 @@ export const bladesInTheDarkConfig: RollConfig = {
     },
     fortune,
     engagement,
+    acquire,
     healing,
     other,
   ],
@@ -121,7 +127,12 @@ export const nocturneRollConfig: RollConfig = {
     },
     fortune,
     engagement,
+    acquire,
     healing,
+    {
+      name: 'Chaos',
+      valuationType: 'Action',
+    },
     other,
   ],
 }
