@@ -7,54 +7,51 @@ import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
 import { RollValuation, valuationMap } from './RollValuation'
 
-const circleSize = 140
+const circleSize = 120
 
 const styles = stylesheet({
   RollLog: {
     listStyle: 'none',
-    position: 'relative',
-    margin: '24px 12px',
+    display: 'flex',
+    margin: '18px 12px',
     fontSize: 12,
   },
   metaWrap: {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
+    flexGrow: 1,
   },
   meta: {
-    border: `1px solid ${borderColor}`,
-    marginLeft: circleSize / 2 + 2,
+    border: `solid ${borderColor}`,
+    borderWidth: '1px 1px 1px 0',
     minHeight: circleSize,
     borderRadius: '0 8px 8px 0',
-  },
-  displacer: {
-    float: 'left',
-    shapeOutside: `ellipse(71px 50% at 6px 70px)`,
-    width: circleSize,
-    height: circleSize,
+    padding: '4px 8px 8px',
+    marginTop: 6,
+    background: 'hsl(178deg 35% 55% / 11%)',
   },
   time: {
     textAlign: 'right',
     color: 'hsl(170, 50%, 46%)',
     fontSize: 10,
     display: 'block',
-    margin: '4px 16px',
+    margin: '4px 16px 0',
   },
   name: {
     marginTop: 6,
+    lineHeight: 1,
   },
   dice: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
+    background: 'radial-gradient(#112d33 51%, hsl(174deg 40% 27%))',
     flexWrap: 'wrap',
-    border: `2px solid ${borderColor}`,
-    background: 'radial-gradient(#112d33 51%, hsl(174deg 53% 32%))',
-    borderRadius: 300,
-    width: circleSize,
-    height: circleSize,
-    padding: 14,
+    flexGrow: 1,
+    padding: 10,
+    borderRadius: '6px 6px 0 0',
     $nest: {
       '&>*': {
         margin: 3,
@@ -78,30 +75,30 @@ const styles = stylesheet({
     fontSize: 24,
   },
   result: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    zIndex: 1,
     display: 'flex',
+    flexShrink: 0,
     flexDirection: 'column',
-    alignItems: 'center',
-    alignContent: 'center',
+    justifyContent: 'space-between',
+    border: `2px solid ${borderColor}`,
+    borderRadius: 8,
+    width: circleSize,
+    minHeight: circleSize,
+    marginBottom: 4,
   },
   resultLabel: {
     textAlign: 'center',
     display: 'inline-block',
-    marginTop: -20,
-    marginBottom: 4,
     color: 'hsl(200, 60%, 8%)',
     textTransform: 'uppercase',
     padding: '4px 8px',
     lineHeight: '1',
-    borderRadius: 1.5,
+    borderRadius: '0 0 8px 8px',
+    margin: '0 -2px -2px',
+    fontSize: 18,
   },
   note: {
     marginTop: 2,
     fontStyle: 'italic',
-    marginBottom: 6,
   },
 })
 
@@ -109,16 +106,16 @@ const RollMessage: FC<{ result: RollValuation; label: string }> = ({ result, lab
   let _style
   switch (result) {
     case 'Crit':
-      _style = style({ background: '#fff940' })
+      _style = style({ background: '#fff940', boxShadow: '0 0 5px 0px #fff940' })
       break
     case 'Success':
-      _style = style({ background: '#49d08b' })
+      _style = style({ background: '#49d08b', boxShadow: '0 0 5px 0px #49d08b' })
       break
     case 'MixedSuccess':
-      _style = style({ background: '#ffa547' })
+      _style = style({ background: '#ffa547', boxShadow: '0 0 5px 0px #ffa547' })
       break
     case 'Miss':
-      _style = style({ background: 'hsl(0, 60%, 50%)', color: '#fff' })
+      _style = style({ background: 'hsl(0, 60%, 50%)', color: '#fff', boxShadow: '0 0 10px 0px hsl(0, 60%, 50%)' })
   }
   return <h1 className={classes(styles.resultLabel, _style)}>{label}</h1>
 }
@@ -191,7 +188,7 @@ export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ resul
           {results.map((d, i) => (
             <ResultDie
               key={`result_${i}`}
-              size={results.length > 4 ? 30 : results.length === 1 ? 50 : 36}
+              size={results.length > 4 ? 36 : results.length === 1 ? 50 : 36}
               value={d}
               rollValuation={valuation}
               highest={(isZero ? secondHighest : highest) === i}
@@ -204,7 +201,6 @@ export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ resul
       </div>
       <div className={styles.metaWrap}>
         <div className={styles.meta}>
-          <div className={styles.displacer}></div>
           <span className={styles.name}>{username} rolls:</span>
           <div className={styles.rollType}>{title}</div>
           {moreLines.map((line, i) => (
@@ -214,10 +210,10 @@ export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ resul
           ))}
           {note && <div className={styles.note}>&ldquo;{note}&rdquo;</div>}
         </div>
+        <em className={styles.time}>
+          {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
+        </em>
       </div>
-      <em className={styles.time}>
-        {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}
-      </em>
     </div>
   )
 }

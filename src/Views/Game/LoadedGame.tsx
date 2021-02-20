@@ -119,7 +119,7 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
   uid,
 }) => {
   const state = useFunState<LoadedGameState>(initialState)
-  const { rolls, title, mode } = state.get()
+  const { rolls, title, mode, rollsLoaded } = state.get()
   const setMode = (mode: LoadedGameState['mode']) => (): void => state.prop('mode').set(mode)
   const scrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -133,7 +133,8 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
     return gdoc
       .collection('rolls')
       .orderBy('date')
-      .onSnapshot((snapshot) =>
+      .onSnapshot((snapshot) => {
+        state.prop('rollsLoaded').set(true)
         state.prop('rolls').mod((oldRolls) => {
           const newRolls = snapshot.docs.map((d): LogItem => ({ ...(d.data() as LogItem), id: d.id }))
           const latestRoll = newRolls[newRolls.length - 1]
@@ -142,8 +143,8 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
             void onNewLogItem(latestRoll)
           }
           return newRolls
-        }),
-      )
+        })
+      })
   }, [gdoc])
 
   // stay scrolled to the bottom
@@ -165,7 +166,9 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
         </a>
       </div>
       <div ref={scrollRef} className={styles.log}>
-        {rolls.length ? (
+        {!rollsLoaded ? (
+          <p>Loading...</p>
+        ) : rolls.length ? (
           <ul className={styles.rolls}>
             {rolls.map((r, i) => (
               <li key={`roll_${r.id}`}>

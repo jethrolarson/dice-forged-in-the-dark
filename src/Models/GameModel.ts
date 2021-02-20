@@ -40,6 +40,7 @@ export type LogItem = RollResult | Message
 
 export interface LoadedGameState extends PersistedState {
   readonly kind: 'LoadedGameState'
+  rollsLoaded: boolean
   mode: 'Roll' | 'Message'
 }
 
@@ -79,6 +80,7 @@ export const initialLoadedGameState = (persistedState: PersistedState): LoadedGa
   kind: 'LoadedGameState',
   ...persistedState,
   mode: 'Roll',
+  rollsLoaded: false,
 })
 
 export const initialGameState: LoadingGameState = {

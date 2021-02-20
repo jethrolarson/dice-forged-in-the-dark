@@ -1,4 +1,4 @@
-# deployment
+# Deployment
 
 1. `yarn deploy`
 
@@ -15,7 +15,6 @@
 - Support for alternate valuations on rolls (alternates to 1-3=miss, 4,5=mixed, etc)
 - Theming
 - Support for dice other than d6
-
 
 # Gleam in my eye
 
