@@ -74,6 +74,9 @@ const styles = stylesheet({
   rollType: {
     fontSize: 24,
   },
+  smallRollType: {
+    fontSize: 14,
+  },
   result: {
     display: 'flex',
     flexShrink: 0,
@@ -202,7 +205,7 @@ export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ resul
       <div className={styles.metaWrap}>
         <div className={styles.meta}>
           <span className={styles.name}>{username} rolls:</span>
-          <div className={styles.rollType}>{title}</div>
+          <div className={title.length > 12 ? styles.smallRollType : styles.rollType}>{title}</div>
           {moreLines.map((line, i) => (
             <div className={styles.line} key={`line${i}`}>
               {line}

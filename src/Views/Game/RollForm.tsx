@@ -11,7 +11,7 @@ import { pipeVal } from '../../common'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { index } from 'accessor-ts'
 import Icon from 'react-icons-kit'
-import { ValuationType } from '../../Models/RollConfig'
+import { RollOptionGroup, RollOptionSection, ValuationType } from '../../Models/RollConfig'
 import { Textarea } from '../../components/Textarea'
 import { TextInput } from '../../components/TextInput'
 import { ButtonSelect } from '../../components/ButtonSelect'
@@ -49,6 +49,11 @@ const styles = stylesheet({
     opacity: 1,
     transition: 'opacity 0.2s',
   },
+  rollOptionSection: {
+    display: 'flex',
+    gap: 10,
+    gridColumn: '1/4',
+  },
 })
 
 const rollDie = (): number => Math.floor(Math.random() * 6) + 1
@@ -73,6 +78,28 @@ interface RollFormState {
   hoveredDieButton: number
   valuationType: ValuationType
 }
+
+const OptGroup: FC<{ optionGroup: RollOptionGroup; index: number; state: FunState<string> }> = ({
+  optionGroup: og,
+  index,
+  state,
+}) =>
+  og.fixedOptions && og.rollOptions ? (
+    <ButtonSelect state={state} options={og.rollOptions} className={style({ gridColumn: '1/4' })} />
+  ) : (
+    <label key={`optGroup${og.name}${index}`}>
+      <TextInput
+        passThroughProps={{
+          placeholder: og.name,
+          type: 'text',
+          name: og.name,
+          list: `list${index}`,
+        }}
+        state={state}
+      />
+      {og.rollOptions && <DataList id={`list${index}`} values={og.rollOptions.join(',')} />}
+    </label>
+  )
 
 export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | null; uid: string }> = ({
   state,
@@ -135,30 +162,20 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | nul
               {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
               <Icon icon={chevronLeft} size={18} className={style({ $nest: { svg: { margin: '-2px 2px 0 0' } } })} />
             </a>
-            {currentConfig.name} Roll
+            {currentConfig.name}
           </h3>
-          {currentConfig?.optionGroups?.map((og, i) =>
-            og.fixedOptions && og.rollOptions ? (
-              <ButtonSelect
-                state={s.prop('rollState').focus(index(i))}
-                options={og.rollOptions}
-                className={style({ gridColumn: '1/4' })}
-              />
-            ) : (
-              <label key={`optGroup${og.name}${i}`}>
-                <TextInput
-                  passThroughProps={{
-                    placeholder: og.name,
-                    type: 'text',
-                    name: og.name,
-                    list: `list${i}`,
-                  }}
-                  state={s.prop('rollState').focus(index(i))}
-                />
-                {og.rollOptions && <DataList id={`list${i}`} values={og.rollOptions.join(',')} />}
-              </label>
-            ),
-          )}
+          {currentConfig?.optionGroups?.map((og, i) => (
+            <OptGroup optionGroup={og} index={i} state={s.prop('rollState').focus(index(i))} />
+          ))}
+
+          {currentConfig?.sections?.map((section: RollOptionSection) => (
+            <div key={section.name} className={styles.rollOptionSection}>
+              {section.optionGroups.map((og, i) => (
+                <OptGroup optionGroup={og} index={i} state={s.prop('rollState').focus(index(i))} />
+              ))}
+            </div>
+          ))}
+
           {currentConfig?.valuationType === 'Ask' && (
             <label className={style({ gridArea: 'valuation' })}>
               Valuation:{' '}

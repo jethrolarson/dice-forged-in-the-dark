@@ -137,4 +137,70 @@ export const nocturneRollConfig: RollConfig = {
   ],
 }
 
-export const presets = [bladesInTheDarkConfig, nocturneRollConfig]
+const perseusConfig: RollConfig = {
+  system: 'Project: Perseus',
+  rollTypes: [
+    {
+      name: 'Agent',
+      valuationType: 'Action',
+      sections: [
+        {
+          name: 'Move',
+          optionGroups: [
+            {
+              name: 'Move',
+              rollOptions: [
+                'Engage in Violence',
+                'Seize an Opportunity',
+                'Manipulate',
+                'Sneak',
+                'Flee',
+                'Persue',
+                'Sleight of Hand',
+                'Escape Bonds',
+                'Detect the Supernatural',
+                'Use the Supernatural as Intended',
+                'Push the Limits',
+              ],
+            },
+
+            {
+              name: 'Action',
+              rollOptions: ['Charm', 'Maneuver', 'Supernatural', 'Violence'],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Operator',
+      valuationType: 'Action',
+      sections: [
+        {
+          name: 'Move',
+          optionGroups: [
+            {
+              name: 'Move',
+              rollOptions: [
+                'Gather Info',
+                'Cover Identity',
+                'Hack the Planet',
+                'Plant Gear',
+                'Establish Contact',
+                'R&R',
+                'Mission Debrief',
+              ],
+            },
+            {
+              name: 'Resource',
+              rollOptions: ['Library', 'Systems', 'Armory', 'Contacts'],
+            },
+          ],
+        },
+      ],
+    },
+    other,
+  ],
+}
+
+export const presets = [bladesInTheDarkConfig, nocturneRollConfig, perseusConfig]

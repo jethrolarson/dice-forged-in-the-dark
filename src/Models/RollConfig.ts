@@ -25,6 +25,13 @@ const ValuationTypeC = T.union([
 
 export type ValuationType = T.TypeOf<typeof ValuationTypeC>
 
+export const RollOptionSectionC = T.type({
+  name: T.string,
+  optionGroups: T.array(RollOptionGroupC),
+})
+
+export type RollOptionSection = T.TypeOf<typeof RollOptionSectionC>
+
 export const RollTypeC = T.intersection([
   T.type({
     name: T.string,
@@ -32,6 +39,7 @@ export const RollTypeC = T.intersection([
   }),
   T.partial({
     optionGroups: T.array(RollOptionGroupC),
+    sections: T.array(RollOptionSectionC),
   }),
 ])
 
