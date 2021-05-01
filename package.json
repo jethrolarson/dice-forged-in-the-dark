@@ -14,6 +14,7 @@
     "fun-state": "^5.0.0",
     "io-ts": "^2.2.13",
     "lodash.debounce": "4.0.8",
+    "markdown-it": "^12.0.6",
     "ramda": "0.27.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@types/lodash.debounce": "4.0.6",
+    "@types/markdown-it": "^12.0.1",
     "@types/ramda": "0.27.34",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",

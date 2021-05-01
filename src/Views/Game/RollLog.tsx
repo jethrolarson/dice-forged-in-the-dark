@@ -6,6 +6,7 @@ import { borderColor } from '../../colors'
 import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
 import { RollValuation, valuationMap } from './RollValuation'
+import { Note } from './Note'
 
 const circleSize = 120
 
@@ -102,6 +103,11 @@ const styles = stylesheet({
   note: {
     marginTop: 2,
     fontStyle: 'italic',
+    $nest: {
+      img: {
+        maxWidth: '100%',
+      },
+    },
   },
 })
 
@@ -211,7 +217,7 @@ export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ resul
               {line}
             </div>
           ))}
-          {note && <div className={styles.note}>&ldquo;{note}&rdquo;</div>}
+          {note && <Note text={note} />}
         </div>
         <em className={styles.time}>
           {!isToday(date) && new Date(date).toLocaleDateString()} {new Date(date).toLocaleTimeString()}

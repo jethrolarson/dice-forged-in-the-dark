@@ -148,7 +148,7 @@ const perseusConfig: RollConfig = {
           name: 'Move',
           optionGroups: [
             {
-              name: 'Move',
+              name: 'Agent Move',
               rollOptions: [
                 'Engage in Violence',
                 'Seize an Opportunity',
@@ -180,7 +180,7 @@ const perseusConfig: RollConfig = {
           name: 'Move',
           optionGroups: [
             {
-              name: 'Move',
+              name: 'Operator Move',
               rollOptions: [
                 'Gather Info',
                 'Cover Identity',

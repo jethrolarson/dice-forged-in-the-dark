@@ -169,17 +169,17 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
         {!rollsLoaded ? (
           <p>Loading...</p>
         ) : rolls.length ? (
-          <ul className={styles.rolls}>
+          <div className={styles.rolls}>
             {rolls.map((r, i) => (
-              <li key={`roll_${r.id}`}>
+              <article key={`roll_${r.id}`}>
                 {r.kind === 'Message' ? (
                   <RollMessage result={r} />
                 ) : (
                   <RollLogItem result={r} isLast={i === rolls.length - 1} />
                 )}
-              </li>
+              </article>
             ))}
-          </ul>
+          </div>
         ) : (
           <p>Make your first roll!</p>
         )}

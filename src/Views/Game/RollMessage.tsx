@@ -1,7 +1,8 @@
-import { FC } from 'react'
+import React, { FC } from 'react'
 import { style } from 'typestyle'
 import { borderColor } from '../../colors'
 import { Message } from '../../Models/GameModel'
+import { Note } from './Note'
 
 export const RollMessage: FC<{ result: Message }> = ({ result: { username, note } }) => {
   return (
@@ -13,7 +14,8 @@ export const RollMessage: FC<{ result: Message }> = ({ result: { username, note 
         borderRadius: '8px',
         padding: '6px 12px',
       })}>
-      {username}: {note}
+      {username}:
+      <Note text={note} />
     </div>
   )
 }
