@@ -13,11 +13,14 @@ module.exports = {
   ],
   rules: {
     'object-shorthand': 2,
+    'no-debugger': 1,
     '@typescript-eslint/strict-boolean-expressions': 0,
     '@typescript-eslint/promise-function-async': 0,
     '@typescript-eslint/unbound-method': 1,
+    '@typescript-eslint/no-non-null-assertion': 1,
+    '@typescript-eslint/no-unused-vars': 1,
     '@typescript-eslint/explicit-function-return-type': [
-      2,
+      1,
       { allowTypedFunctionExpressions: true, allowHigherOrderFunctions: true },
     ],
     complexity: [1, 10], // KISS

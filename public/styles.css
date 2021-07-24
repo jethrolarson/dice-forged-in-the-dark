@@ -90,6 +90,13 @@ textarea::-webkit-input-placeholder {
   color: hsl(170deg 21% 51%);
 }
 
+select {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgb(38, 102, 105);
+  padding: 4px 6px;
+}
+
 a {
   color: hsl(150, 60%, 60%);
 }

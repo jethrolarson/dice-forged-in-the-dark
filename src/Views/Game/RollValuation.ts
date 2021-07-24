@@ -1,11 +1,12 @@
 import { constant } from 'fp-ts/lib/function'
-import { equals, max, min, sum } from 'ramda'
-import { RollResult } from '../../Models/GameModel'
+import { equals, max, min, sum, prop, map } from 'ramda'
+import { DieResult, RollResult } from '../../Models/GameModel'
 import { ValuationType } from '../../Models/RollConfig'
 
 export type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
 
-export const valuateActionRoll = ({ results, isZero }: RollResult): RollValuation => {
+export const valuateActionRoll = ({ diceRolled, isZero }: RollResult): RollValuation => {
+  const results = getResults(diceRolled)
   const successes = results.filter(equals(6)).length
   const winThreshold = isZero ? 2 : 1
   if (successes > winThreshold) {
@@ -21,10 +22,13 @@ export const valuateActionRoll = ({ results, isZero }: RollResult): RollValuatio
   return 'Miss'
 }
 
-export const sumRoll = ({ results }: RollResult): string => sum(results).toString()
-export const valuateSumRoll = ({ results }: RollResult): RollValuation => 'Success'
+const getResults = map(prop('value'))
 
-export const resistRoll = ({ results, isZero }: RollResult): string => {
+export const sumRoll = ({ diceRolled }: RollResult): string => sum(getResults(diceRolled)).toString()
+export const valuateSumRoll = (): RollValuation => 'Success'
+
+export const resistRoll = ({ diceRolled, isZero }: RollResult): string => {
+  const results = getResults(diceRolled)
   const successes = results.filter(equals(6)).length
   const winThreshold = isZero ? 2 : 1
   let stress = 6 - results.reduce(max)
@@ -40,6 +44,9 @@ type ValuationMap = {
     label: (result: RollResult, valuation: RollValuation) => string
   }
 }
+
+const maxValue = (diceRolled: DieResult[]): number => getResults(diceRolled).reduce(max)
+const minValue = (diceRolled: DieResult[]): number => getResults(diceRolled).reduce(min)
 
 export const valuationMap: ValuationMap = {
   Action: {
@@ -67,11 +74,11 @@ export const valuationMap: ValuationMap = {
   },
   Highest: {
     valuation: constant('Success'),
-    label: (result): string => result.results.reduce(max).toString(),
+    label: (result): string => maxValue(result.diceRolled).toString(),
   },
   Lowest: {
     valuation: constant('Success'),
-    label: (result): string => result.results.reduce(min).toString(),
+    label: (result): string => minValue(result.diceRolled).toString(),
   },
   Ask: {
     valuation: constant('Miss'),

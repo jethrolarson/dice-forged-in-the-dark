@@ -7,6 +7,7 @@ import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
 import { RollValuation, valuationMap } from './RollValuation'
 import { Note } from './Note'
+import { map, prop } from 'ramda'
 
 const circleSize = 120
 
@@ -131,23 +132,22 @@ const RollMessage: FC<{ result: RollValuation; label: string }> = ({ result, lab
 
 const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
 
-const dieColor = (
+const transparent = color('hsla(0, 0%, 0%, 0)')
+
+const dieStyles = (
+  value: number,
   excluded: boolean,
   highest: boolean,
-  valuation: RollValuation,
-  value: number,
   isLast: boolean,
+  dieColor: ColorHelper,
 ): { dieColor: ColorHelper; dotColor: ColorHelper; border?: boolean; glow?: boolean; pulse?: boolean } => {
   if (excluded) {
-    return { dieColor: color('hsla(0, 0%, 0%, 0)'), dotColor: color('hsl(0, 60%, 50%)'), border: true }
+    return { dieColor: transparent, dotColor: dieColor, border: true }
   }
-  if (value === 6) return { dieColor: color('#49d08b'), dotColor: color('#000'), pulse: isLast }
-  if (highest) {
-    return valuation === 'MixedSuccess'
-      ? { dieColor: color('#ffa547'), dotColor: color('#000'), pulse: isLast }
-      : { dieColor: color('hsl(0, 60%, 50%)'), dotColor: color('#fff'), pulse: isLast }
+  if (highest || value === 6) {
+    return { dieColor, dotColor: color('#000'), pulse: isLast }
   }
-  return { dieColor: color('hsla(0, 0%, 0%, 0)'), dotColor: color(borderColor), border: true }
+  return { dieColor: transparent, dotColor: dieColor, border: true }
 }
 
 const ResultDie: FC<{
@@ -155,13 +155,16 @@ const ResultDie: FC<{
   size: number
   highest: boolean
   excluded: boolean
-  rollValuation: RollValuation
   isLast: boolean
-}> = ({ value, size, highest, excluded, rollValuation, isLast }) => (
-  <Die value={value} size={size} {...dieColor(excluded, highest, rollValuation, value, isLast)} />
+  dieColor: ColorHelper
+}> = ({ value, size, highest, excluded, isLast, dieColor }) => (
+  <Die value={value} size={size} {...dieStyles(value, excluded, highest, isLast, dieColor)} />
 )
 
-const highestIndexes = (results: RollResult['results']): [number, number] => {
+const getResults = map(prop('value'))
+
+const highestIndexes = (diceRolled: RollResult['diceRolled']): [number, number] => {
+  const results = getResults(diceRolled)
   if (results.length === 1) return [0, -1]
   return results.slice(1).reduce<[number, number]>(
     ([fst, snd], d, i) => {
@@ -174,35 +177,30 @@ const highestIndexes = (results: RollResult['results']): [number, number] => {
 }
 
 export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ result, isLast }) => {
-  const { isZero, note, results, position, effect, date, username, rollType, lines } = result
+  const { isZero, note, diceRolled, date, username, rollType, lines } = result
   const valuationMapItem = valuationMap[result.valuationType ?? 'Action']
   const valuation = valuationMapItem.valuation(result)
   const valuationLabel = valuationMapItem.label(result, valuation)
-  const [highest, secondHighest] = highestIndexes(results)
+  const [highest, secondHighest] = highestIndexes(diceRolled)
   const excludedIndex = isZero ? highest : -1
-  let title: string
-  let moreLines: string[]
-  if (lines?.length) {
-    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    title = lines[0] || rollType
-    moreLines = lines.slice(1)
-  } else {
-    title = rollType
-    moreLines = [position ?? '', effect ?? '']
-  }
+
+  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+  const title = lines?.[0] || rollType
+  const moreLines = lines.slice(1)
+  const len = diceRolled.length
   return (
     <div className={styles.RollLog}>
       <div className={styles.result}>
         <div className={styles.dice}>
-          {results.map((d, i) => (
+          {diceRolled.map(({ dieColor, value: d }, i) => (
             <ResultDie
               key={`result_${i}`}
-              size={results.length > 4 ? 36 : results.length === 1 ? 50 : 36}
+              size={len > 4 ? 36 : len === 1 ? 50 : 36}
               value={d}
-              rollValuation={valuation}
               highest={(isZero ? secondHighest : highest) === i}
               excluded={excludedIndex === i}
               isLast={isLast}
+              dieColor={dieColor}
             />
           ))}
         </div>

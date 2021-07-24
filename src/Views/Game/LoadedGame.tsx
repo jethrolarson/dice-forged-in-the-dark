@@ -1,12 +1,12 @@
 import useFunState, { merge } from 'fun-state'
 import { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import { stylesheet } from 'typestyle'
-import { important } from 'csx'
+import { color, important } from 'csx'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 
-import { LoadedGameState, LogItem } from '../../Models/GameModel'
+import { DieColor, DieResult, DieType, LoadedGameState, LogItem } from '../../Models/GameModel'
 import { borderColor } from '../../colors'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm'
@@ -112,6 +112,23 @@ const onNewLogItem = (item: LogItem): Promise<unknown> => {
   }
 }
 
+const parseDieResult = (d: DieResult): DieResult => ({ ...d, dieColor: color((d.dieColor as unknown) as string) })
+
+const parseRoll = (d: LogItem & { results?: number[]; effect?: string[]; position?: string }): LogItem => {
+  switch (d.kind) {
+    case 'Message':
+      return d
+    default:
+      return {
+        ...d,
+        lines: d.lines ?? [d.position, d.effect],
+        diceRolled: d.diceRolled
+          ? d.diceRolled.map(parseDieResult)
+          : d.results?.map((value) => ({ value, dieType: DieType.d6, dieColor: color(DieColor.white) })) ?? [],
+      }
+  }
+}
+
 export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdoc: DocRef; uid: string }> = ({
   initialState,
   gameId,
@@ -136,7 +153,7 @@ export const LoadedGame: FC<{ initialState: LoadedGameState; gameId: string; gdo
       .onSnapshot((snapshot) => {
         state.prop('rollsLoaded').set(true)
         state.prop('rolls').mod((oldRolls) => {
-          const newRolls = snapshot.docs.map((d): LogItem => ({ ...(d.data() as LogItem), id: d.id }))
+          const newRolls = snapshot.docs.map((d): LogItem => parseRoll({ ...(d.data() as LogItem), id: d.id }))
           const latestRoll = newRolls[newRolls.length - 1]
           const latestOldRoll = oldRolls[oldRolls.length - 1]
           if (latestRoll && latestOldRoll && latestOldRoll.id !== latestRoll.id && inLastTenSeconds(latestRoll.date)) {

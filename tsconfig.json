@@ -15,7 +15,7 @@
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
     "strictFunctionTypes": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "strict": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,

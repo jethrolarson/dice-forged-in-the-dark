@@ -22,3 +22,8 @@ export const getWinSound = getSound('win.mp3')
 export const getWarnSound = getSound('warn.mp3')
 export const getCritSound = getSound('crit.mp3')
 export const getMessageSound = getSound('message.mp3')
+export const getAddSound = getSound('addSound.mp3')
+
+const playSound = (filename: string): Promise<void> => getSound(filename)().then((s: HTMLAudioElement) => s.play())
+
+export const playAddSound = (): Promise<void> => playSound('addSound.mp3')

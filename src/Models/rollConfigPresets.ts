@@ -155,7 +155,7 @@ const perseusConfig: RollConfig = {
                 'Manipulate',
                 'Sneak',
                 'Flee',
-                'Persue',
+                'Pursue',
                 'Sleight of Hand',
                 'Escape Bonds',
                 'Detect the Supernatural',

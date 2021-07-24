@@ -5,8 +5,7 @@ import { classes, stylesheet } from 'typestyle'
 
 const styles = stylesheet({
   ButtonSelect: {
-    marginBottom: -5,
-    columnCount: 3,
+    columnCount: 2,
     columnGap: 5,
   },
   threeCol: {},
