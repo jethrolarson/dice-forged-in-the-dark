@@ -203,4 +203,70 @@ const perseusConfig: RollConfig = {
   ],
 }
 
-export const presets = [bladesInTheDarkConfig, nocturneRollConfig, perseusConfig]
+const xThreatConfig: RollConfig = {
+  system: 'X-Threat Playtest 0.0.1',
+  rollTypes: [
+    {
+      name: 'Agent',
+      valuationType: 'Action',
+      sections: [
+        {
+          name: 'Move',
+          optionGroups: [
+            {
+              name: 'Agent Move',
+              rollOptions: [
+                'Engage in Violence (V)',
+                'Seize an Opportunity',
+                'Manipulate (C)',
+                'Sneak (M)',
+                'Flee (M)',
+                'Pursue (M)',
+                'Sleight of Hand (M)',
+                'Escape Bonds (M)',
+                'Surf the Mesh (S)',
+                'Use Hypertech as Intended (S)',
+                'Push the Limits (S)',
+              ],
+            },
+
+            {
+              name: 'Action',
+              rollOptions: ['Charm', 'Maneuver', 'Supernatural', 'Violence'],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      name: 'Operator',
+      valuationType: 'Action',
+      sections: [
+        {
+          name: 'Move',
+          optionGroups: [
+            {
+              name: 'Operator Move',
+              rollOptions: [
+                'Gather Info (D)',
+                'Cover Identity (D)',
+                'Hack (S)',
+                'Plant Gear (A)',
+                'Establish Contact (C)',
+                'R&R',
+                'Mission Debrief',
+              ],
+            },
+            {
+              name: 'Resource',
+              rollOptions: ['Data', 'Systems', 'Armory', 'Contacts'],
+            },
+          ],
+        },
+      ],
+    },
+    other,
+  ],
+}
+
+export const presets = [bladesInTheDarkConfig, nocturneRollConfig, perseusConfig, xThreatConfig]
