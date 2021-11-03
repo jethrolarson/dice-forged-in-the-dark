@@ -1,7 +1,7 @@
 import React, { FC } from 'react'
 import useFunState from 'fun-state'
 import { style } from 'typestyle'
-import { DocRef } from '../../hooks/useDoc'
+import { DocumentReference, addDoc, collection } from '@firebase/firestore'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
 
@@ -10,26 +10,21 @@ interface MessageFormState {
   username: string
 }
 
-export const MessageForm: FC<{ gdoc: DocRef | null }> = ({ gdoc }) => {
+export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
   const state = useFunState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
   const postMessage: React.FormEventHandler<HTMLFormElement> = (e): void => {
     e.preventDefault()
-    if (gdoc) {
-      gdoc
-        .collection('rolls')
-        .add({
-          note,
-          username,
-          date: Date.now(),
-          kind: 'Message',
-        })
-        .catch((e) => {
-          console.error(e)
-          alert('failed to add roll')
-        })
-      state.prop('username').set('')
-    }
+    addDoc(collection(gdoc, 'rolls'), {
+      note,
+      username,
+      date: Date.now(),
+      kind: 'Message',
+    }).catch((e) => {
+      console.error(e)
+      alert('failed to add roll')
+    })
+    state.prop('username').set('')
   }
   return (
     <form

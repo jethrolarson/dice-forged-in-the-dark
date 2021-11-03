@@ -8,11 +8,11 @@ import {
   missingGameState,
   PersistedState,
 } from '../../Models/GameModel'
-import { DocRef, useDoc } from '../../hooks/useDoc'
+import { useDoc } from '../../hooks/useDoc'
+import { DocumentReference, getDoc, setDoc } from '@firebase/firestore'
 import { LoadedGame } from './LoadedGame'
 import { useUser } from '../../hooks/useAuthState'
 import { User } from '../../Models/User'
-import { initFirebase } from '../../initFirebase'
 import { Login } from '../Login/Login'
 
 export const gamePath = (path: string): O.Option<GameView> => {
@@ -20,14 +20,13 @@ export const gamePath = (path: string): O.Option<GameView> => {
   return m && m.length > 0 && m[1] ? O.some({ kind: 'GameView', id: m[1] }) : O.none
 }
 
-const saveGameToUser = (userDoc: DocRef, gameId: string): void => {
-  userDoc
-    .get()
+const saveGameToUser = (userDoc: DocumentReference, gameId: string): void => {
+  getDoc(userDoc)
     .then((ss) => {
       const user = ss.data() as Partial<User> | undefined
       const games: string[] = user?.games ?? []
       if (!games.includes(gameId)) {
-        userDoc.set({ games: games.concat([gameId]) }).catch((err) => {
+        setDoc(userDoc, { games: games.concat([gameId]) }).catch((err) => {
           alert('failed to add game to your user')
           console.error(err)
         })
@@ -44,39 +43,32 @@ export const GameWithUID: FC<{ gameId: string; uid: string }> = ({ gameId, uid }
   const userDoc = useDoc(`users/${uid}`)
   const [gameState, setGameState] = useState<GameState>(initialGameState)
   useEffect(() => {
-    if (gdoc && userDoc) {
-      gdoc
-        .get()
-        .then((snapshot) => {
-          if (!snapshot.exists) {
-            setGameState(missingGameState)
-          }
-          const data = snapshot.data()
-          data && setGameState(initialLoadedGameState(data as PersistedState))
-          saveGameToUser(userDoc, snapshot.id)
-        })
-        .catch((e) => {
-          console.error(e)
-          alert('failed to load game')
-        })
-    }
+    getDoc(gdoc)
+      .then((snapshot) => {
+        if (!snapshot.exists) {
+          setGameState(missingGameState)
+        }
+        const data = snapshot.data()
+        data && setGameState(initialLoadedGameState(data as PersistedState))
+        saveGameToUser(userDoc, snapshot.id)
+      })
+      .catch((e) => {
+        console.error(e)
+        alert('failed to load game')
+      })
   }, [gdoc])
-
-  if (gdoc) {
-    switch (gameState.kind) {
-      case 'LoadedGameState':
-        return <LoadedGame initialState={gameState} gameId={gameId} gdoc={gdoc} uid={uid} />
-      case 'MissingGameState':
-        return <h1>Game not found. Check the url</h1>
-      case 'LoadingGameState':
-        return <div>Game Loading</div>
-    }
+  switch (gameState.kind) {
+    case 'LoadedGameState':
+      return <LoadedGame initialState={gameState} gameId={gameId} gdoc={gdoc} uid={uid} />
+    case 'MissingGameState':
+      return <h1>Game not found. Check the url</h1>
+    case 'LoadingGameState':
+      return <div>Game Loading</div>
   }
   return <div>Doc Loading</div>
 }
 
 export const Game: FC<{ gameId: string }> = ({ gameId }) => {
-  initFirebase()
   const user = useUser()
   return user ? (
     <GameWithUID gameId={gameId} uid={user.uid} />

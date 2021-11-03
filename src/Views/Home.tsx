@@ -1,16 +1,16 @@
 import React, { FC, useEffect } from 'react'
+import type { User as FSUser } from '@firebase/auth'
 import { PersistedState } from '../Models/GameModel'
-import fireApp from 'firebase/app'
-import { useFirestore } from '../hooks/useFirestore'
+import { getDoc, collection, doc, addDoc, getFirestore } from '@firebase/firestore'
 import { style } from 'typestyle'
 import useFunState, { FunState } from 'fun-state'
 import { TextInput } from '../components/TextInput'
 import { Login } from './Login/Login'
 import { useUser } from '../hooks/useAuthState'
-import { initFirebase } from '../initFirebase'
 import { bladesInTheDarkConfig } from '../Models/rollConfigPresets'
 import { useDoc } from '../hooks/useDoc'
 import { User } from '../Models/User'
+import { getAuth } from '@firebase/auth'
 
 type GameState = PersistedState & { id: string }
 
@@ -20,12 +20,7 @@ interface HomeState {
   creating: boolean
 }
 
-const createGame = (
-  uid: string,
-  title: string,
-  gamesDoc: fireApp.firestore.CollectionReference,
-  state: FunState<HomeState>,
-) => (): void => {
+const createGame = (uid: string, title: string, state: FunState<HomeState>) => (): void => {
   state.prop('creating').set(true)
   const gameState: PersistedState = {
     owners: [uid],
@@ -34,8 +29,7 @@ const createGame = (
     rolls: [],
     title,
   }
-  gamesDoc
-    .add(gameState)
+  addDoc(collection(getFirestore(), 'games'), gameState)
     .then((value) => {
       window.location.hash = `#/game-settings/${value.id}`
       state.prop('creating').set(false)
@@ -46,46 +40,42 @@ const createGame = (
     })
 }
 
-export const UserHome: FC<{ user: fireApp.User }> = ({ user }) => {
+export const UserHome: FC<{ user: FSUser }> = ({ user }) => {
   const state = useFunState<HomeState>({
     games: [],
     gameName: '',
     creating: false,
   })
-  const firestore = useFirestore()
-  const userDoc = useDoc(`users/${user.uid}`)
+  const firestore = getFirestore()
   useEffect(() => {
-    if (firestore && userDoc) {
-      userDoc
-        .get()
-        .then((ss) => {
-          const userData = ss.data() as User | undefined
-          if (userData?.games.length) {
-            Promise.all(
-              userData.games.map(
-                (id): Promise<GameState> =>
-                  firestore
-                    .doc(`games/${id}`)
-                    .get()
-                    .then((game) => ({ id: game.id, ...(game.data() as PersistedState) })),
-              ),
-            )
-              .then(state.prop('games').set)
-              .catch((e) => {
-                console.error(e)
-                alert('failed to load one or more games')
-              })
-          }
-        })
-        .catch((err) => {
-          alert('failed to load user data')
-          console.error(err)
-        })
-    }
+    getDoc(useDoc(`users/${user.uid}`))
+      .then((ss) => {
+        const userData = ss.data() as User | undefined
+        if (userData?.games.length) {
+          Promise.all(
+            userData.games.map(
+              (id): Promise<GameState> =>
+                getDoc(doc(firestore, `games/${id}`)).then((game) => ({
+                  id: game.id,
+                  ...(game.data() as PersistedState),
+                })),
+            ),
+          )
+            .then(state.prop('games').set)
+            .catch((e) => {
+              console.error(e)
+              alert('failed to load one or more games')
+            })
+        }
+      })
+      .catch((err) => {
+        alert('failed to load user data')
+        console.error(err)
+      })
     return undefined
-  }, [firestore, userDoc, user])
+  }, [firestore, user])
 
-  const logout = (): Promise<void> => fireApp.auth().signOut()
+  const logout = (): Promise<void> => getAuth().signOut()
   const { gameName, creating, games } = state.get()
   return firestore ? (
     <>
@@ -110,7 +100,7 @@ export const UserHome: FC<{ user: fireApp.User }> = ({ user }) => {
         <button
           disabled={gameName.length === 0 || creating}
           className={style({ flexShrink: 0 })}
-          onClick={createGame(user.uid, gameName, firestore.collection('games'), state)}>
+          onClick={createGame(user.uid, gameName, state)}>
           Create Game
         </button>
       </div>
@@ -122,7 +112,6 @@ export const UserHome: FC<{ user: fireApp.User }> = ({ user }) => {
 }
 
 export const Home: FC = () => {
-  initFirebase()
   const user = useUser()
   return (
     <div className={style({ margin: '30px auto', padding: '0 30px', maxWidth: 800 })}>

@@ -6,7 +6,7 @@ import { color, important } from 'csx'
 import { Die } from './Die'
 import { borderColor } from '../../colors'
 import { DieColor, DieResult, DieType, LoadedGameState, RollResult } from '../../Models/GameModel'
-import { DocRef } from '../../hooks/useDoc'
+import { DocumentReference, addDoc, collection, getFirestore } from '@firebase/firestore'
 import { pipeVal } from '../../common'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { append, index, removeAt } from 'accessor-ts'
@@ -146,7 +146,7 @@ const zeroDicePool: Rollable[] = [
   [DieType.d6, DieColor.red],
   [DieType.d6, DieColor.red],
 ]
-export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | null; uid: string }> = ({
+export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentReference; uid: string }> = ({
   state,
   gdoc,
   uid,
@@ -166,36 +166,31 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocRef | nul
 
   const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
   const roll = (): void => {
-    if (gdoc) {
-      const n = dicePool.length
-      const isZero = n === 0
-      const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(([dieType, dieColor]) => ({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        dieColor: dieColor as any,
-        dieType,
-        value: rollDie(),
-      })) as DieResult[]
-      const roll: Omit<RollResult, 'id'> = {
-        note,
-        rollType,
-        lines: rollState,
-        username,
-        isZero,
-        diceRolled,
-        date: Date.now(),
-        kind: 'Roll',
-        valuationType,
-        uid,
-      }
-      gdoc
-        .collection('rolls')
-        .add(roll)
-        .catch((e) => {
-          console.error(e)
-          alert('failed to add roll')
-        })
-      reset()
+    const n = dicePool.length
+    const isZero = n === 0
+    const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(([dieType, dieColor]) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      dieColor: dieColor as any,
+      dieType,
+      value: rollDie(),
+    })) as DieResult[]
+    const roll: Omit<RollResult, 'id'> = {
+      note,
+      rollType,
+      lines: rollState,
+      username,
+      isZero,
+      diceRolled,
+      date: Date.now(),
+      kind: 'Roll',
+      valuationType,
+      uid,
     }
+    addDoc(collection(gdoc, 'rolls'), roll).catch((e) => {
+      console.error(e)
+      alert('failed to add roll')
+    })
+    reset()
   }
 
   const addDie = (dieType: DieType, dieColor: DieColor): void => {

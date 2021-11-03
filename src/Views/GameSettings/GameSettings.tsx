@@ -1,12 +1,12 @@
 import React, { FC, useEffect, useState } from 'react'
-import firebase from 'firebase/app'
+import { DocumentReference, getDoc, deleteDoc, setDoc } from '@firebase/firestore'
 import { stylesheet } from 'typestyle'
 import useFunState from 'fun-state'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
-import { DocRef, useDoc } from '../../hooks/useDoc'
+import { useDoc } from '../../hooks/useDoc'
 import {
   PersistedState,
   GameSettingsView,
@@ -61,9 +61,9 @@ const styles = stylesheet({
 
 const noop = (): void => {}
 
-const deleteGame = (gdoc: firebase.firestore.DocumentReference) => (): void => {
-  if (gdoc && window.confirm('Are you sure you want to delete this game permanently?')) {
-    gdoc.delete().catch((e) => {
+const deleteGame = (gdoc: DocumentReference) => (): void => {
+  if (window.confirm('Are you sure you want to delete this game permanently?')) {
+    deleteDoc(gdoc).catch((e) => {
       console.error(e)
       alert('delete failed')
     })
@@ -78,7 +78,7 @@ export const gameSettingsPath = (path: string): O.Option<GameSettingsView> => {
 
 type GameSettingsState = PersistedState & { rollConfigText: string; rollConfigError: string }
 
-export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettingsState; gdoc: DocRef }> = ({
+export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettingsState; gdoc: DocumentReference }> = ({
   gameId,
   initialState,
   gdoc,
@@ -91,8 +91,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
       parseRollConfig(rollConfigText),
       E.map((rollConfig: RollConfig) => {
         state.prop('rollConfigError').set('')
-        gdoc
-          .set({ rollConfig, title }, { merge: true })
+        setDoc(gdoc, { rollConfig, title }, { merge: true })
           .then(() => {
             document.location.hash = `#/game/${gameId}`
           })
@@ -155,40 +154,33 @@ const setRollConfig = (gs: LoadedGameState): GameSettingsState => {
 }
 
 export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
-  const gdoc = useDoc(`games/${gameId}`)
   const [gameState, setGameState] = useState<GameState>(initialGameState)
+  const gdoc = useDoc(`games/${gameId}`)
   useEffect(() => {
-    if (gdoc) {
-      gdoc
-        .get()
-        .then((ss) => {
-          const data = ss.data()
-          window.document.title =
-            (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
-            ' - Dice Forged in the Dark'
-          if (data) {
-            setGameState(initialLoadedGameState(data as PersistedState))
-          }
-        })
-        .catch((err) => {
-          console.error(err)
-          setGameState({ kind: 'ErrorGameState' })
-        })
-    }
-  }, [gdoc])
+    getDoc(gdoc)
+      .then((ss) => {
+        const data = ss.data()
+        window.document.title =
+          (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
+          ' - Dice Forged in the Dark'
+        if (data) {
+          setGameState(initialLoadedGameState(data as PersistedState))
+        }
+      })
+      .catch((err) => {
+        console.error(err)
+        setGameState({ kind: 'ErrorGameState' })
+      })
+  }, [gameId])
 
-  if (gdoc) {
-    switch (gameState.kind) {
-      case 'LoadedGameState':
-        return <LoadedGameSettings initialState={setRollConfig(gameState)} gameId={gameId} gdoc={gdoc} />
-      case 'MissingGameState':
-        return <h1>Game not found. Check the url</h1>
-      case 'LoadingGameState':
-        return <div>Game Loading</div>
-      case 'ErrorGameState':
-        return <h1>Error loading game. Try refreshing the page. Check console if you care why.</h1>
-    }
-  } else {
-    return <div>Doc Loading</div>
+  switch (gameState.kind) {
+    case 'LoadedGameState':
+      return <LoadedGameSettings initialState={setRollConfig(gameState)} gameId={gameId} gdoc={gdoc} />
+    case 'MissingGameState':
+      return <h1>Game not found. Check the url</h1>
+    case 'LoadingGameState':
+      return <div>Game Loading</div>
+    case 'ErrorGameState':
+      return <h1>Error loading game. Try refreshing the page. Check console if you care why.</h1>
   }
 }
