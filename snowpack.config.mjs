@@ -4,6 +4,9 @@ export default {
     public: { url: '/', static: true },
     src: '/dist',
   },
+  packageOptions: {
+    polyfillNode: true,
+  },
   plugins: [
     '@snowpack/plugin-react-refresh',
     // '@snowpack/plugin-dotenv',
@@ -19,6 +22,12 @@ export default {
   testOptions: {
     files: ['src/**/*.test.*'],
   },
+  knownEntryPoints: [
+    'fp-ts/es6/Either',
+    'uc.micro/properties/Any/regex',
+    'uc.micro/categories/Cc/regex',
+    'uc.micro/categories/Z/regex',
+  ],
   /* optional, if you want to use alias when importing */
   //   alias: {
   //     '~': './src/',

@@ -204,66 +204,49 @@ const perseusConfig: RollConfig = {
 }
 
 const xThreatConfig: RollConfig = {
-  system: 'X-Threat Playtest 0.0.1',
+  system: 'X-Threat Playtest 2.0.0',
   rollTypes: [
     {
-      name: 'Agent',
-      valuationType: 'Action',
+      name: 'Action',
       sections: [
         {
-          name: 'Move',
           optionGroups: [
             {
-              name: 'Agent Move',
-              rollOptions: [
-                'Engage in Violence (V)',
-                'Seize an Opportunity',
-                'Manipulate (C)',
-                'Sneak (M)',
-                'Flee (M)',
-                'Pursue (M)',
-                'Sleight of Hand (M)',
-                'Escape Bonds (M)',
-                'Surf the Mesh (S)',
-                'Use Hypertech as Intended (S)',
-                'Push the Limits (S)',
-              ],
-            },
-
-            {
-              name: 'Action',
-              rollOptions: ['Charm', 'Maneuver', 'Supernatural', 'Violence'],
+              name: 'Approach',
+              rollOptions: ['Charm', 'Deceit', 'Force', 'Precision', 'Ingenuity', 'Grace'],
+              fixedOptions: true,
             },
           ],
+          name: 'Approach',
         },
-      ],
-    },
-    {
-      name: 'Operator',
-      valuationType: 'Action',
-      sections: [
         {
-          name: 'Move',
           optionGroups: [
             {
-              name: 'Operator Move',
-              rollOptions: [
-                'Gather Info (D)',
-                'Cover Identity (D)',
-                'Hack (S)',
-                'Plant Gear (A)',
-                'Establish Contact (C)',
-                'R&R',
-                'Mission Debrief',
-              ],
-            },
-            {
+              rollOptions: [],
               name: 'Resource',
-              rollOptions: ['Data', 'Systems', 'Armory', 'Contacts'],
+            },
+            {
+              rollOptions: [],
+              name: 'Device',
+            },
+          ],
+          name: 'details',
+        },
+        {
+          name: 'Stakes',
+          optionGroups: [
+            {
+              rollOptions: ['Controlled', 'Risky', 'Desperate'],
+              name: 'Position',
+            },
+            {
+              name: 'Effect',
+              rollOptions: ['Limited', 'Standard', 'Great'],
             },
           ],
         },
       ],
+      valuationType: 'Action',
     },
     other,
   ],

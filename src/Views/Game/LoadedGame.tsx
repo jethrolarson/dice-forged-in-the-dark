@@ -6,7 +6,7 @@ import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 import { onSnapshot, DocumentReference, collection, query, orderBy } from '@firebase/firestore'
-import { DieColor, DieResult, DieType, LoadedGameState, LogItem, Paint } from '../../Models/GameModel'
+import { DieColor, DieResult, DieType, LoadedGameState, LogItem } from '../../Models/GameModel'
 import { borderColor } from '../../colors'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm'
@@ -14,7 +14,7 @@ import { MessageForm } from './MessageForm'
 import { RollMessage } from './RollMessage'
 import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
-import { Canvas } from './Canvas'
+// import { Canvas } from './Canvas'
 
 const styles = stylesheet({
   Game: {},
@@ -27,14 +27,15 @@ const styles = stylesheet({
   right: {
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh',
-    maxWidth: 375,
+    height: 'calc(100vh - 57px)', // HACK use better css
+    maxWidth: 400,
     background: 'radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%))',
     backgroundRepeat: 'no-repeat',
   },
   heading: {
     display: 'flex',
     alignItems: 'center',
+    borderBottom: `1px solid ${borderColor}`,
   },
   title: {
     background: 'transparent',
@@ -67,7 +68,7 @@ const styles = stylesheet({
     },
   },
   log: {
-    border: `1px solid ${borderColor}`,
+    borderBottom: `1px solid ${borderColor}`,
     background: 'hsla(0, 0, 40%, 0.4)',
     borderWidth: '1px 0',
     flex: 1,
@@ -190,7 +191,7 @@ export const LoadedGame: FC<{
       </div>
       <div className={styles.body}>
         <div className={styles.left}>
-          <Canvas items={rolls.filter((item): item is Paint => item.kind === 'Paint')} gdoc={gdoc} />
+          {/*<Canvas items={rolls.filter((item): item is Paint => item.kind === 'Paint')} gdoc={gdoc} />*/}
         </div>
         <div className={styles.right}>
           <div ref={scrollRef} className={styles.log}>

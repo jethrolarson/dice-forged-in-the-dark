@@ -126,7 +126,7 @@ const OptGroup: FC<{ optionGroup: RollOptionGroup; index: number; state: FunStat
   state,
 }) =>
   og.fixedOptions && og.rollOptions ? (
-    <ButtonSelect state={state} options={og.rollOptions} className={style({ gridColumn: '1/3' })} />
+    <ButtonSelect state={state} options={og.rollOptions} className={style({ flexGrow: 1 })} />
   ) : (
     <label key={`optGroup${og.name}${index}`}>
       <TextInput
@@ -155,7 +155,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
 
   const s = useFunState<RollFormState>({
     note: '',
-    rollState: ['', '', '', ''],
+    rollState: ['', '', '', '', ''],
     rollType: '',
     username: '',
     valuationType: 'Action',
@@ -198,6 +198,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
     void playAddSound()
   }
   const removeDie = (index: number): void => s.prop('dicePool').mod(removeAt(index))
+  let idx = -1
   return (
     <form
       className={styles.form}
@@ -226,14 +227,17 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
 
             {currentConfig?.sections?.map((section: RollOptionSection) => (
               <div key={section.name} className={styles.rollOptionSection}>
-                {section.optionGroups.map((og, i) => (
-                  <OptGroup
-                    key={String(i) + og.name}
-                    optionGroup={og}
-                    index={i}
-                    state={s.prop('rollState').focus(index(i))}
-                  />
-                ))}
+                {section.optionGroups.map((og) => {
+                  idx++
+                  return (
+                    <OptGroup
+                      key={String(idx) + og.name}
+                      optionGroup={og}
+                      index={idx}
+                      state={s.prop('rollState').focus(index(idx))}
+                    />
+                  )
+                })}
               </div>
             ))}
             <label className={styles.character}>
@@ -263,7 +267,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
             <label className={styles.note}>
               <Textarea
                 passThroughProps={{
-                  placeholder: 'Note',
+                  placeholder: 'Description',
                   className: styles.noteInput,
                   onInput: (e): void => {
                     const target = e.target as HTMLTextAreaElement
