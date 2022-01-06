@@ -6,13 +6,19 @@
 
 - Dice roll sound: https://notificationsounds.com/message-tones/communication-channel-519
 
+# Features
+
+- Real-time collaboration
+- Sound effects
+- Custom game configuration
+- User Login (google auth)
+- Support for alternate valuations on rolls (alternates to 1-3=miss, 4,5=mixed, etc)
+
 # Loosely Planned Features
 
 - Additional Presets for popular FitD hacks (BoB, SnV, etc...)
-- User Login (probably start with google auth)
 - Appropriate security on writes
 - User settings (turn off sound, default character name)
-- Support for alternate valuations on rolls (alternates to 1-3=miss, 4,5=mixed, etc)
 - Theming
 - Support for dice other than d6
 

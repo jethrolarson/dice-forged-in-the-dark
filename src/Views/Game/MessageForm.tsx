@@ -22,7 +22,7 @@ export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
       kind: 'Message',
     }).catch((e) => {
       console.error(e)
-      alert('failed to add roll')
+      alert('failed to send message')
     })
     state.prop('username').set('')
   }

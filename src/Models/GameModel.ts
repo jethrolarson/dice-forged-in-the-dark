@@ -1,4 +1,5 @@
 import { ColorHelper } from 'csx'
+import { number } from 'fp-ts'
 import { RollConfig, ValuationType } from './RollConfig'
 import { bladesInTheDarkConfig } from './rollConfigPresets'
 
@@ -56,7 +57,19 @@ export interface Message extends LogItemCommon {
   kind: 'Message'
 }
 
-export type LogItem = RollResult | Message
+export type Point = [number, number]
+
+export type Paint = Line // | circle | square | text | Path
+
+export interface Line extends LogItemCommon {
+  kind: 'Paint'
+  paintType: 'line'
+  coords: [x1: number, y1: number, x2: number, y2: number]
+  color: string
+  width: number
+}
+
+export type LogItem = RollResult | Message | Paint
 
 export interface LoadedGameState extends PersistedState {
   readonly kind: 'LoadedGameState'

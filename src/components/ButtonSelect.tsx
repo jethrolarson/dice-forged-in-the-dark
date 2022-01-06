@@ -1,6 +1,6 @@
 import { important } from 'csx'
 import { FunState } from 'fun-state'
-import { FC } from 'react'
+import React, { FC } from 'react'
 import { classes, stylesheet } from 'typestyle'
 
 const styles = stylesheet({

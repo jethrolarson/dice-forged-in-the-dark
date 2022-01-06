@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import React, { FC } from 'react'
 import { stylesheet } from 'typestyle'
 import Markdown from '../../markdown'
 

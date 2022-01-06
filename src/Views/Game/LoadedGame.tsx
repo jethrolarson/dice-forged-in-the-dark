@@ -1,12 +1,12 @@
 import useFunState, { merge } from 'fun-state'
-import { FC, useEffect, useLayoutEffect, useRef } from 'react'
+import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import { stylesheet } from 'typestyle'
 import { color, important } from 'csx'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
-import { onSnapshot, DocumentReference, collection, query, orderBy, getFirestore, getDocs } from '@firebase/firestore'
-import { DieColor, DieResult, DieType, LoadedGameState, LogItem } from '../../Models/GameModel'
+import { onSnapshot, DocumentReference, collection, query, orderBy } from '@firebase/firestore'
+import { DieColor, DieResult, DieType, LoadedGameState, LogItem, Paint } from '../../Models/GameModel'
 import { borderColor } from '../../colors'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm'
@@ -14,6 +14,7 @@ import { MessageForm } from './MessageForm'
 import { RollMessage } from './RollMessage'
 import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
+import { Canvas } from './Canvas'
 
 const styles = stylesheet({
   Game: {},
@@ -102,7 +103,7 @@ const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
 const onNewLogItem = (item: LogItem): Promise<unknown> => {
   if (item.kind === 'Message') {
     return getMessageSound().then((sound) => sound.play())
-  } else {
+  } else if (item.kind === 'Roll') {
     const valuation = valuateActionRoll(item)
     switch (valuation) {
       case 'Miss':
@@ -115,6 +116,7 @@ const onNewLogItem = (item: LogItem): Promise<unknown> => {
         return getCritSound().then((sound) => sound.play())
     }
   }
+  return Promise.resolve()
 }
 
 const parseDieResult = (d: DieResult): DieResult => ({ ...d, dieColor: color(d.dieColor as unknown as string) })
@@ -122,6 +124,8 @@ const parseDieResult = (d: DieResult): DieResult => ({ ...d, dieColor: color(d.d
 const parseRoll = (d: LogItem & { results?: number[]; effect?: string[]; position?: string }): LogItem => {
   switch (d.kind) {
     case 'Message':
+      return d
+    case 'Paint':
       return d
     default:
       return {
@@ -185,7 +189,9 @@ export const LoadedGame: FC<{
         </a>
       </div>
       <div className={styles.body}>
-        <div className={styles.left}>Canvas</div>
+        <div className={styles.left}>
+          <Canvas items={rolls.filter((item): item is Paint => item.kind === 'Paint')} gdoc={gdoc} />
+        </div>
         <div className={styles.right}>
           <div ref={scrollRef} className={styles.log}>
             {!rollsLoaded ? (
@@ -196,9 +202,9 @@ export const LoadedGame: FC<{
                   <article key={`roll_${r.id}`}>
                     {r.kind === 'Message' ? (
                       <RollMessage result={r} />
-                    ) : (
+                    ) : r.kind === 'Roll' ? (
                       <RollLogItem result={r} isLast={i === rolls.length - 1} />
-                    )}
+                    ) : null}
                   </article>
                 ))}
               </div>

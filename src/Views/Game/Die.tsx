@@ -1,5 +1,5 @@
 import { ColorHelper } from 'csx'
-import { FC } from 'react'
+import React, { FC } from 'react'
 
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'

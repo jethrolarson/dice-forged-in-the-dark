@@ -115,3 +115,11 @@ a:visited {
   background: linear-gradient(180deg, #2c9a92, #10626d);
   box-shadow: inset 0px 1px 1px hsla(0, 0%, 100%, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.25);
 }
+
+/* canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+} */

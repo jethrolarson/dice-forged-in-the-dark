@@ -18,6 +18,10 @@ module.exports = {
     '@typescript-eslint/unbound-method': 1,
     '@typescript-eslint/no-non-null-assertion': 1,
     '@typescript-eslint/no-unused-vars': 1,
+    '@typescript-eslint/member-delimiter-style': [
+      1,
+      { multiline: { delimiter: 'none' }, singleline: { delimiter: 'semi' } },
+    ],
     '@typescript-eslint/explicit-function-return-type': [
       1,
       { allowTypedFunctionExpressions: true, allowHigherOrderFunctions: true },

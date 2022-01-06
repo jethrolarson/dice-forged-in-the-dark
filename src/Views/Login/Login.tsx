@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import React, { FC } from 'react'
 import { getAuth, GoogleAuthProvider, signInWithPopup } from '@firebase/auth'
 
 export const Login: FC = () => {
