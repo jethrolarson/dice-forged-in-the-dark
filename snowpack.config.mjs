@@ -22,7 +22,7 @@ export default {
   testOptions: {
     files: ['src/**/*.test.*'],
   },
-  knownEntryPoints: [
+  knownEntrypoints: [
     'fp-ts/es6/Either',
     'uc.micro/properties/Any/regex',
     'uc.micro/categories/Cc/regex',

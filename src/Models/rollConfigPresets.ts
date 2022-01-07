@@ -42,28 +42,38 @@ export const bladesInTheDarkConfig: RollConfig = {
     {
       name: 'Action',
       valuationType: 'Action',
-      optionGroups: [
+      sections: [
         {
           name: 'Action',
-          rollOptions: [
-            'None',
-            'Attune',
-            'Command',
-            'Consort',
-            'Finesse',
-            'Hunt',
-            'Prowl',
-            'Skirmish',
-            'Study',
-            'Survey',
-            'Sway',
-            'Tinker',
-            'Wreck',
+          optionGroups: [
+            {
+              name: 'Action',
+              rollOptions: [
+                'None',
+                'Attune',
+                'Command',
+                'Consort',
+                'Finesse',
+                'Hunt',
+                'Prowl',
+                'Skirmish',
+                'Study',
+                'Survey',
+                'Sway',
+                'Tinker',
+                'Wreck',
+              ],
+              fixedOptions: true,
+            },
           ],
-          fixedOptions: true,
         },
-        { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate'] },
-        { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme'] },
+        {
+          name: 'Stakes',
+          optionGroups: [
+            { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate'] },
+            { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme'] },
+          ],
+        },
       ],
     },
     {
@@ -91,27 +101,37 @@ export const nocturneRollConfig: RollConfig = {
     {
       name: 'Action',
       valuationType: 'Action',
-      optionGroups: [
+      sections: [
         {
           name: 'Action',
-          rollOptions: [
-            'Fight',
-            'Hunt',
-            'Pilot',
-            'Scramble',
-            'Command',
-            'Consort',
-            'Sneak',
-            'Sway',
-            'Analyze',
-            'Operate',
-            'Scan',
-            'Hack',
+          optionGroups: [
+            {
+              name: 'Action',
+              rollOptions: [
+                'Fight',
+                'Hunt',
+                'Pilot',
+                'Scramble',
+                'Command',
+                'Consort',
+                'Sneak',
+                'Sway',
+                'Analyze',
+                'Operate',
+                'Scan',
+                'Hack',
+              ],
+              fixedOptions: true,
+            },
           ],
-          fixedOptions: true,
         },
-        { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate'] },
-        { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme'] },
+        {
+          name: 'Stakes',
+          optionGroups: [
+            { name: 'Position', rollOptions: ['Controlled', 'Risky', 'Desperate'] },
+            { name: 'Effect', rollOptions: ['None', 'Limited', 'Standard', 'Great', 'Extreme'] },
+          ],
+        },
       ],
     },
     {
