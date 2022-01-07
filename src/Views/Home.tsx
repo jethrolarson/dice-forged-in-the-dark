@@ -47,8 +47,9 @@ export const UserHome: FC<{ user: FSUser }> = ({ user }) => {
     creating: false,
   })
   const firestore = getFirestore()
+  const userDoc = useDoc(`users/${user.uid}`)
   useEffect(() => {
-    getDoc(useDoc(`users/${user.uid}`))
+    getDoc(userDoc)
       .then((ss) => {
         const userData = ss.data() as User | undefined
         if (userData?.games.length) {
