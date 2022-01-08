@@ -126,7 +126,13 @@ const OptGroup: FC<{ optionGroup: RollOptionGroup; index: number; state: FunStat
   state,
 }) =>
   og.fixedOptions && og.rollOptions ? (
-    <ButtonSelect state={state} options={og.rollOptions} className={style({ flexGrow: 1 })} />
+    <ButtonSelect
+      state={state}
+      options={og.rollOptions}
+      columns={og.columns ?? 2}
+      label={og.showLabel ? og.name : ''}
+      className={style({ flexGrow: 1 })}
+    />
   ) : (
     <label key={`optGroup${og.name}${index}`}>
       <TextInput
@@ -155,14 +161,14 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
 
   const s = useFunState<RollFormState>({
     note: '',
-    rollState: ['', '', '', '', ''],
+    rollState: ['', '', '', '', ''], // TODO don't flatten this. Use a transform of rollConfig instead
     rollType: '',
     username: '',
     valuationType: 'Action',
     dicePool: [],
   })
   const { note, rollType, username, rollState, valuationType, dicePool } = s.get()
-  const reset = (): void => merge(s)({ note: '', rollType: '', rollState: ['', '', '', ''], dicePool: [] })
+  const reset = (): void => merge(s)({ note: '', rollType: '', rollState: ['', '', '', '', ''], dicePool: [] })
 
   const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
   const roll = (): void => {
@@ -174,10 +180,15 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
       dieType,
       value: rollDie(),
     })) as DieResult[]
+    const lines = currentConfig?.sections
+      ? currentConfig.sections
+          .flatMap((s) => s.optionGroups)
+          .map((og, i) => (og.showLabel ? og.name + ': ' : '') + rollState[i])
+      : rollState
     const roll: Omit<RollResult, 'id'> = {
       note,
       rollType,
-      lines: rollState,
+      lines,
       username,
       isZero,
       diceRolled,
@@ -200,11 +211,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
   const removeDie = (index: number): void => s.prop('dicePool').mod(removeAt(index))
   let idx = -1
   return (
-    <form
-      className={styles.form}
-      onSubmit={(e): void => {
-        e.preventDefault()
-      }}>
+    <form className={styles.form} onSubmit={(e): void => e.preventDefault()}>
       {currentConfig ? (
         <div className={styles.formWrap}>
           <DicePool dicePool={dicePool} roll={roll} removeDie={removeDie} />
@@ -287,7 +294,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
   )
 }
 
-const dieColors = [DieColor.white, DieColor.yellow, DieColor.red, DieColor.green]
+export const dieColors = [DieColor.white, DieColor.yellow, DieColor.red, DieColor.green]
 
 const DicePool: FC<{ dicePool: Rollable[]; roll: () => unknown; removeDie: (index: number) => unknown }> = ({
   dicePool,

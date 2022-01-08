@@ -1,12 +1,16 @@
 import { important } from 'csx'
 import { FunState } from 'fun-state'
 import React, { FC } from 'react'
-import { classes, stylesheet } from 'typestyle'
+import { classes, style, stylesheet } from 'typestyle'
 
 const styles = stylesheet({
-  ButtonSelect: {
+  buttons: {
     columnCount: 2,
     columnGap: 5,
+  },
+  label: {
+    margin: '0 0 4px',
+    fontSize: 14,
   },
   threeCol: {},
   option: {
@@ -22,23 +26,28 @@ const styles = stylesheet({
   },
 })
 
-export const ButtonSelect: FC<{ state: FunState<string>; options: string[]; className?: string }> = ({
-  state,
-  options,
-  className,
-}) => {
+export const ButtonSelect: FC<{
+  state: FunState<string>
+  options: string[]
+  className?: string
+  columns: number
+  label: string
+}> = ({ state, options, className, columns, label }) => {
   const selected = state.get()
   return (
-    <div className={classes(styles.ButtonSelect, className)}>
-      {options.map((opt) => (
-        <button
-          onClick={(): void => state.set(opt)}
-          type="button"
-          value={opt}
-          className={classes(styles.option, opt === selected && styles.selected)}>
-          {opt}
-        </button>
-      ))}
+    <div className={className}>
+      {label && <label className={styles.label}>{label}</label>}
+      <div className={classes(styles.buttons, style({ columnCount: columns }))}>
+        {options.map((opt) => (
+          <button
+            onClick={(): void => state.mod((st) => (st == opt ? '' : opt))}
+            type="button"
+            value={opt}
+            className={classes(styles.option, opt === selected && styles.selected)}>
+            {opt}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

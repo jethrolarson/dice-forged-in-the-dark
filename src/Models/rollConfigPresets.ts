@@ -232,7 +232,20 @@ const xThreatConfig: RollConfig = {
         {
           optionGroups: [
             {
+              name: 'Highest Tier',
+              columns: 3,
+              showLabel: true,
+              rollOptions: ['I', 'II', 'III'],
+              fixedOptions: true,
+            },
+          ],
+          name: 'Tier',
+        },
+        {
+          optionGroups: [
+            {
               name: 'Approach',
+              showLabel: true,
               rollOptions: ['Charm', 'Deceit', 'Force', 'Precision', 'Ingenuity', 'Grace'],
               fixedOptions: true,
             },
