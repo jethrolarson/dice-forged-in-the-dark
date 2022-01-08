@@ -1,5 +1,6 @@
 import React, { FC } from 'react'
 import useFunState, { FunState, merge } from 'fun-state'
+import * as AX from 'accessor-ts'
 import { style, stylesheet } from 'typestyle'
 import { trim } from 'ramda'
 import { color, important } from 'csx'
@@ -109,7 +110,7 @@ const DataList: FC<{ id: string; values: string }> = ({ id, values }) => (
   </datalist>
 )
 
-type Rollable = [DieType, DieColor]
+type Rollable = { type: DieType; color: DieColor }
 
 interface RollFormState {
   rollType: string
@@ -149,8 +150,8 @@ const OptGroup: FC<{ optionGroup: RollOptionGroup; index: number; state: FunStat
   )
 
 const zeroDicePool: Rollable[] = [
-  [DieType.d6, DieColor.red],
-  [DieType.d6, DieColor.red],
+  { type: DieType.d6, color: DieColor.red },
+  { type: DieType.d6, color: DieColor.red },
 ]
 export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentReference; uid: string }> = ({
   state,
@@ -174,7 +175,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
   const roll = (): void => {
     const n = dicePool.length
     const isZero = n === 0
-    const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(([dieType, dieColor]) => ({
+    const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       dieColor: dieColor as any,
       dieType,
@@ -204,17 +205,18 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
     reset()
   }
 
-  const addDie = (dieType: DieType, dieColor: DieColor): void => {
-    s.prop('dicePool').mod(append([dieType, dieColor]))
+  const addDie = (type: DieType, color: DieColor): void => {
+    s.prop('dicePool').mod(append({ type, color }))
     void playAddSound()
   }
   const removeDie = (index: number): void => s.prop('dicePool').mod(removeAt(index))
+  const changeColor = (index: number): void => s.prop('dicePool').focus(AX.index(index)).prop('color').mod(nextColor)
   let idx = -1
   return (
     <form className={styles.form} onSubmit={(e): void => e.preventDefault()}>
       {currentConfig ? (
         <div className={styles.formWrap}>
-          <DicePool dicePool={dicePool} roll={roll} removeDie={removeDie} />
+          <DicePool dicePool={dicePool} roll={roll} removeDie={removeDie} changeColor={changeColor} />
           <div className={styles.formGrid}>
             <h3 className={styles.heading}>
               <a
@@ -294,19 +296,27 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
   )
 }
 
-export const dieColors = [DieColor.white, DieColor.yellow, DieColor.red, DieColor.green]
+export const dieColors = [DieColor.white, DieColor.yellow, DieColor.red, DieColor.green, DieColor.purple]
 
-const DicePool: FC<{ dicePool: Rollable[]; roll: () => unknown; removeDie: (index: number) => unknown }> = ({
-  dicePool,
-  roll,
-  removeDie,
-}) => {
+const DicePool: FC<{
+  dicePool: Rollable[]
+  roll: () => unknown
+  removeDie: (index: number) => unknown
+  changeColor: (index: number) => void
+}> = ({ dicePool, roll, removeDie, changeColor }) => {
   return (
     <div className={styles.DicePool}>
       <div className={styles.diceBox}>
-        {dicePool.map(([d, c], i) =>
+        {dicePool.map(({ type: d, color: c }, i) =>
           d === DieType.d6 ? (
-            <button key={String(i) + d + c} onClick={(): unknown => removeDie(i)} className={styles.dieButton}>
+            <button
+              key={String(i) + d + c}
+              onClick={(): unknown => removeDie(i)}
+              className={styles.dieButton}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                changeColor(i)
+              }}>
               <Die dieColor={color(c)} dotColor={color('#000')} value={6} size={38} />
             </button>
           ) : (

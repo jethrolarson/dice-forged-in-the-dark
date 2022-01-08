@@ -36,6 +36,7 @@ export enum DieColor {
   yellow = 'hsl(31, 100%, 64%)',
   red = 'hsl(0, 60%, 50%)',
   green = 'hsl(149, 59%, 55%)',
+  purple = 'hsl(230, 65%, 64%)',
 }
 
 export interface DieResult {
