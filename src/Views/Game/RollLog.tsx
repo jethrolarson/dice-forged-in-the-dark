@@ -208,7 +208,7 @@ export const RollLogItem: FC<{ result: RollResult; isLast: boolean }> = ({ resul
       </div>
       <div className={styles.metaWrap}>
         <div className={styles.meta}>
-          <span className={styles.name}>{username} rolls:</span>
+          {username && <span className={styles.name}>{username} rolls:</span>}
           <div className={title.length > 12 ? styles.smallRollType : styles.rollType}>{title}</div>
           {moreLines.map((line, i) => (
             <div className={styles.line} key={`line${i}`}>

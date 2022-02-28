@@ -1,4 +1,4 @@
-import { FunState } from 'fun-state'
+import { FunState } from '@fun-land/fun-state'
 import React, { FC } from 'react'
 import { pipeVal } from '../common'
 

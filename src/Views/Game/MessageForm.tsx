@@ -1,9 +1,9 @@
 import React, { FC } from 'react'
-import useFunState from 'fun-state'
 import { style } from 'typestyle'
 import { DocumentReference, addDoc, collection } from '@firebase/firestore'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
+import useFunState from '@fun-land/use-fun-state'
 
 interface MessageFormState {
   note: string

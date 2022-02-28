@@ -1,3 +1,7 @@
+# License
+
+None so far but if you want to use this code talk to me.
+
 # Deployment
 
 1. `yarn deploy`

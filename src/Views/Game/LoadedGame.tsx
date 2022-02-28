@@ -1,4 +1,3 @@
-import useFunState, { merge } from 'fun-state'
 import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import { stylesheet } from 'typestyle'
 import { color, important } from 'csx'
@@ -9,11 +8,13 @@ import { onSnapshot, DocumentReference, collection, query, orderBy } from '@fire
 import { DieColor, DieResult, DieType, LoadedGameState, LogItem } from '../../Models/GameModel'
 import { borderColor } from '../../colors'
 import { RollLogItem } from './RollLog'
-import { RollForm } from './RollForm'
+import { RollForm } from './RollForm/RollForm'
 import { MessageForm } from './MessageForm'
 import { RollMessage } from './RollMessage'
 import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
+import useFunState from '@fun-land/use-fun-state'
+import { merge } from 'ramda'
 // import { Canvas } from './Canvas'
 
 const styles = stylesheet({
@@ -134,7 +135,7 @@ const parseRoll = (d: LogItem & { results?: number[]; effect?: string[]; positio
         lines: d.lines ?? [d.position, d.effect],
         diceRolled: d.diceRolled
           ? d.diceRolled.map(parseDieResult)
-          : d.results?.map((value) => ({ value, dieType: DieType.d6, dieColor: color(DieColor.white) })) ?? [],
+          : d.results?.map((value) => ({ value, dieType: 'd6', dieColor: color(DieColor.white) })) ?? [],
       }
   }
 }

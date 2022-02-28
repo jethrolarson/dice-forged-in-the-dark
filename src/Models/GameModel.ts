@@ -1,7 +1,6 @@
 import { ColorHelper } from 'csx'
-import { number } from 'fp-ts'
 import { RollConfig, ValuationType } from './RollConfig'
-import { bladesInTheDarkConfig } from './rollConfigPresets'
+import { presets } from './rollConfigPresets'
 
 export interface GameView {
   kind: 'GameView'
@@ -21,23 +20,15 @@ interface LogItemCommon {
   uid: string
 }
 
-export enum DieType {
-  d2 = 'd2',
-  d4 = 'd4',
-  d6 = 'd6',
-  d8 = 'd8',
-  d10 = 'd10',
-  d12 = 'd12',
-  d20 = 'd20',
-}
+export type DieType = 'd2' | 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
 
-export enum DieColor {
-  white = '#92d2d0',
-  yellow = 'hsl(31, 100%, 64%)',
-  red = 'hsl(0, 60%, 50%)',
-  green = 'hsl(149, 59%, 55%)',
-  purple = 'hsl(230, 65%, 64%)',
-}
+export const DieColor = {
+  white: '#92d2d0',
+  yellow: 'hsl(31, 100%, 64%)',
+  red: 'hsl(0, 60%, 50%)',
+  green: 'hsl(149, 59%, 55%)',
+  purple: 'hsl(230, 65%, 64%)',
+} as const
 
 export interface DieResult {
   dieColor: ColorHelper
@@ -105,7 +96,7 @@ export interface PersistedState {
 export const initialPersistedState = (creatorId: string): PersistedState => ({
   rolls: [],
   title: '',
-  rollConfig: bladesInTheDarkConfig,
+  rollConfig: presets[0],
   owners: [creatorId],
   players: [],
 })

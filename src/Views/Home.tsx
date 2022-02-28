@@ -3,14 +3,15 @@ import type { User as FSUser } from '@firebase/auth'
 import { PersistedState } from '../Models/GameModel'
 import { getDoc, collection, doc, addDoc, getFirestore } from '@firebase/firestore'
 import { style } from 'typestyle'
-import useFunState, { FunState } from 'fun-state'
 import { TextInput } from '../components/TextInput'
 import { Login } from './Login/Login'
 import { useUser } from '../hooks/useAuthState'
-import { bladesInTheDarkConfig } from '../Models/rollConfigPresets'
+import { presets } from '../Models/rollConfigPresets'
 import { useDoc } from '../hooks/useDoc'
 import { User } from '../Models/User'
 import { getAuth } from '@firebase/auth'
+import { FunState } from '@fun-land/fun-state'
+import useFunState from '@fun-land/use-fun-state'
 
 type GameState = PersistedState & { id: string }
 
@@ -25,7 +26,7 @@ const createGame = (uid: string, title: string, state: FunState<HomeState>) => (
   const gameState: PersistedState = {
     owners: [uid],
     players: [],
-    rollConfig: bladesInTheDarkConfig,
+    rollConfig: presets[0],
     rolls: [],
     title,
   }

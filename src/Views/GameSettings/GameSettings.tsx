@@ -1,7 +1,6 @@
 import React, { FC, useEffect, useState } from 'react'
 import { DocumentReference, getDoc, deleteDoc, setDoc } from '@firebase/firestore'
 import { stylesheet } from 'typestyle'
-import useFunState from 'fun-state'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import * as O from 'fp-ts/lib/Option'
@@ -18,9 +17,10 @@ import {
 import { parseRollConfig, RollConfig } from '../../Models/RollConfig'
 import { pipe } from 'fp-ts/lib/function'
 import { PathReporter } from 'io-ts/PathReporter'
-import { bladesInTheDarkConfig, presets } from '../../Models/rollConfigPresets'
+import { presets } from '../../Models/rollConfigPresets'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
+import useFunState from '@fun-land/use-fun-state'
 
 const styles = stylesheet({
   GameSettings: {
@@ -127,8 +127,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
               <button
                 key={preset.system}
                 onClick={(): void => {
-                  confirm(`Replace your config with ${preset.system ?? 'default'}? This can not be undone.`) &&
-                    state.prop('rollConfigText').set(JSON.stringify(preset, null, 2))
+                  state.prop('rollConfigText').set(JSON.stringify(preset, null, 2))
                 }}>
                 {preset.system ?? 'Other'}
               </button>
@@ -149,7 +148,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
 }
 
 const setRollConfig = (gs: LoadedGameState): GameSettingsState => {
-  const rollConfigText = JSON.stringify(gs.rollConfig || bladesInTheDarkConfig, null, 2)
+  const rollConfigText = JSON.stringify(gs.rollConfig || presets[0], null, 2)
   return { ...gs, rollConfigText, rollConfigError: '' }
 }
 

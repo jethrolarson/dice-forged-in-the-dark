@@ -1,5 +1,5 @@
+import { FunState } from '@fun-land/fun-state'
 import { important } from 'csx'
-import { FunState } from 'fun-state'
 import React, { FC } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
 
@@ -40,6 +40,7 @@ export const ButtonSelect: FC<{
       <div className={classes(styles.buttons, style({ columnCount: columns }))}>
         {options.map((opt) => (
           <button
+            key={opt}
             onClick={(): void => state.mod((st) => (st == opt ? '' : opt))}
             type="button"
             value={opt}
