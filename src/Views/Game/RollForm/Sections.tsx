@@ -7,7 +7,7 @@ import React, { FC, useEffect, useState } from 'react'
 import { stylesheet } from 'typestyle'
 import { borderColor } from '../../../colors'
 import { DieColor, DieType } from '../../../Models/GameModel'
-import { BuilderSection, RollOptionGroup, RollOptionSection, SectionT } from '../../../Models/RollConfig'
+import { BuilderSection, RollOptionSection, SectionT } from '../../../Models/RollConfig'
 import { Modifier } from './Modifier'
 import { OptGroup } from './OptGroup'
 
@@ -23,6 +23,29 @@ const styles = stylesheet({
     backgroundColor: hsla(0, 0, 0, 0.3).toString(),
     padding: 5,
   },
+  heading: {
+    fontWeight: 'normal',
+    display: 'block',
+    border: 0,
+    textAlign: 'left',
+    $nest: {
+      '&::before': {
+        float: 'right',
+        content: '"ᐃ"',
+        marginRight: -5,
+      },
+    },
+  },
+  expander: {
+    borderWidth: 1,
+    textAlign: 'left',
+    $nest: {
+      '&::before': {
+        float: 'right',
+        content: '"ᐁ"',
+      },
+    },
+  },
 })
 
 const Section: FC<{ state: FunState<string[]>; section: SectionT }> = ({ section, state }) => (
@@ -36,41 +59,46 @@ const Section: FC<{ state: FunState<string[]>; section: SectionT }> = ({ section
 const Builder: FC<{
   state: FunState<string>
   section: BuilderSection
-  addDie: (type: DieType, color: keyof typeof DieColor) => void
-}> = ({ section, state, addDie }) => {
+  setDice: (id: string, count: number, type: DieType, color: keyof typeof DieColor) => void
+}> = ({ section, state, setDice }) => {
   const [open, setOpen] = useState(false)
   const st = useFunState(section.optionGroups.map(constant('')))
   const values = st.get()
   useEffect(() => {
+    const dieColor = section.dieColor ?? 'white'
     if (values.every(Boolean)) {
       setOpen(false)
       state.set(values.join(section.separator ?? ' '))
-      const dieColor = section.dieColor ?? 'white'
-      section.addDieWhenSelected && addDie(section.addDieWhenSelected as DieType, dieColor)
+      section.addDieWhenSelected && setDice(section.name, 1, section.addDieWhenSelected as DieType, dieColor)
+    } else {
+      section.addDieWhenSelected && setDice(section.name, 0, section.addDieWhenSelected as DieType, dieColor)
     }
   }, values)
   return open ? (
     <div key={section.name} className={styles.Builder}>
-      <h4>{section.name}</h4>
+      <button className={styles.heading} onClick={() => setOpen(false)}>
+        {section.name}
+      </button>
       {section.optionGroups.map((og, i) => (
         <OptGroup key={og.name} optionGroup={og} state={st.focus(index(i))} />
       ))}
     </div>
   ) : (
-    <button onClick={() => setOpen(true)}>{state.get() || section.name}</button>
+    <button className={styles.expander} onClick={() => setOpen(true)}>
+      {state.get() || section.name}
+    </button>
   )
 }
 
 export const Sections: FC<{
   state: FunState<string[]>
   sections: RollOptionSection[]
-  addDie: (type: DieType, color: keyof typeof DieColor) => void
   setDice: (id: string, count: number, type: DieType, color: keyof typeof DieColor) => void
-}> = ({ sections, state, addDie, setDice }) => (
+}> = ({ sections, state, setDice }) => (
   <>
     {sections.map((section) =>
       section.sectionType === 'builder' ? (
-        <Builder key={section.name} state={state.focus(index(section.line))} section={section} addDie={addDie} />
+        <Builder key={section.name} state={state.focus(index(section.line))} section={section} setDice={setDice} />
       ) : section.sectionType === 'modifier' ? (
         <Modifier key={section.name} section={section} setDice={setDice} />
       ) : (

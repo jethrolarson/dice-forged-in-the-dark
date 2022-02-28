@@ -176,12 +176,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
               {currentConfig.name}
             </h3>
             {currentConfig.sections && (
-              <Sections
-                state={s.prop('rollState')}
-                sections={currentConfig.sections}
-                addDie={addDie}
-                setDice={setDice}
-              />
+              <Sections state={s.prop('rollState')} sections={currentConfig.sections} setDice={setDice} />
             )}
             {!currentConfig.excludeCharacter && (
               <label className={styles.character}>
