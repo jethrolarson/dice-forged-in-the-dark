@@ -108,7 +108,8 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
     dicePool: [],
   })
   const { note, rollType, username, rollState, valuationType, dicePool } = s.get()
-  const reset = (): void => merge(s)({ note: '', rollType: '', rollState: ['', '', '', '', '', ''], dicePool: [] })
+  const reset = (): void =>
+    merge(s)({ note: '', rollType: '', rollState: ['', '', '', '', '', '', '', '', '', ''], dicePool: [] })
 
   const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
   const roll = (): void => {
