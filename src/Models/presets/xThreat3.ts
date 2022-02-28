@@ -1,5 +1,5 @@
 import { RollConfig } from '../RollConfig'
-import { other } from './common'
+import { fortune, other } from './common'
 
 const approaches = ['Charm', 'Deceit', 'Force', 'Focus', 'Ingenuity']
 const standardPowers = ['Speed', 'Strength', 'Cycles', 'Stealth', 'Data', 'Fortitude']
@@ -100,6 +100,7 @@ const config: RollConfig = {
       ],
       valuationType: 'Action',
     },
+    fortune,
     other,
   ],
 }

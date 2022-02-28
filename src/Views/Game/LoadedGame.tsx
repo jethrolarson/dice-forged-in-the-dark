@@ -27,6 +27,7 @@ const styles = stylesheet({
   },
   right: {
     display: 'flex',
+    flexGrow: 1,
     flexDirection: 'column',
     height: 'calc(100vh - 57px)', // HACK use better css
     maxWidth: 400,
