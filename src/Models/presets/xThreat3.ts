@@ -89,10 +89,16 @@ const config: RollConfig = {
           optionGroups: [
             {
               rollOptions: ['Controlled', 'Risky', 'Desperate'],
+              fixedOptions: true,
+              showLabel: true,
+              columns: 1,
               name: 'Position',
             },
             {
               name: 'Effect',
+              showLabel: true,
+              fixedOptions: true,
+              columns: 1,
               rollOptions: ['Limited', 'Standard', 'Great'],
             },
           ],

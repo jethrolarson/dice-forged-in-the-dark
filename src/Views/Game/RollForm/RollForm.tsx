@@ -121,11 +121,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
       dieType,
       value: rollDie(),
     })) as DieResult[]
-    const lines = currentConfig?.sections
-      ? currentConfig.sections
-          .flatMap((s) => (s.sectionType !== 'modifier' ? s.optionGroups : []))
-          .map((og, i) => (og.showLabel ? og.name + ': ' : '') + rollState[i])
-      : rollState
+    const lines = rollState
     const roll: Omit<RollResult, 'id'> = {
       note,
       rollType,
