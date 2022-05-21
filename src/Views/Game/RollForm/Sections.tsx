@@ -6,7 +6,7 @@ import { constant } from 'fp-ts/lib/function'
 import React, { FC, useEffect, useState } from 'react'
 import { stylesheet } from 'typestyle'
 import { borderColor } from '../../../colors'
-import { DieColor, DieType } from '../../../Models/GameModel'
+import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderSection, RollOptionSection, SectionT } from '../../../Models/RollConfig'
 import { Modifier } from './Modifier'
 import { OptGroup } from './OptGroup'
@@ -61,9 +61,9 @@ const Builder: FC<{
   section: BuilderSection
   setDice: (id: string, count: number, type: DieType, color: keyof typeof DieColor) => void
 }> = ({ section, state, setDice }) => {
-  const [open, setOpen] = useState(false)
-  const st = useFunState(section.optionGroups.map(constant('')))
-  const values = st.get()
+  const st = useFunState({ values: section.optionGroups.map(constant('')), isOpen: false })
+  const { values, isOpen } = st.get()
+  const setOpen = st.prop('isOpen').set
   useEffect(() => {
     const dieColor = section.dieColor ?? 'white'
     if (values.every(Boolean)) {
@@ -74,13 +74,13 @@ const Builder: FC<{
       section.addDieWhenSelected && setDice(section.name, 0, section.addDieWhenSelected as DieType, dieColor)
     }
   }, values)
-  return open ? (
+  return isOpen ? (
     <div key={section.name} className={styles.Builder}>
       <button className={styles.heading} onClick={() => setOpen(false)}>
         {section.name}
       </button>
       {section.optionGroups.map((og, i) => (
-        <OptGroup key={og.name} optionGroup={og} state={st.focus(index(i))} />
+        <OptGroup key={og.name} optionGroup={og} state={st.prop('values').focus(index(i))} />
       ))}
     </div>
   ) : (

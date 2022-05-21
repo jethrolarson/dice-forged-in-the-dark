@@ -1,9 +1,10 @@
 import { constant } from 'fp-ts/lib/function'
 import { equals, max, min, sum, prop, map } from 'ramda'
-import { DieResult, RollResult } from '../../Models/GameModel'
+import { RollResult } from '../../Models/GameModel'
+import { DieResult } from '../../Models/Die'
 import { ValuationType } from '../../Models/RollConfig'
 
-export type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss'
+export type RollValuation = 'Success' | 'MixedSuccess' | 'Crit' | 'Miss' | 'CritFail'
 
 export const valuateActionRoll = ({ diceRolled, isZero }: RollResult): RollValuation => {
   const results = getResults(diceRolled)
@@ -19,6 +20,10 @@ export const valuateActionRoll = ({ diceRolled, isZero }: RollResult): RollValua
   if (mixed >= winThreshold) {
     return 'MixedSuccess'
   }
+
+  const naughts = results.filter(equals(1)).length
+
+  if (naughts > (isZero ? 1 : 2)) return 'CritFail'
   return 'Miss'
 }
 
@@ -61,6 +66,8 @@ export const valuationMap: ValuationMap = {
           return 'Mixed'
         case 'Miss':
           return 'Miss'
+        case 'CritFail':
+          return 'Crit Fail'
       }
     },
   },

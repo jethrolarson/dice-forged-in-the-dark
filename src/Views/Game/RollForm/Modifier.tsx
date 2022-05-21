@@ -3,7 +3,7 @@ import { tap } from 'ramda'
 import React, { FC, useEffect } from 'react'
 import { stylesheet } from 'typestyle'
 import { NumberSpinner } from '../../../components/NumberSpinner'
-import { DieType, DieColor } from '../../../Models/GameModel'
+import { DieType, DieColor } from '../../../Models/Die'
 import { ModifierT } from '../../../Models/RollConfig'
 
 const styles = stylesheet({

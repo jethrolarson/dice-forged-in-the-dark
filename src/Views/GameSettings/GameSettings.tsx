@@ -21,6 +21,7 @@ import { presets } from '../../Models/rollConfigPresets'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
 import useFunState from '@fun-land/use-fun-state'
+import { validateTitle } from './validate'
 
 const styles = stylesheet({
   GameSettings: {
@@ -42,6 +43,11 @@ const styles = stylesheet({
         fontWeight: 'normal',
       },
     },
+  },
+  loadPreset: {
+    display: 'inline-block',
+    width: 'auto',
+    marginBottom: 2,
   },
   rollConfigLabel: {
     display: 'flex',
@@ -84,14 +90,15 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
   gdoc,
 }) => {
   const state = useFunState<GameSettingsState>(initialState)
-  const { rollConfigText, rollConfigError, title } = state.get()
+  const { rollConfigText, rollConfigError, title, miroId } = state.get()
 
   const saveSettings = (): void =>
     pipe(
       parseRollConfig(rollConfigText),
+      validateTitle(title),
       E.map((rollConfig: RollConfig) => {
         state.prop('rollConfigError').set('')
-        setDoc(gdoc, { rollConfig, title }, { merge: true })
+        setDoc(gdoc, { rollConfig, title, miroId }, { merge: true })
           .then(() => {
             document.location.hash = `#/game/${gameId}`
           })
@@ -115,30 +122,47 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
       </div>
       <label>
         Game Name <br />
-        <TextInput passThroughProps={{ 'aria-label': 'Game Name' }} state={state.prop('title')} />
+        <TextInput passThroughProps={{ 'aria-label': 'Game Name', required: true }} state={state.prop('title')} />
+      </label>
+      <label>
+        Miro Id (optional) <br />
+        <TextInput passThroughProps={{ 'aria-label': 'Miro Id' }} state={state.prop('miroId')} />
       </label>
       <label>
         {' '}
         <div className={styles.rollConfigLabel}>
-          Roll Config
-          <span>
-            Load Preset:
-            {presets.map((preset) => (
-              <button
-                key={preset.system}
-                onClick={(): void => {
-                  state.prop('rollConfigText').set(JSON.stringify(preset, null, 2))
-                }}>
-                {preset.system ?? 'Other'}
-              </button>
-            ))}
-          </span>
+          <label htmlFor="rollConfig">Roll Config</label>
+          <label>
+            Load Preset:{' '}
+            <select
+              className={styles.loadPreset}
+              onChange={({ target: { value } }): void => {
+                state.prop('rollConfigText').set(
+                  JSON.stringify(
+                    presets.find((preset) => preset.system === value),
+                    null,
+                    2,
+                  ),
+                )
+              }}>
+              {presets.map((preset) => (
+                <option key={preset.system} value={preset.system}>
+                  {preset.system ?? 'Other'}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-        <Textarea passThroughProps={{ className: styles.rollConfig }} state={state.prop('rollConfigText')} />
+        <Textarea
+          passThroughProps={{ className: styles.rollConfig, id: 'rollConfig' }}
+          state={state.prop('rollConfigText')}
+        />
         {rollConfigError && <div className={styles.error}>{rollConfigError}</div>}
       </label>
       <div className={styles.footer}>
-        <button onClick={gdoc ? saveSettings : noop}>Save Settings</button>
+        <button onClick={gdoc ? saveSettings : noop} disabled={!title || !rollConfigText}>
+          Save Settings
+        </button>
         <button className="dangerous" onClick={gdoc ? deleteGame(gdoc) : noop}>
           Delete Game
         </button>

@@ -1,4 +1,5 @@
 import { ColorHelper } from 'csx'
+import { DieResult } from './Die'
 import { RollConfig, ValuationType } from './RollConfig'
 import { presets } from './rollConfigPresets'
 
@@ -18,22 +19,6 @@ interface LogItemCommon {
   date: number
   id: string
   uid: string
-}
-
-export type DieType = 'd2' | 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
-
-export const DieColor = {
-  white: '#92d2d0',
-  yellow: 'hsl(31, 100%, 64%)',
-  red: 'hsl(0, 60%, 50%)',
-  green: 'hsl(149, 59%, 55%)',
-  purple: 'hsl(230, 65%, 64%)',
-} as const
-
-export interface DieResult {
-  dieColor: ColorHelper
-  dieType: DieType
-  value: number
 }
 
 export interface RollResult extends LogItemCommon {
@@ -91,6 +76,7 @@ export interface PersistedState {
   rollConfig: RollConfig
   owners: string[]
   players: string[]
+  miroId: string
 }
 
 export const initialPersistedState = (creatorId: string): PersistedState => ({
@@ -99,6 +85,7 @@ export const initialPersistedState = (creatorId: string): PersistedState => ({
   rollConfig: presets[0],
   owners: [creatorId],
   players: [],
+  miroId: '',
 })
 
 export const initialLoadedGameState = (persistedState: PersistedState): LoadedGameState => ({
@@ -106,6 +93,7 @@ export const initialLoadedGameState = (persistedState: PersistedState): LoadedGa
   ...persistedState,
   mode: 'Roll',
   rollsLoaded: false,
+  miroId: persistedState.miroId ?? '',
 })
 
 export const initialGameState: LoadingGameState = {

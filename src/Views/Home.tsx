@@ -28,6 +28,7 @@ const createGame = (uid: string, title: string, state: FunState<HomeState>) => (
     players: [],
     rollConfig: presets[0],
     rolls: [],
+    miroId: '',
     title,
   }
   addDoc(collection(getFirestore(), 'games'), gameState)

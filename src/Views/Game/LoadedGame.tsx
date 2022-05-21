@@ -1,11 +1,11 @@
 import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
 import { stylesheet } from 'typestyle'
-import { color, important } from 'csx'
+import { color, hsla, important } from 'csx'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 import { onSnapshot, DocumentReference, collection, query, orderBy } from '@firebase/firestore'
-import { DieColor, DieResult, DieType, LoadedGameState, LogItem } from '../../Models/GameModel'
+import { LoadedGameState, LogItem } from '../../Models/GameModel'
 import { borderColor } from '../../colors'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm/RollForm'
@@ -14,7 +14,8 @@ import { RollMessage } from './RollMessage'
 import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
 import useFunState from '@fun-land/use-fun-state'
-import { merge } from 'ramda'
+import { mergeRight } from 'ramda'
+import { DieResult, DieColor } from '../../Models/Die'
 // import { Canvas } from './Canvas'
 
 const styles = stylesheet({
@@ -29,7 +30,7 @@ const styles = stylesheet({
     display: 'flex',
     flexGrow: 1,
     flexDirection: 'column',
-    height: 'calc(100vh - 57px)', // HACK use better css
+    height: '100vh',
     maxWidth: 400,
     background: 'radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%))',
     backgroundRepeat: 'no-repeat',
@@ -71,7 +72,6 @@ const styles = stylesheet({
   },
   log: {
     borderBottom: `1px solid ${borderColor}`,
-    background: 'hsla(0, 0, 40%, 0.4)',
     borderWidth: '1px 0',
     flex: 1,
     flexDirection: 'column',
@@ -98,6 +98,11 @@ const styles = stylesheet({
   },
   tabOn: {
     borderColor,
+  },
+  canvas: {
+    width: '100%',
+    height: '100vh',
+    display: 'block',
   },
 })
 
@@ -148,7 +153,7 @@ export const LoadedGame: FC<{
   uid: string
 }> = ({ initialState, gameId, gdoc, uid }) => {
   const state = useFunState<LoadedGameState>(initialState)
-  const { rolls, title, mode, rollsLoaded } = state.get()
+  const { rolls, title, mode, rollsLoaded, miroId } = state.get()
   const setMode = (mode: LoadedGameState['mode']) => (): void => state.prop('mode').set(mode)
   const scrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -157,7 +162,7 @@ export const LoadedGame: FC<{
       window.document.title =
         (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
         ' - Dice Forged in the Dark'
-      data && merge(state)(data)
+      data && mergeRight(state)(data)
     })
     return onSnapshot(query(collection(gdoc, 'rolls'), orderBy('date')), (snapshot) => {
       state.prop('rollsLoaded').set(true)
@@ -180,22 +185,29 @@ export const LoadedGame: FC<{
 
   return (
     <div className={styles.Game}>
-      <div className={styles.heading}>
-        <a href="#/">
-          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-          <Icon icon={chevronLeft} size={28} />
-        </a>
-        <h1 className={styles.title}>{title}</h1>
-        <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
-          {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-          <Icon icon={gears} size={28} />
-        </a>
-      </div>
       <div className={styles.body}>
         <div className={styles.left}>
-          {/*<Canvas items={rolls.filter((item): item is Paint => item.kind === 'Paint')} gdoc={gdoc} />*/}
+          {miroId && (
+            <iframe
+              className={styles.canvas}
+              src={`https://miro.com/app/live-embed/${miroId}/?embedAutoplay=true`}
+              frameBorder="0"
+              scrolling="no"
+              allowFullScreen></iframe>
+          )}
         </div>
         <div className={styles.right}>
+          <div className={styles.heading}>
+            <a href="#/">
+              {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+              <Icon icon={chevronLeft} size={28} />
+            </a>
+            <h1 className={styles.title}>{title}</h1>
+            <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
+              {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+              <Icon icon={gears} size={28} />
+            </a>
+          </div>
           <div ref={scrollRef} className={styles.log}>
             {!rollsLoaded ? (
               <p>Loading...</p>
@@ -211,19 +223,19 @@ export const LoadedGame: FC<{
                   </article>
                 ))}
               </div>
-            ) : (
-              <p>Make your first roll!</p>
-            )}
+            ) : null}
           </div>
-          <nav className={styles.tabs}>
-            <button className={mode === 'Roll' ? styles.tabOn : undefined} onClick={setMode('Roll')}>
-              Roll
-            </button>
-            <button className={mode === 'Message' ? styles.tabOn : undefined} onClick={setMode('Message')}>
-              Message
-            </button>
-          </nav>
-          {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} uid={uid} /> : <MessageForm gdoc={gdoc} />}
+          <div>
+            <nav className={styles.tabs}>
+              <button className={mode === 'Roll' ? styles.tabOn : undefined} onClick={setMode('Roll')}>
+                Roll
+              </button>
+              <button className={mode === 'Message' ? styles.tabOn : undefined} onClick={setMode('Message')}>
+                Message
+              </button>
+            </nav>
+            {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} uid={uid} /> : <MessageForm gdoc={gdoc} />}
+          </div>
         </div>
       </div>
     </div>

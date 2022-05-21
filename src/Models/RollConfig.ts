@@ -1,7 +1,6 @@
 import { flow } from 'fp-ts/lib/function'
 import * as E from 'fp-ts/lib/Either'
 import * as T from 'io-ts'
-import { DieColor } from './GameModel'
 
 export const BuilderOptionGroupC = T.intersection([
   T.type({

@@ -4,7 +4,7 @@ import { range } from 'ramda'
 import { color, important } from 'csx'
 import { Die } from '../Die'
 import { borderColor } from '../../../colors'
-import { DieColor, DieResult, DieType, LoadedGameState, RollResult } from '../../../Models/GameModel'
+import { LoadedGameState, RollResult } from '../../../Models/GameModel'
 import { DocumentReference, addDoc, collection, getFirestore } from '@firebase/firestore'
 import { pipeVal } from '../../../common'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
@@ -18,6 +18,7 @@ import { Sections } from './Sections'
 import { FunState, merge } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { append, index, removeAt } from '@fun-land/accessor'
+import { DieResult, DieColor, DieType } from '../../../Models/Die'
 
 const styles = stylesheet({
   form: {
@@ -33,7 +34,12 @@ const styles = stylesheet({
     gridGap: 10,
     flexGrow: 2,
   },
-  backButton: { $nest: { svg: { margin: '-2px 2px 0 0' } } },
+  backButton: {
+    border: 0,
+    padding: '4px',
+    marginRight: 4,
+  },
+  backButtonIcon: { $nest: { svg: { margin: '-2px 2px 0 0' } } },
   heading: {},
   rollTypes: {
     display: 'grid',
@@ -115,6 +121,7 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
   const roll = (): void => {
     const n = dicePool.length
     const isZero = n === 0
+    if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       dieColor: DieColor[dieColor] as any,
@@ -160,15 +167,15 @@ export const RollForm: FC<{ state: FunState<LoadedGameState>; gdoc: DocumentRefe
           <DicePool dicePool={dicePool} roll={roll} removeDie={removeDie} changeColor={changeColor} />
           <div className={styles.formGrid}>
             <h3 className={styles.heading}>
-              <a
-                href="#/"
+              <button
+                className={styles.backButton}
                 onClick={(e): void => {
                   e.preventDefault()
                   reset()
                 }}>
                 {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                <Icon icon={chevronLeft} size={18} className={styles.backButton} />
-              </a>
+                <Icon icon={chevronLeft} size={18} className={styles.backButtonIcon} />
+              </button>
               {currentConfig.name}
             </h3>
             {currentConfig.sections && (
@@ -234,24 +241,22 @@ const DicePool: FC<{
   return (
     <div className={styles.DicePool}>
       <div className={styles.diceBox}>
-        {dicePool.map(({ type: d, color: c }, i) =>
-          d === 'd6' ? (
-            <button
-              key={String(i) + d + c}
-              onClick={(): unknown => removeDie(i)}
-              className={styles.dieButton}
-              onContextMenu={(e) => {
-                e.preventDefault()
-                changeColor(i)
-              }}>
+        {dicePool.map(({ type: d, color: c }, i) => (
+          <button
+            key={String(i) + d + c}
+            onClick={(): unknown => removeDie(i)}
+            className={styles.dieButton}
+            onContextMenu={(e) => {
+              e.preventDefault()
+              changeColor(i)
+            }}>
+            {d === 'd6' ? (
               <Die dieColor={color(DieColor[c])} dotColor={color('#000')} value={6} size={38} />
-            </button>
-          ) : (
-            <div style={{ color: c }}>
-              {d} c{c}
-            </div>
-          ),
-        )}
+            ) : (
+              <div style={{ color: c }}>{d}</div>
+            )}
+          </button>
+        ))}
       </div>
       <button onClick={roll} className={styles.rollButton}>
         ROLL {dicePool.length}
@@ -288,7 +293,7 @@ const DiceSelection: FC<{ addDie: (dieType: DieType, dieColor: keyof typeof DieC
         }}>
         <Die
           value={6}
-          dieColor={color(dieColor)}
+          dieColor={color(DieColor[dieColor])}
           glow={hoveredDieButton === 6}
           pulse={hoveredDieButton === 6}
           dotColor={color('#000')}

@@ -1,6 +1,5 @@
 import React, { FC } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
-import diceSprite from '../../dice.png'
 import { RollResult } from '../../Models/GameModel'
 import { borderColor } from '../../colors'
 import { Die } from './Die'
@@ -60,21 +59,9 @@ const styles = stylesheet({
       },
     },
   },
-  dieResult: {
-    backgroundImage: `url(${diceSprite})`,
-    appearance: 'none',
-    display: 'inline-block',
-    width: 36,
-    height: 36,
-    color: 'transparent',
-    backgroundSize: '214px 36px',
-    borderRadius: 6,
-    margin: '0 2px',
-    backgroundBlendMode: 'multiply',
-  },
   line: { fontWeight: 500 },
   rollType: {
-    fontSize: 24,
+    fontSize: 20,
   },
   smallRollType: {
     fontSize: 14,
@@ -112,23 +99,24 @@ const styles = stylesheet({
   },
 })
 
-const RollMessage: FC<{ result: RollValuation; label: string }> = ({ result, label }) => {
-  let _style
+const rollResultStyle = (result: RollValuation): string => {
   switch (result) {
     case 'Crit':
-      _style = style({ background: '#fff940', boxShadow: '0 0 5px 0px #fff940' })
-      break
+      return style({ background: '#fff940', boxShadow: '0 0 5px 0px #fff940' })
     case 'Success':
-      _style = style({ background: '#49d08b', boxShadow: '0 0 5px 0px #49d08b' })
-      break
+      return style({ background: '#49d08b', boxShadow: '0 0 5px 0px #49d08b' })
     case 'MixedSuccess':
-      _style = style({ background: '#ffa547', boxShadow: '0 0 5px 0px #ffa547' })
-      break
+      return style({ background: '#ffa547', boxShadow: '0 0 5px 0px #ffa547' })
     case 'Miss':
-      _style = style({ background: 'hsl(0, 60%, 50%)', color: '#fff', boxShadow: '0 0 10px 0px hsl(0, 60%, 50%)' })
+      return style({ background: 'hsl(0, 60%, 50%)', color: '#fff', boxShadow: '0 0 10px 0px hsl(0, 60%, 50%)' })
+    case 'CritFail':
+      return style({ background: 'hsl(0, 60%, 0%)', color: '#fff', boxShadow: '0 0 10px 0px hsl(0, 60%, 50%)' })
   }
-  return <h1 className={classes(styles.resultLabel, _style)}>{label}</h1>
 }
+
+const RollMessage: FC<{ result: RollValuation; label: string }> = ({ result, label }) => (
+  <h1 className={classes(styles.resultLabel, rollResultStyle(result))}>{label}</h1>
+)
 
 const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
 

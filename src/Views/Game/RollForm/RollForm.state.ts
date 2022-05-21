@@ -1,4 +1,4 @@
-import { DieType, DieColor } from '../../../Models/GameModel'
+import { DieType, DieColor } from '../../../Models/Die'
 import { ValuationType } from '../../../Models/RollConfig'
 
 export type Rollable = { type: DieType; color: keyof typeof DieColor; id?: string }
