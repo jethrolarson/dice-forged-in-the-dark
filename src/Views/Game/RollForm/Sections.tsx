@@ -67,7 +67,6 @@ const Builder: FC<{
   useEffect(() => {
     const dieColor = section.dieColor ?? 'white'
     if (values.every(Boolean)) {
-      setOpen(false)
       state.set(values.join(section.separator ?? ' '))
       section.addDieWhenSelected && setDice(section.name, 1, section.addDieWhenSelected as DieType, dieColor)
     } else {
@@ -76,12 +75,12 @@ const Builder: FC<{
   }, values)
   return isOpen ? (
     <div key={section.name} className={styles.Builder}>
-      <button className={styles.heading} onClick={() => setOpen(false)}>
-        {section.name}
-      </button>
       {section.optionGroups.map((og, i) => (
         <OptGroup key={og.name} optionGroup={og} state={st.prop('values').focus(index(i))} />
       ))}
+      <button onClick={() => setOpen(false)} disabled={!values.every(Boolean)}>
+        Done
+      </button>
     </div>
   ) : (
     <button className={styles.expander} onClick={() => setOpen(true)}>

@@ -225,7 +225,7 @@ export const LoadedGame: FC<{
               </a>
               <h1 className={styles.title}>{title}</h1>
               <button onClick={() => setHidden(true)} title="Click to Minimize">
-                🗕
+                _
               </button>
               <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
                 {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
