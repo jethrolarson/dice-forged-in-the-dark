@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useLayoutEffect, useRef } from 'react'
+import React, { FC, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { stylesheet } from 'typestyle'
 import { color, hsla, important } from 'csx'
 import Icon from 'react-icons-kit'
@@ -16,7 +16,6 @@ import { valuateActionRoll } from './RollValuation'
 import useFunState from '@fun-land/use-fun-state'
 import { mergeRight } from 'ramda'
 import { DieResult, DieColor } from '../../Models/Die'
-// import { Canvas } from './Canvas'
 
 const styles = stylesheet({
   Game: {},
@@ -104,6 +103,20 @@ const styles = stylesheet({
     height: '100vh',
     display: 'block',
   },
+  showDiceCol: {
+    display: 'flex',
+    minWidth: 15,
+    background: 'linear-gradient(180deg, #2c9a92, #10626d)',
+    $nest: {
+      '&:hover span': {
+        display: 'block',
+      },
+    },
+  },
+  showDiceApp: {
+    writingMode: 'vertical-rl',
+    display: 'none',
+  },
 })
 
 const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
@@ -153,6 +166,7 @@ export const LoadedGame: FC<{
   uid: string
 }> = ({ initialState, gameId, gdoc, uid }) => {
   const state = useFunState<LoadedGameState>(initialState)
+  const [hidden, setHidden] = useState(false)
   const { rolls, title, mode, rollsLoaded, miroId } = state.get()
   const setMode = (mode: LoadedGameState['mode']) => (): void => state.prop('mode').set(mode)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -190,53 +204,64 @@ export const LoadedGame: FC<{
           {miroId && (
             <iframe
               className={styles.canvas}
-              src={`https://miro.com/app/live-embed/${miroId}/?embedAutoplay=true`}
+              src={`https://miro.com/app/live-embed/${miroId}/`}
               frameBorder="0"
               scrolling="no"
               allowFullScreen></iframe>
           )}
         </div>
-        <div className={styles.right}>
-          <div className={styles.heading}>
-            <a href="#/">
-              {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-              <Icon icon={chevronLeft} size={28} />
-            </a>
-            <h1 className={styles.title}>{title}</h1>
-            <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
-              {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-              <Icon icon={gears} size={28} />
-            </a>
+        {hidden ? (
+          <div className={styles.showDiceCol}>
+            <button onClick={() => setHidden(false)}>
+              <span className={styles.showDiceApp}>Show Dice App</span>
+            </button>
           </div>
-          <div ref={scrollRef} className={styles.log}>
-            {!rollsLoaded ? (
-              <p>Loading...</p>
-            ) : rolls.length ? (
-              <div className={styles.rolls}>
-                {rolls.map((r, i) => (
-                  <article key={`roll_${r.id}`}>
-                    {r.kind === 'Message' ? (
-                      <RollMessage result={r} />
-                    ) : r.kind === 'Roll' ? (
-                      <RollLogItem result={r} isLast={i === rolls.length - 1} />
-                    ) : null}
-                  </article>
-                ))}
-              </div>
-            ) : null}
-          </div>
-          <div>
-            <nav className={styles.tabs}>
-              <button className={mode === 'Roll' ? styles.tabOn : undefined} onClick={setMode('Roll')}>
-                Roll
+        ) : (
+          <section className={styles.right}>
+            <div className={styles.heading}>
+              <a href="#/">
+                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+                <Icon icon={chevronLeft} size={28} />
+              </a>
+              <h1 className={styles.title}>{title}</h1>
+              <button onClick={() => setHidden(true)} title="Click to Minimize">
+                🗕
               </button>
-              <button className={mode === 'Message' ? styles.tabOn : undefined} onClick={setMode('Message')}>
-                Message
-              </button>
-            </nav>
-            {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} uid={uid} /> : <MessageForm gdoc={gdoc} />}
-          </div>
-        </div>
+              <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
+                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+                <Icon icon={gears} size={28} />
+              </a>
+            </div>
+            <div ref={scrollRef} className={styles.log}>
+              {!rollsLoaded ? (
+                <p>Loading...</p>
+              ) : rolls.length ? (
+                <div className={styles.rolls}>
+                  {rolls.map((r, i) => (
+                    <article key={`roll_${r.id}`}>
+                      {r.kind === 'Message' ? (
+                        <RollMessage result={r} />
+                      ) : r.kind === 'Roll' ? (
+                        <RollLogItem result={r} isLast={i === rolls.length - 1} />
+                      ) : null}
+                    </article>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <div>
+              <nav className={styles.tabs}>
+                <button className={mode === 'Roll' ? styles.tabOn : undefined} onClick={setMode('Roll')}>
+                  Roll
+                </button>
+                <button className={mode === 'Message' ? styles.tabOn : undefined} onClick={setMode('Message')}>
+                  Message
+                </button>
+              </nav>
+              {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} uid={uid} /> : <MessageForm gdoc={gdoc} />}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )
