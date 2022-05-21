@@ -23,7 +23,7 @@ export const valuateActionRoll = ({ diceRolled, isZero }: RollResult): RollValua
 
   const naughts = results.filter(equals(1)).length
 
-  if (naughts > (isZero ? 1 : 2)) return 'CritFail'
+  if (naughts > (isZero ? 0 : 1)) return 'CritFail'
   return 'Miss'
 }
 
