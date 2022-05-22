@@ -34,10 +34,6 @@ export interface Message extends LogItemCommon {
   kind: 'Message'
 }
 
-export type Point = [number, number]
-
-export type Paint = Line // | circle | square | text | Path
-
 export interface Line extends LogItemCommon {
   kind: 'Paint'
   paintType: 'line'
@@ -46,7 +42,7 @@ export interface Line extends LogItemCommon {
   width: number
 }
 
-export type LogItem = RollResult | Message | Paint
+export type LogItem = RollResult | Message
 
 export interface LoadedGameState extends PersistedState {
   readonly kind: 'LoadedGameState'
@@ -77,6 +73,7 @@ export interface PersistedState {
   owners: string[]
   players: string[]
   miroId: string
+  theme: string
 }
 
 export const initialPersistedState = (creatorId: string): PersistedState => ({
@@ -86,7 +83,15 @@ export const initialPersistedState = (creatorId: string): PersistedState => ({
   owners: [creatorId],
   players: [],
   miroId: '',
+  theme: '',
 })
+
+export enum Theme {
+  Future = 'Future',
+  Simple = 'Simple',
+}
+
+export const defaultTheme = Theme.Future
 
 export const initialLoadedGameState = (persistedState: PersistedState): LoadedGameState => ({
   kind: 'LoadedGameState',
@@ -94,6 +99,7 @@ export const initialLoadedGameState = (persistedState: PersistedState): LoadedGa
   mode: 'Roll',
   rollsLoaded: false,
   miroId: persistedState.miroId ?? '',
+  theme: persistedState.theme ?? defaultTheme,
 })
 
 export const initialGameState: LoadingGameState = {

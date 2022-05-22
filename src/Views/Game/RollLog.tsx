@@ -1,7 +1,6 @@
 import React, { FC } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
 import { RollResult } from '../../Models/GameModel'
-import { borderColor } from '../../colors'
 import { Die } from './Die'
 import { color, ColorHelper } from 'csx'
 import { RollValuation, valuationMap } from './RollValuation'
@@ -24,17 +23,17 @@ const styles = stylesheet({
     flexGrow: 1,
   },
   meta: {
-    border: `solid ${borderColor}`,
+    border: `solid var(--border-color)`,
     borderWidth: '1px 1px 1px 0',
     minHeight: circleSize,
-    borderRadius: '0 8px 8px 0',
+    borderRadius: '0 var(--br) var(--br) 0',
     padding: '4px 8px 8px',
     marginTop: 6,
-    background: 'hsl(178deg 35% 55% / 11%)',
+    background: 'var(--bg-log-meta)',
   },
   time: {
     textAlign: 'right',
-    color: 'hsl(170, 50%, 46%)',
+    color: 'var(--fc-deem)',
     fontSize: 10,
     display: 'block',
     margin: '4px 16px 0',
@@ -48,11 +47,11 @@ const styles = stylesheet({
     alignItems: 'center',
     justifyContent: 'center',
     alignContent: 'center',
-    background: 'radial-gradient(#112d33 51%, hsl(174deg 40% 27%))',
+    background: 'var(--bg-dice)',
     flexWrap: 'wrap',
     flexGrow: 1,
     padding: 10,
-    borderRadius: '6px 6px 0 0',
+    borderRadius: 'calc(var(--br) - 2px) calc(var(--br) - 2px) 0 0',
     $nest: {
       '&>*': {
         margin: 3,
@@ -71,8 +70,8 @@ const styles = stylesheet({
     flexShrink: 0,
     flexDirection: 'column',
     justifyContent: 'space-between',
-    border: `2px solid ${borderColor}`,
-    borderRadius: 8,
+    border: `2px solid var(--border-color)`,
+    borderRadius: 'var(--br)',
     width: circleSize,
     minHeight: circleSize,
     marginBottom: 4,
@@ -84,7 +83,7 @@ const styles = stylesheet({
     textTransform: 'uppercase',
     padding: '4px 8px',
     lineHeight: '1',
-    borderRadius: '0 0 8px 8px',
+    borderRadius: '0 0 var(--br) var(--br)',
     margin: '0 -2px -2px',
     fontSize: 18,
   },
@@ -102,15 +101,15 @@ const styles = stylesheet({
 const rollResultStyle = (result: RollValuation): string => {
   switch (result) {
     case 'Crit':
-      return style({ background: '#fff940', boxShadow: '0 0 5px 0px #fff940' })
+      return style({ background: '#fff940', boxShadow: 'var(--bs-result-crit)' })
     case 'Success':
-      return style({ background: '#49d08b', boxShadow: '0 0 5px 0px #49d08b' })
+      return style({ background: '#49d08b', boxShadow: 'var(--bs-result-success)' })
     case 'MixedSuccess':
-      return style({ background: '#ffa547', boxShadow: '0 0 5px 0px #ffa547' })
+      return style({ background: '#ffa547', boxShadow: 'var(--bs-result-mixed)' })
     case 'Miss':
-      return style({ background: 'hsl(0, 60%, 50%)', color: '#fff', boxShadow: '0 0 10px 0px hsl(0, 60%, 50%)' })
+      return style({ background: 'hsl(0, 60%, 50%)', color: '#fff', boxShadow: 'var(--bs-result-miss)' })
     case 'CritFail':
-      return style({ background: 'hsl(0, 60%, 0%)', color: '#fff', boxShadow: '0 0 10px 0px hsl(0, 60%, 50%)' })
+      return style({ background: 'hsl(0, 60%, 0%)', color: '#fff', boxShadow: 'var(--bs-result-critfail)' })
   }
 }
 
@@ -120,22 +119,20 @@ const RollMessage: FC<{ result: RollValuation; label: string }> = ({ result, lab
 
 const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
 
-const transparent = color('hsla(0, 0%, 0%, 0)')
-
 const dieStyles = (
   value: number,
   excluded: boolean,
   highest: boolean,
   isLast: boolean,
-  dieColor: ColorHelper,
-): { dieColor: ColorHelper; dotColor: ColorHelper; border?: boolean; glow?: boolean; pulse?: boolean } => {
+  dieColor: string,
+): { dieColor: string; dotColor: string; border?: boolean; glow?: boolean; pulse?: boolean } => {
   if (excluded) {
-    return { dieColor: transparent, dotColor: dieColor, border: true }
+    return { dieColor: 'transparent', dotColor: dieColor, border: true }
   }
   if (highest || value === 6) {
-    return { dieColor, dotColor: color('#000'), pulse: isLast }
+    return { dieColor, dotColor: '#000', pulse: isLast }
   }
-  return { dieColor: transparent, dotColor: dieColor, border: true }
+  return { dieColor: 'transparent', dotColor: dieColor, border: true }
 }
 
 const ResultDie: FC<{
@@ -144,7 +141,7 @@ const ResultDie: FC<{
   highest: boolean
   excluded: boolean
   isLast: boolean
-  dieColor: ColorHelper
+  dieColor: string
 }> = ({ value, size, highest, excluded, isLast, dieColor }) => (
   <Die value={value} size={size} {...dieStyles(value, excluded, highest, isLast, dieColor)} />
 )

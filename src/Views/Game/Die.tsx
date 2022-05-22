@@ -47,18 +47,18 @@ const dots = [
 ]
 const pulseAnimation = keyframes({
   '0%': {
-    opacity: 1,
-  },
-
-  '70%': {
     opacity: 0.6,
   },
 
+  '70%': {
+    opacity: 0.1,
+  },
+
   '100%': {
-    opacity: 1,
+    opacity: 0.6,
   },
 })
-const dropShadow = (dieColor: ColorHelper): NestedCSSProperties => ({
+const dropShadow = (dieColor: string): NestedCSSProperties => ({
   position: 'relative',
   $nest: {
     '&::after': {
@@ -69,7 +69,7 @@ const dropShadow = (dieColor: ColorHelper): NestedCSSProperties => ({
       height: '100%',
       borderRadius: '5px',
       opacity: 0,
-      boxShadow: `0 0 10px 5px ${dieColor.fade(0.4).toString()}`,
+      boxShadow: `0 0 10px 5px ${dieColor}`,
       animationDuration: '1s',
       animationIterationCount: 'infinite',
     },
@@ -78,8 +78,8 @@ const dropShadow = (dieColor: ColorHelper): NestedCSSProperties => ({
 
 export interface DieProps {
   value: number
-  dieColor: ColorHelper
-  dotColor: ColorHelper
+  dieColor: string
+  dotColor: string
   border?: boolean
   size?: number
   glow?: boolean

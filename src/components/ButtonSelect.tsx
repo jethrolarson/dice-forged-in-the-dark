@@ -19,9 +19,9 @@ const styles = stylesheet({
     marginBottom: 5,
   },
   selected: {
-    backgroundColor: important('#49d08b'),
-    borderColor: important('#49d08b'),
-    color: '#201c29',
+    backgroundColor: 'var(--bg-die-green) !important',
+    borderColor: 'var(--bg-die-green) !important',
+    color: '#000',
     cursor: 'default',
   },
 })

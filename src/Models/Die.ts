@@ -1,17 +1,15 @@
-import { ColorHelper } from 'csx'
-
 export type DieType = 'd2' | 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
 
 export const DieColor = {
-  white: '#92d2d0',
-  yellow: 'hsl(31, 100%, 64%)',
-  red: 'hsl(0, 60%, 50%)',
-  green: 'hsl(149, 59%, 55%)',
-  purple: 'hsl(230, 65%, 64%)',
+  white: 'var(--bg-die-white)',
+  yellow: 'var(--bg-die-yellow)',
+  red: 'var(--bg-die-red)',
+  green: 'var(--bg-die-green)',
+  purple: 'var(--bg-die-purple)',
 } as const
 
 export interface DieResult {
-  dieColor: ColorHelper
+  dieColor: keyof typeof DieColor
   dieType: DieType
   value: number
 }

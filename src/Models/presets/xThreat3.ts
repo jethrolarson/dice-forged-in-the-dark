@@ -1,4 +1,3 @@
-import { DieColor } from '../Die'
 import { RollConfig } from '../RollConfig'
 import { fortune, other } from './common'
 

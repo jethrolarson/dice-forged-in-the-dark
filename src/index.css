@@ -1,10 +1,7 @@
-/*
-TODO make this pretty
-*/
 body {
   padding: 0;
   margin: 0;
-  font-family: 'Roboto Mono', monospace;
+  font-family: var(--ff);
   line-height: 1.4;
   font-weight: 300;
   background: black;
@@ -41,9 +38,9 @@ label {
 button {
   outline: none;
   border: 2px solid;
-  border-color: #92d2d0;
+  border-color: var(--border-color);
   background: transparent;
-  color: #92d2d0;
+  color: var(--border-color);
   padding: 4px 6px;
   font-family: inherit;
   cursor: pointer;
@@ -51,8 +48,8 @@ button {
 button:hover,
 button:focus {
   outline: none;
-  background-color: #92d2d0;
-  color: #201c29;
+  background: var(--bg-button);
+  color: var(--fc-button-hover);
 }
 button:disabled {
   cursor: not-allowed;
@@ -66,7 +63,7 @@ button.dangerous {
 }
 button.dangerous:hover,
 button.dangerous:focus {
-  background-color: hsl(0, 60%, 50%);
+  background: hsl(0, 60%, 50%);
   color: #201c29;
 }
 input,
@@ -75,7 +72,7 @@ select {
   padding: 4px 6px;
   font-family: inherit;
   background: transparent;
-  border: 1px solid rgb(38, 102, 105);
+  border: 1px solid var(--bc-deem);
   color: inherit;
   width: 100%;
 }
@@ -84,12 +81,12 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #92d2d0;
-  background: #204c4e;
+  border-color: var(--border-color);
+  background: var(--bg-input-focus);
 }
 input::-webkit-input-placeholder,
 textarea::-webkit-input-placeholder {
-  color: hsl(170deg 21% 51%);
+  color: var(--fc-deem);
 }
 
 input:invalid,
@@ -100,15 +97,18 @@ textarea:invalid {
 select {
   background: transparent;
   color: inherit;
-  border: 1px solid rgb(38, 102, 105);
+  border: 1px solid var(--bc-deem);
   padding: 4px 6px;
 }
 
 a {
-  color: hsl(150, 60%, 60%);
+  color: var(--fc-link);
 }
 a:visited {
-  color: hsl(150, 60%, 50%);
+  color: var(--fc-link-visited);
+}
+a:hover {
+  color: var(--fc-link-hover);
 }
 
 *::-webkit-scrollbar {
@@ -116,17 +116,79 @@ a:visited {
   height: 12px;
 }
 *::-webkit-scrollbar-track {
-  background: linear-gradient(90deg, #201c29, #201c29 1px, hsl(191deg 50% 5%) 0, hsl(191deg 50% 5%));
+  background: var(--bg-scrollbar-track);
 }
 *::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #2c9a92, #10626d);
+  background: var(--bg-scrollbar);
   box-shadow: inset 0px 1px 1px hsla(0, 0%, 100%, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.25);
 }
 
-/* canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-} */
+.Future {
+  --ff: 'Roboto Mono', monospace;
+  --border-color: #92d2d0;
+  --bg-button: var(--border-color);
+  --bg-game: radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%));
+  --border-game: none;
+  --fc: inherit;
+  --fc-deem: hsl(170, 50%, 46%);
+  --fc-button-hover: #201c29;
+  --fc-link: hsl(150, 60%, 60%);
+  --fc-link-visited: hsl(150, 60%, 50%);
+  --fc-link-hover: hsl(150, 65%, 62%);
+  --bg-scrollbar: linear-gradient(180deg, #2c9a92, #10626d);
+  --bg-scrollbar-track: linear-gradient(90deg, #201c29, #201c29 1px, hsl(191deg 50% 5%) 0, hsl(191deg 50% 5%));
+  --bg-log-meta: hsl(178deg 35% 55% / 11%);
+  --br: 8px;
+  --bg-dice: radial-gradient(#112d33 51%, hsl(174deg 40% 27%));
+  --c-icon-button: #2b635e;
+  --c-icon-button-hover: hsl(170, 80%, 90%);
+
+  --bg-input-focus: #204c4e;
+  --bc-deem: rgb(38, 102, 105);
+
+  --bs-result-crit: 0 0 5px 0px #fff940;
+  --bs-result-success: 0 0 5px 0px #49d08b;
+  --bs-result-mixed: 0 0 5px 0px #ffa547;
+  --bs-result-miss: 0 0 10px 0px hsl(0, 60%, 50%);
+  --bs-result-critfail: 0 0 10px 0px hsl(0, 60%, 50%);
+
+  --bg-die-white: #92d2d0;
+  --bg-die-yellow: hsl(31, 100%, 64%);
+  --bg-die-red: hsl(0, 60%, 50%);
+  --bg-die-green: hsl(149, 59%, 55%);
+  --bg-die-purple: hsl(230, 65%, 64%);
+}
+.Simple {
+  --ff: 'Garamond', serif;
+  --border-color: #000;
+  --bg-button: #000 url('/charcoal.png');
+  --bg-game: #fff;
+  --border-game: 2px solid var(--border-color);
+  --fc: #000;
+  --fc-deem: #999;
+  --fc-button-hover: #fff;
+  --fc-link: #444;
+  --fc-link-visited: #666;
+  --fc-link-hover: #888;
+  --bg-scrollbar: #000 url('/charcoal.png');
+  --bg-scrollbar-track: #eee;
+  --bg-log-meta: transparent;
+  --br: 0;
+  --bg-dice: #bbb;
+  --c-icon-button: #666;
+  --c-icon-button-hover: var(--fc);
+
+  --bc-deem: #666;
+
+  --bs-result-crit: none;
+  --bs-result-success: none;
+  --bs-result-mixed: none;
+  --bs-result-miss: none;
+  --bs-result-critfail: none;
+
+  --bg-die-white: #fff;
+  --bg-die-yellow: hsl(50deg 92% 52%);
+  --bg-die-red: hsl(0deg 82% 57%);
+  --bg-die-green: hsl(131deg 60% 41%);
+  --bg-die-purple: hsl(221deg 95% 68%);
+}

@@ -1,6 +1,6 @@
 import React, { FC, useEffect } from 'react'
 import type { User as FSUser } from '@firebase/auth'
-import { PersistedState } from '../Models/GameModel'
+import { defaultTheme, PersistedState } from '../Models/GameModel'
 import { getDoc, collection, doc, addDoc, getFirestore } from '@firebase/firestore'
 import { style } from 'typestyle'
 import { TextInput } from '../components/TextInput'
@@ -30,6 +30,7 @@ const createGame = (uid: string, title: string, state: FunState<HomeState>) => (
     rolls: [],
     miroId: '',
     title,
+    theme: defaultTheme,
   }
   addDoc(collection(getFirestore(), 'games'), gameState)
     .then((value) => {

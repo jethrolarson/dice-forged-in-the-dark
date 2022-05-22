@@ -1,29 +1,27 @@
-export const getSound = (filename: string): (() => Promise<HTMLAudioElement>) =>
-  ((): (() => Promise<HTMLAudioElement>) => {
-    let loadingAudio = false
-    let diceAudioEl: HTMLAudioElement
-    return (): Promise<HTMLAudioElement> => {
-      diceAudioEl = new Audio(filename)
-      diceAudioEl.volume = 0.4
-      return new Promise<HTMLAudioElement>((resolve) => {
-        if (!loadingAudio) {
-          loadingAudio = true
-          diceAudioEl.addEventListener('canplaythrough', () => {
-            resolve(diceAudioEl)
-          })
-        }
-        return resolve(diceAudioEl)
-      })
-    }
-  })()
+import { flow } from 'fp-ts/lib/function'
 
-export const getRollSound = getSound('communication-channel-519.mp3')
-export const getWinSound = getSound('win.mp3')
-export const getWarnSound = getSound('warn.mp3')
-export const getCritSound = getSound('crit.mp3')
-export const getMessageSound = getSound('message.mp3')
-export const getAddSound = getSound('addSound.mp3')
+export const getSound = (filename: string): Promise<HTMLAudioElement> => {
+  let diceAudioEl = new Audio(filename)
+  diceAudioEl.volume = 0.4
+  return new Promise<HTMLAudioElement>((resolve) => {
+    diceAudioEl.addEventListener('canplaythrough', () => {
+      resolve(diceAudioEl)
+    })
+  })
+}
 
-const playSound = (filename: string): Promise<void> => getSound(filename)().then((s: HTMLAudioElement) => s.play())
+const rollSound = getSound('communication-channel-519.mp3')
+const winSound = getSound('win.mp3')
+const warnSound = getSound('warn.mp3')
+const critSound = getSound('crit.mp3')
+const messageSound = getSound('message.mp3')
+const addSound = getSound('addSound.mp3')
 
-export const playAddSound = (): Promise<void> => playSound('addSound.mp3')
+const playSound = (sound: Promise<HTMLAudioElement>) => (): Promise<void> => sound.then((s: HTMLAudioElement) => s.play())
+
+export const playRollSound = playSound(rollSound)
+export const playWinSound = playSound(winSound)
+export const playWarnSound = playSound(warnSound)
+export const playCritSound = playSound(critSound)
+export const playMessageSound = playSound(messageSound)
+export const playAddSound = playSound(addSound)

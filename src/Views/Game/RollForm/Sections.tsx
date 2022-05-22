@@ -5,7 +5,6 @@ import { hsla } from 'csx'
 import { constant } from 'fp-ts/lib/function'
 import React, { FC, useEffect, useState } from 'react'
 import { stylesheet } from 'typestyle'
-import { borderColor } from '../../../colors'
 import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderSection, RollOptionSection, SectionT } from '../../../Models/RollConfig'
 import { Modifier } from './Modifier'
@@ -19,7 +18,7 @@ const styles = stylesheet({
   Builder: {
     display: 'grid',
     gap: 10,
-    border: '1px solid ' + borderColor,
+    border: '1px solid var(--border-color)',
     backgroundColor: hsla(0, 0, 0, 0.3).toString(),
     padding: 5,
   },

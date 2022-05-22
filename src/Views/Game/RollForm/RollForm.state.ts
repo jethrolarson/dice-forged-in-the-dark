@@ -1,3 +1,4 @@
+import { Acc } from '@fun-land/accessor'
 import { DieType, DieColor } from '../../../Models/Die'
 import { ValuationType } from '../../../Models/RollConfig'
 
@@ -11,3 +12,5 @@ export interface RollFormState {
   valuationType: ValuationType
   dicePool: Rollable[]
 }
+
+export const accessDieColor = (idx: number) => Acc<RollFormState>().prop('dicePool').at(idx).prop('color')

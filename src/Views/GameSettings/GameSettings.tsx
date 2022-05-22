@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react'
 import { DocumentReference, getDoc, deleteDoc, setDoc } from '@firebase/firestore'
-import { stylesheet } from 'typestyle'
+import { classes, stylesheet } from 'typestyle'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import * as O from 'fp-ts/lib/Option'
@@ -13,6 +13,7 @@ import {
   initialGameState,
   GameState,
   initialLoadedGameState,
+  Theme,
 } from '../../Models/GameModel'
 import { parseRollConfig, RollConfig } from '../../Models/RollConfig'
 import { pipe } from 'fp-ts/lib/function'
@@ -25,7 +26,8 @@ import { validateTitle } from './validate'
 
 const styles = stylesheet({
   GameSettings: {
-    background: 'radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%))',
+    background: 'var(--bg-game)',
+    color: 'var(--fc)',
     padding: '10px 34px 34px',
     flex: 1,
     display: 'grid',
@@ -90,7 +92,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
   gdoc,
 }) => {
   const state = useFunState<GameSettingsState>(initialState)
-  const { rollConfigText, rollConfigError, title, miroId } = state.get()
+  const { rollConfigText, rollConfigError, title, miroId, theme } = state.get()
 
   const saveSettings = (): void =>
     pipe(
@@ -98,7 +100,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
       validateTitle(title),
       E.map((rollConfig: RollConfig) => {
         state.prop('rollConfigError').set('')
-        setDoc(gdoc, { rollConfig, title, miroId }, { merge: true })
+        setDoc(gdoc, { rollConfig, title, miroId, theme }, { merge: true })
           .then(() => {
             document.location.hash = `#/game/${gameId}`
           })
@@ -112,7 +114,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
     )
 
   return (
-    <div className={styles.GameSettings}>
+    <div className={classes(styles.GameSettings, theme)}>
       <div className={styles.heading}>
         <a href={`#/game/${gameId}`}>
           {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
@@ -128,6 +130,20 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
         Miro Id (optional) <br />
         <TextInput passThroughProps={{ 'aria-label': 'Miro Id' }} state={state.prop('miroId')} />
       </label>
+      <label>
+        Theme:{' '}
+        <select
+          className={styles.loadPreset}
+          onChange={({ target: { value } }) => {
+            state.prop('theme').set(value)
+          }}
+          value={state.prop('theme').get()}>
+          {Object.values(Theme).map((theme) => (
+            <option key={theme}>{theme}</option>
+          ))}
+        </select>
+      </label>
+
       <label>
         {' '}
         <div className={styles.rollConfigLabel}>

@@ -2,14 +2,13 @@ import { FunState } from '@fun-land/fun-state'
 import { decrement, increment } from 'fp-ts/lib/function'
 import React, { FC } from 'react'
 import { stylesheet } from 'typestyle'
-import { borderColor } from '../colors'
 
 const styles = stylesheet({
   NumberSpinner: {
     display: 'flex',
     $nest: {
       label: {
-        border: 'solid ' + borderColor,
+        border: 'solid var(--border-color)',
         borderWidth: '2px 0',
         padding: '3px 8px',
       },

@@ -1,17 +1,24 @@
 import React, { FC, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { stylesheet } from 'typestyle'
-import { color, hsla, important } from 'csx'
+import { classes, cssRaw, stylesheet } from 'typestyle'
+import { color, important } from 'csx'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
-import { onSnapshot, DocumentReference, collection, query, orderBy } from '@firebase/firestore'
-import { LoadedGameState, LogItem } from '../../Models/GameModel'
-import { borderColor } from '../../colors'
+import {
+  onSnapshot,
+  DocumentReference,
+  collection,
+  query,
+  orderBy,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from '@firebase/firestore'
+import { LoadedGameState, LogItem, Theme } from '../../Models/GameModel'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm/RollForm'
 import { MessageForm } from './MessageForm'
 import { RollMessage } from './RollMessage'
-import { getRollSound, getWarnSound, getWinSound, getCritSound, getMessageSound } from '../../sounds'
+import { playWarnSound, playRollSound, playWinSound, playCritSound, playMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
 import useFunState from '@fun-land/use-fun-state'
 import { mergeRight } from 'ramda'
@@ -27,17 +34,19 @@ const styles = stylesheet({
   },
   right: {
     display: 'flex',
+    borderLeft: 'var(--border-game)',
     flexGrow: 1,
     flexDirection: 'column',
     height: '100vh',
     maxWidth: 400,
-    background: 'radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%))',
+    background: 'var(--bg-game)',
     backgroundRepeat: 'no-repeat',
+    color: 'var(--fc)',
   },
   heading: {
     display: 'flex',
     alignItems: 'center',
-    borderBottom: `1px solid ${borderColor}`,
+    borderBottom: `1px solid var(--border-color)`,
   },
   title: {
     background: 'transparent',
@@ -60,17 +69,17 @@ const styles = stylesheet({
     padding: 10,
     background: 'transparent',
     textDecoration: 'none',
-    color: important('#2b635e'),
+    color: important('var(--c-icon-button)'),
     transition: 'color 0.2s',
     $nest: {
       '&:hover': {
-        color: important('hsl(170, 80%, 90%)'),
+        color: important('var(--c-icon-button-hover)'),
         transition: 'color 0.2s',
       },
     },
   },
   log: {
-    borderBottom: `1px solid ${borderColor}`,
+    borderBottom: `1px solid var(--border-color)`,
     borderWidth: '1px 0',
     flex: 1,
     flexDirection: 'column',
@@ -91,12 +100,12 @@ const styles = stylesheet({
         borderColor: 'transparent',
         borderWidth: '2px 0 0 ',
         background: important('transparent'),
-        color: important(borderColor),
+        color: important('var(--border-color)'),
       },
     },
   },
   tabOn: {
-    borderColor,
+    borderColor: 'var(--border-color)',
   },
   canvas: {
     width: '100%',
@@ -106,7 +115,7 @@ const styles = stylesheet({
   showDiceCol: {
     display: 'flex',
     minWidth: 15,
-    background: 'linear-gradient(180deg, #2c9a92, #10626d)',
+    background: 'var(--bg-scrollbar)',
     $nest: {
       '&:hover span': {
         display: 'block',
@@ -117,47 +126,64 @@ const styles = stylesheet({
     writingMode: 'vertical-rl',
     display: 'none',
   },
+  minimize: {
+    marginRight: 5,
+  },
 })
 
 const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
 
 const onNewLogItem = (item: LogItem): Promise<unknown> => {
   if (item.kind === 'Message') {
-    return getMessageSound().then((sound) => sound.play())
+    return playMessageSound()
   } else if (item.kind === 'Roll') {
     const valuation = valuateActionRoll(item)
     switch (valuation) {
       case 'Miss':
-        return getWarnSound().then((sound) => sound.play())
+        return playWarnSound()
       case 'MixedSuccess':
-        return getRollSound().then((sound) => sound.play())
+        return playRollSound()
       case 'Success':
-        return getWinSound().then((sound) => sound.play())
+        return playWinSound()
       case 'Crit':
-        return getCritSound().then((sound) => sound.play())
+        return playCritSound()
+      case 'CritFail':
+        return playWarnSound()
     }
   }
   return Promise.resolve()
 }
 
-const parseDieResult = (d: DieResult): DieResult => ({ ...d, dieColor: color(d.dieColor as unknown as string) })
+const setPageTitle = (title?: string) => {
+  window.document.title = `${title} - Dice Forged in the Dark`
+}
 
 const parseRoll = (d: LogItem & { results?: number[]; effect?: string[]; position?: string }): LogItem => {
   switch (d.kind) {
     case 'Message':
-      return d
-    case 'Paint':
       return d
     default:
       return {
         ...d,
         lines: d.lines ?? [d.position, d.effect],
         diceRolled: d.diceRolled
-          ? d.diceRolled.map(parseDieResult)
-          : d.results?.map((value) => ({ value, dieType: 'd6', dieColor: color(DieColor.white) })) ?? [],
+          ? d.diceRolled
+          : d.results?.map((value) => ({ value, dieType: 'd6', dieColor: 'white' })) ?? [],
       }
   }
 }
+
+const updateLogItems =
+  (docs: QueryDocumentSnapshot<DocumentData>[]) =>
+  (oldRolls: LogItem[]): LogItem[] => {
+    const newRolls = docs.map((d): LogItem => parseRoll({ ...(d.data() as LogItem), id: d.id }))
+    const latestRoll = newRolls[newRolls.length - 1]
+    const latestOldRoll = oldRolls[oldRolls.length - 1]
+    if (latestRoll && latestOldRoll && latestOldRoll.id !== latestRoll.id && inLastTenSeconds(latestRoll.date)) {
+      void onNewLogItem(latestRoll)
+    }
+    return newRolls
+  }
 
 export const LoadedGame: FC<{
   initialState: LoadedGameState
@@ -167,28 +193,18 @@ export const LoadedGame: FC<{
 }> = ({ initialState, gameId, gdoc, uid }) => {
   const state = useFunState<LoadedGameState>(initialState)
   const [hidden, setHidden] = useState(false)
-  const { rolls, title, mode, rollsLoaded, miroId } = state.get()
+  const { rolls, title, mode, rollsLoaded, miroId, rollConfig, theme } = state.get()
   const setMode = (mode: LoadedGameState['mode']) => (): void => state.prop('mode').set(mode)
   const scrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     onSnapshot(gdoc, (ss) => {
       const data = ss.data()
-      window.document.title =
-        (data && Reflect.has(data, 'title') && typeof data.title === 'string' ? data.title : 'Untitled') +
-        ' - Dice Forged in the Dark'
+      setPageTitle(data?.title)
       data && mergeRight(state)(data)
     })
     return onSnapshot(query(collection(gdoc, 'rolls'), orderBy('date')), (snapshot) => {
       state.prop('rollsLoaded').set(true)
-      state.prop('rolls').mod((oldRolls) => {
-        const newRolls = snapshot.docs.map((d): LogItem => parseRoll({ ...(d.data() as LogItem), id: d.id }))
-        const latestRoll = newRolls[newRolls.length - 1]
-        const latestOldRoll = oldRolls[oldRolls.length - 1]
-        if (latestRoll && latestOldRoll && latestOldRoll.id !== latestRoll.id && inLastTenSeconds(latestRoll.date)) {
-          void onNewLogItem(latestRoll)
-        }
-        return newRolls
-      })
+      state.prop('rolls').mod(updateLogItems(snapshot.docs))
     })
   }, [])
 
@@ -198,7 +214,7 @@ export const LoadedGame: FC<{
   }, [rolls])
 
   return (
-    <div className={styles.Game}>
+    <div className={classes(styles.Game, theme)}>
       <div className={styles.body}>
         <div className={styles.left}>
           {miroId && (
@@ -224,13 +240,13 @@ export const LoadedGame: FC<{
                 <Icon icon={chevronLeft} size={28} />
               </a>
               <h1 className={styles.title}>{title}</h1>
-              <button onClick={() => setHidden(true)} title="Click to Minimize">
-                _
-              </button>
               <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
                 {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                 <Icon icon={gears} size={28} />
               </a>
+              <button className={styles.minimize} onClick={() => setHidden(true)} title="Click to Minimize">
+                🗕
+              </button>
             </div>
             <div ref={scrollRef} className={styles.log}>
               {!rollsLoaded ? (
@@ -258,7 +274,11 @@ export const LoadedGame: FC<{
                   Message
                 </button>
               </nav>
-              {mode === 'Roll' ? <RollForm state={state} gdoc={gdoc} uid={uid} /> : <MessageForm gdoc={gdoc} />}
+              {mode === 'Roll' ? (
+                <RollForm rollConfig={rollConfig} gdoc={gdoc} uid={uid} />
+              ) : (
+                <MessageForm gdoc={gdoc} />
+              )}
             </div>
           </section>
         )}
