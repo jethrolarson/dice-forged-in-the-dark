@@ -24,7 +24,6 @@ export const App: FC<{}> = () => {
   }, [])
 
   const { view } = state.get()
-  console.log(view)
   switch (view.kind) {
     case 'DefaultView':
       return <Home />
