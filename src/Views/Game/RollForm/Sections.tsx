@@ -107,7 +107,12 @@ export const Sections: FC<{
       section.sectionType === 'builder' ? (
         <Builder key={section.name} state={state.focus(index(section.line))} section={section} setDice={setDice} />
       ) : section.sectionType === 'modifier' ? (
-        <Modifier key={section.name} section={section} setDice={setDice} />
+        <Modifier
+          key={section.name}
+          section={section}
+          setDice={setDice}
+          state={typeof section.line == 'undefined' ? undefined : state.focus(index(section.line))}
+        />
       ) : section.sectionType === 'row' ? (
         <div className={styles.sectionRow}>
           <Sections state={state} sections={section.sections} setDice={setDice} />

@@ -143,7 +143,7 @@ export const RollForm: FC<{ rollConfig: RollConfig; gdoc: DocumentReference; uid
     valuationType: 'Action',
     dicePool: [],
   })
-  const { rollType, username, rollState, valuationType, dicePool } = s.get()
+  const { rollType, username, valuationType, dicePool } = s.get()
 
   const currentConfig = rollConfig.rollTypes.find((rt) => rt.name === rollType)
 
@@ -166,7 +166,7 @@ export const RollForm: FC<{ rollConfig: RollConfig; gdoc: DocumentReference; uid
           <DicePool
             dicePool={dicePool}
             roll={roll(gdoc, uid, s)}
-            disabled={!username.length}
+            disabled={!currentConfig.excludeCharacter && !username.length}
             removeDie={removeDie}
             changeColor={changeColor}
           />

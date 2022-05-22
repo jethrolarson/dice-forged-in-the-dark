@@ -1,3 +1,4 @@
+import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { tap } from 'ramda'
 import React, { FC, useEffect } from 'react'
@@ -15,12 +16,14 @@ const styles = stylesheet({
 export const Modifier: FC<{
   section: ModifierT
   setDice: (id: string, count: number, type: DieType, color: keyof typeof DieColor) => void
-}> = ({ setDice, section }) => {
+  state?: FunState<string>
+}> = ({ setDice, section, state }) => {
   const updateDice = (v: number) => {
     setDice(section.name, v, section.dieType, section.dieColor)
+    v !== 0 && state?.set(`${section.name}: ${v}`)
   }
-  const state = useFunState(section.baseModifier, tap(updateDice))
-  useEffect(() => updateDice(state.get()), [section])
+  const s = useFunState(section.baseModifier, tap(updateDice))
+  useEffect(() => updateDice(s.get()), [section])
   return (
     <div>
       {section.showLabel && (
@@ -28,7 +31,7 @@ export const Modifier: FC<{
           {section.name}
         </label>
       )}
-      <NumberSpinner min={section.min} max={section.max} state={state} />
+      <NumberSpinner min={section.min} max={section.max} state={s} />
     </div>
   )
 }

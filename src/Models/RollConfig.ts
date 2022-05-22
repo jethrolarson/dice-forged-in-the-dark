@@ -85,6 +85,9 @@ export const ModifierC = T.intersection([
     min: T.number,
     showLabel: T.boolean,
   }),
+  T.partial({
+    line: T.number,
+  }),
 ])
 
 export const RowC = T.type({
