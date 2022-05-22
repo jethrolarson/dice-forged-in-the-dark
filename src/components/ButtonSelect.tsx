@@ -32,11 +32,16 @@ export const ButtonSelect: FC<{
   className?: string
   columns: number
   label: string
-}> = ({ state, options, className, columns, label }) => {
+  tooltip?: string
+}> = ({ state, options, className, columns, label, tooltip }) => {
   const selected = state.get()
   return (
     <div className={className}>
-      {label && <label className={styles.label}>{label}</label>}
+      {label && (
+        <label className={styles.label} title={tooltip}>
+          {label}
+        </label>
+      )}
       <div className={classes(styles.buttons, style({ columnCount: columns }))}>
         {options.map((opt) => (
           <button

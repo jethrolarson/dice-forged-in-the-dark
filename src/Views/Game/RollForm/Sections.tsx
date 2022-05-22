@@ -45,6 +45,15 @@ const styles = stylesheet({
       },
     },
   },
+  sectionRow: {
+    display: 'flex',
+    gap: 5,
+    $nest: {
+      '&>*': {
+        flexGrow: 1,
+      },
+    },
+  },
 })
 
 const Section: FC<{ state: FunState<string[]>; section: SectionT }> = ({ section, state }) => (
@@ -99,6 +108,10 @@ export const Sections: FC<{
         <Builder key={section.name} state={state.focus(index(section.line))} section={section} setDice={setDice} />
       ) : section.sectionType === 'modifier' ? (
         <Modifier key={section.name} section={section} setDice={setDice} />
+      ) : section.sectionType === 'row' ? (
+        <div className={styles.sectionRow}>
+          <Sections state={state} sections={section.sections} setDice={setDice} />
+        </div>
       ) : (
         <Section key={section.name} state={state} section={section} />
       ),

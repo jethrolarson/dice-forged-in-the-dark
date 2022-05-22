@@ -28,10 +28,11 @@ export const OptGroup: FC<{ optionGroup: BuilderOptionGroup; state: FunState<str
       options={og.rollOptions}
       columns={og.columns ?? 2}
       label={og.showLabel ? og.name : ''}
+      tooltip={og.tooltip}
       className={style({ flexGrow: 1 })}
     />
   ) : (
-    <label>
+    <label title={og.tooltip}>
       <TextInput
         passThroughProps={{
           placeholder: og.name,

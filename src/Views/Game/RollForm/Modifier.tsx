@@ -23,7 +23,11 @@ export const Modifier: FC<{
   useEffect(() => updateDice(state.get()), [section])
   return (
     <div>
-      {section.showLabel && <label className={styles.label}>{section.name}</label>}
+      {section.showLabel && (
+        <label className={styles.label} title={section.tooltip}>
+          {section.name}
+        </label>
+      )}
       <NumberSpinner min={section.min} max={section.max} state={state} />
     </div>
   )

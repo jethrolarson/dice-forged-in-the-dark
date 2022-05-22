@@ -2,6 +2,10 @@ import { flow } from 'fp-ts/lib/function'
 import * as E from 'fp-ts/lib/Either'
 import * as T from 'io-ts'
 
+const WithTooltip = T.partial({
+  tooltip: T.string,
+})
+
 export const BuilderOptionGroupC = T.intersection([
   T.type({
     name: T.string,
@@ -12,6 +16,7 @@ export const BuilderOptionGroupC = T.intersection([
     showLabel: T.boolean,
     fixedOptions: T.boolean,
   }),
+  WithTooltip,
 ])
 
 export type BuilderOptionGroup = T.TypeOf<typeof BuilderOptionGroupC>
@@ -68,22 +73,30 @@ export const SectionC = T.type({
   optionGroups: T.array(RollOptionGroupC),
 })
 
-export const ModifierC = T.type({
-  sectionType: T.literal('modifier'),
-  name: T.string,
-  dieColor: DieColorC,
-  dieType: DieTypeC,
-  baseModifier: T.number,
-  max: T.number,
-  min: T.number,
-  showLabel: T.boolean,
+export const ModifierC = T.intersection([
+  WithTooltip,
+  T.type({
+    sectionType: T.literal('modifier'),
+    name: T.string,
+    dieColor: DieColorC,
+    dieType: DieTypeC,
+    baseModifier: T.number,
+    max: T.number,
+    min: T.number,
+    showLabel: T.boolean,
+  }),
+])
+
+export const RowC = T.type({
+  sectionType: T.literal('row'),
+  sections: T.array(T.union([SectionC, BuilderSectionC, ModifierC])),
 })
 
 export type ModifierT = T.TypeOf<typeof ModifierC>
 
 export type SectionT = T.TypeOf<typeof SectionC>
 
-export const RollOptionSectionC = T.union([SectionC, BuilderSectionC, ModifierC])
+export const RollOptionSectionC = T.union([SectionC, BuilderSectionC, ModifierC, RowC])
 
 export type RollOptionSection = T.TypeOf<typeof RollOptionSectionC>
 
