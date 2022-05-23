@@ -103,7 +103,7 @@ export const Sections: FC<{
   setDice: (id: string, count: number, type: DieType, color: keyof typeof DieColor) => void
 }> = ({ sections, state, setDice }) => (
   <>
-    {sections.map((section) =>
+    {sections.map((section, i) =>
       section.sectionType === 'builder' ? (
         <Builder key={section.name} state={state.focus(index(section.line))} section={section} setDice={setDice} />
       ) : section.sectionType === 'modifier' ? (
@@ -114,7 +114,7 @@ export const Sections: FC<{
           state={typeof section.line == 'undefined' ? undefined : state.focus(index(section.line))}
         />
       ) : section.sectionType === 'row' ? (
-        <div className={styles.sectionRow}>
+        <div className={styles.sectionRow} key={'row' + i}>
           <Sections state={state} sections={section.sections} setDice={setDice} />
         </div>
       ) : (

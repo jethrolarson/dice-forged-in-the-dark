@@ -5,7 +5,7 @@ const config: RollConfig = {
   rollTypes: [
     {
       valuationType: 'Action',
-      name: 'Encounter',
+      name: 'Encounter Action',
       sections: [
         {
           optionGroups: [
@@ -49,7 +49,7 @@ const config: RollConfig = {
       ],
     },
     {
-      name: 'Storm',
+      name: 'Storm Action',
       valuationType: 'Action',
       excludeCharacter: true,
       sections: [

@@ -134,7 +134,7 @@ a:hover {
   --bg-button: var(--border-color);
   --bg-game: radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%));
   --border-game: none;
-  --fc: inherit;
+  --fc: hsl(170, 100%, 86%);
   --fc-deem: hsl(170, 50%, 46%);
   --fc-button-hover: #201c29;
   --fc-link: hsl(150, 60%, 60%);
@@ -162,6 +162,7 @@ a:hover {
   --bg-die-red: hsl(0, 60%, 50%);
   --bg-die-green: hsl(149, 59%, 55%);
   --bg-die-purple: hsl(230, 65%, 64%);
+  font-family: var(--ff);
 }
 .Simple {
   --ff: 'Garamond', serif;
@@ -196,4 +197,5 @@ a:hover {
   --bg-die-red: hsl(0deg 82% 57%);
   --bg-die-green: hsl(131deg 60% 41%);
   --bg-die-purple: hsl(221deg 95% 68%);
+  font-family: var(--ff);
 }
