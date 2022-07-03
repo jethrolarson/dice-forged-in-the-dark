@@ -1,8 +1,8 @@
-import { ColorHelper } from 'csx'
 import React, { FC } from 'react'
 
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'
+import { DieColor } from '../../Models/Die'
 
 const styles = stylesheet({
   Die: {
@@ -75,6 +75,14 @@ const dropShadow = (dieColor: string): NestedCSSProperties => ({
     },
   },
 })
+
+export const dieColors = ['white', 'yellow', 'red', 'green', 'purple'] as const
+
+export const nextColor = (c: keyof typeof DieColor): keyof typeof DieColor => {
+  const i = dieColors.indexOf(c) + 1
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return dieColors[i === dieColors.length ? 0 : i]!
+}
 
 export interface DieProps {
   value: number

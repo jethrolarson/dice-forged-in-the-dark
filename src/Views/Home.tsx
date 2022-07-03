@@ -25,6 +25,7 @@ const createGame = (uid: string, title: string, state: FunState<HomeState>) => (
   state.prop('creating').set(true)
   const gameState: PersistedState = {
     owners: [uid],
+    system: '',
     players: [],
     rollConfig: presets[0],
     rolls: [],
@@ -108,7 +109,7 @@ export const UserHome: FC<{ user: FSUser }> = ({ user }) => {
           Create Game
         </button>
       </div>
-      <button onClick={logout}>Logout</button>
+      <button onClick={() => void logout()}>Logout</button>
     </>
   ) : (
     <div>Loading...</div>

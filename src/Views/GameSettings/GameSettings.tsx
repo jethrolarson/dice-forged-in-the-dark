@@ -23,6 +23,7 @@ import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
 import useFunState from '@fun-land/use-fun-state'
 import { validateTitle } from './validate'
+import { merge } from '@fun-land/fun-state'
 
 const styles = stylesheet({
   GameSettings: {
@@ -92,7 +93,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
   gdoc,
 }) => {
   const state = useFunState<GameSettingsState>(initialState)
-  const { rollConfigText, rollConfigError, title, miroId, theme } = state.get()
+  const { rollConfigText, rollConfigError, title, miroId, theme, system } = state.get()
 
   const saveSettings = (): void =>
     pipe(
@@ -100,7 +101,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
       validateTitle(title),
       E.map((rollConfig: RollConfig) => {
         state.prop('rollConfigError').set('')
-        setDoc(gdoc, { rollConfig, title, miroId, theme }, { merge: true })
+        setDoc(gdoc, { rollConfig, title, miroId, theme, system }, { merge: true })
           .then(() => {
             document.location.hash = `#/game/${gameId}`
           })
@@ -153,13 +154,14 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
             <select
               className={styles.loadPreset}
               onChange={({ target: { value } }): void => {
-                state.prop('rollConfigText').set(
-                  JSON.stringify(
+                merge(state)({
+                  rollConfigText: JSON.stringify(
                     presets.find((preset) => preset.system === value),
                     null,
                     2,
                   ),
-                )
+                  system: value,
+                })
               }}>
               {presets.map((preset) => (
                 <option key={preset.system} value={preset.system}>

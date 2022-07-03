@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { classes, cssRaw, stylesheet } from 'typestyle'
-import { color, important } from 'csx'
+import { classes, stylesheet } from 'typestyle'
+import { important } from 'csx'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
@@ -13,16 +13,15 @@ import {
   QueryDocumentSnapshot,
   DocumentData,
 } from '@firebase/firestore'
-import { LoadedGameState, LogItem, Theme } from '../../Models/GameModel'
+import { LoadedGameState, LogItem } from '../../Models/GameModel'
 import { RollLogItem } from './RollLog'
 import { RollForm } from './RollForm/RollForm'
-import { MessageForm } from './MessageForm'
 import { RollMessage } from './RollMessage'
 import { playWarnSound, playRollSound, playWinSound, playCritSound, playMessageSound } from '../../sounds'
 import { valuateActionRoll } from './RollValuation'
 import useFunState from '@fun-land/use-fun-state'
 import { mergeRight } from 'ramda'
-import { DieResult, DieColor } from '../../Models/Die'
+import { MIForm } from './MIForm/MIForm'
 
 const styles = stylesheet({
   Game: {},
@@ -46,7 +45,7 @@ const styles = stylesheet({
   heading: {
     display: 'flex',
     alignItems: 'center',
-    borderBottom: `1px solid var(--border-color)`,
+    borderBottom: '1px solid var(--border-color)',
   },
   title: {
     background: 'transparent',
@@ -79,7 +78,7 @@ const styles = stylesheet({
     },
   },
   log: {
-    borderBottom: `1px solid var(--border-color)`,
+    borderBottom: '1px solid var(--border-color)',
     borderWidth: '1px 0',
     flex: 1,
     flexDirection: 'column',
@@ -154,7 +153,7 @@ const onNewLogItem = (item: LogItem): Promise<unknown> => {
   return Promise.resolve()
 }
 
-const setPageTitle = (title?: string) => {
+const setPageTitle = (title: string) => {
   window.document.title = `${title} - Dice Forged in the Dark`
 }
 
@@ -174,7 +173,7 @@ const parseRoll = (d: LogItem & { results?: number[]; effect?: string[]; positio
 }
 
 const updateLogItems =
-  (docs: QueryDocumentSnapshot<DocumentData>[]) =>
+  (docs: Array<QueryDocumentSnapshot<DocumentData>>) =>
   (oldRolls: LogItem[]): LogItem[] => {
     const newRolls = docs.map((d): LogItem => parseRoll({ ...(d.data() as LogItem), id: d.id }))
     const latestRoll = newRolls[newRolls.length - 1]
@@ -193,13 +192,12 @@ export const LoadedGame: FC<{
 }> = ({ initialState, gameId, gdoc, uid }) => {
   const state = useFunState<LoadedGameState>(initialState)
   const [hidden, setHidden] = useState(false)
-  const { rolls, title, mode, rollsLoaded, miroId, rollConfig, theme } = state.get()
-  const setMode = (mode: LoadedGameState['mode']) => (): void => state.prop('mode').set(mode)
+  const { rolls, title, rollsLoaded, miroId, rollConfig, theme } = state.get()
   const scrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     onSnapshot(gdoc, (ss) => {
       const data = ss.data()
-      setPageTitle(data?.title)
+      setPageTitle((data?.title as string) ?? '')
       data && mergeRight(state)(data)
     })
     return onSnapshot(query(collection(gdoc, 'rolls'), orderBy('date')), (snapshot) => {
@@ -223,7 +221,8 @@ export const LoadedGame: FC<{
               src={`https://miro.com/app/live-embed/${miroId}/`}
               frameBorder="0"
               scrolling="no"
-              allowFullScreen></iframe>
+              allowFullScreen
+            />
           )}
         </div>
         {hidden ? (
@@ -266,18 +265,10 @@ export const LoadedGame: FC<{
               ) : null}
             </div>
             <div>
-              <nav className={styles.tabs}>
-                <button className={mode === 'Roll' ? styles.tabOn : undefined} onClick={setMode('Roll')}>
-                  Roll
-                </button>
-                <button className={mode === 'Message' ? styles.tabOn : undefined} onClick={setMode('Message')}>
-                  Message
-                </button>
-              </nav>
-              {mode === 'Roll' ? (
-                <RollForm rollConfig={rollConfig} gdoc={gdoc} uid={uid} />
+              {rollConfig.system === 'mala-incognita' ? (
+                <MIForm gdoc={gdoc} uid={uid} />
               ) : (
-                <MessageForm gdoc={gdoc} />
+                <RollForm rollConfig={rollConfig} gdoc={gdoc} uid={uid} />
               )}
             </div>
           </section>

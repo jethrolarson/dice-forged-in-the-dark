@@ -1,7 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
-import React, { FC } from 'react'
+import React, { FC, ReactNode } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
-import { RollOption } from '../Models/RollConfig'
 
 const styles = stylesheet({
   buttons: {
@@ -12,7 +11,6 @@ const styles = stylesheet({
     margin: '0 0 4px',
     fontSize: 14,
   },
-  threeCol: {},
   option: {
     display: 'block',
     width: '100%',
@@ -26,9 +24,11 @@ const styles = stylesheet({
   },
 })
 
+export type ButtonOption = string | { value: string; content: ReactNode }
+
 export const ButtonSelect: FC<{
   selected: string
-  options: RollOption[]
+  options: ButtonOption[]
   className?: string
   columns?: number
   label: string
@@ -44,14 +44,15 @@ export const ButtonSelect: FC<{
       )}
       <div className={classes(styles.buttons, style({ columnCount: columns }))}>
         {options.map((opt) => {
-          const optName = typeof opt === 'string' ? opt : opt.name
+          const value = typeof opt === 'string' ? opt : opt.value
           return (
             <button
-              key={optName}
-              onClick={onSelect.bind(null, optName)}
+              key={value}
+              onClick={onSelect.bind(null, value)}
+              value={value}
               type="button"
-              className={classes(styles.option, selected === optName && styles.selected)}>
-              {optName}
+              className={classes(styles.option, selected === value && styles.selected)}>
+              {typeof opt === 'string' ? opt : opt.content}
             </button>
           )
         })}
@@ -62,17 +63,18 @@ export const ButtonSelect: FC<{
 
 export const FunButtonSelect: FC<{
   $: FunState<string>
-  options: RollOption[]
+  options: ButtonOption[]
   className?: string
   columns?: number
   label: string
   tooltip?: string
-}> = ({ $, options, columns, label, tooltip }) => (
+}> = ({ $, options, className, columns, label, tooltip }) => (
   <ButtonSelect
+    className={className}
     columns={columns}
     label={label}
     tooltip={tooltip}
-    onSelect={$.set}
+    onSelect={(value) => $.mod((oldValue) => (oldValue === value ? '' : value))}
     options={options}
     selected={$.get()}
   />

@@ -6,12 +6,28 @@ const WithTooltip = T.partial({
   tooltip: T.string,
 })
 
+const DieTypeC = T.literal('d6')
+
+export const RollOptionC = T.union([
+  T.string,
+  T.intersection([
+    T.type({
+      name: T.string,
+    }),
+    T.partial({
+      addDieWhenSelected: T.array(DieTypeC),
+    }),
+  ]),
+])
+
+export type RollOption = T.TypeOf<typeof RollOptionC>
+
 export const BuilderOptionGroupC = T.intersection([
   T.type({
     name: T.string,
   }),
   T.partial({
-    rollOptions: T.array(T.string),
+    rollOptions: T.array(RollOptionC),
     columns: T.number,
     showLabel: T.boolean,
     fixedOptions: T.boolean,
@@ -49,8 +65,6 @@ const DieColorC = T.union([
   T.literal('yellow'),
 ])
 
-const DieTypeC = T.literal('d6')
-
 export const BuilderSectionC = T.intersection([
   T.type({
     name: T.string,
@@ -59,7 +73,7 @@ export const BuilderSectionC = T.intersection([
     optionGroups: T.array(BuilderOptionGroupC),
   }),
   T.partial({
-    addDieWhenSelected: DieTypeC, // can add others once we support more dice sizes
+    addDieWhenSelected: T.union([DieTypeC, T.array(DieTypeC)]), // can add others once we support more dice sizes
     dieColor: DieColorC,
     separator: T.string,
   }),
@@ -107,9 +121,9 @@ export const RollTypeC = T.intersection([
   T.type({
     name: T.string,
     valuationType: ValuationTypeC,
+    sections: T.array(RollOptionSectionC),
   }),
   T.partial({
-    sections: T.array(RollOptionSectionC),
     hideDice: T.boolean,
     excludeCharacter: T.boolean,
   }),
@@ -119,10 +133,10 @@ export type RollType = T.TypeOf<typeof RollTypeC>
 
 export const RollConfigC = T.intersection([
   T.type({
-    rollTypes: T.array(RollTypeC),
+    system: T.string,
   }),
   T.partial({
-    system: T.string,
+    rollTypes: T.array(RollTypeC),
   }),
 ])
 

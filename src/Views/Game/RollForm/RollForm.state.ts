@@ -1,8 +1,6 @@
 import { Acc } from '@fun-land/accessor'
-import { DieType, DieColor } from '../../../Models/Die'
 import { ValuationType } from '../../../Models/RollConfig'
-
-export type Rollable = { type: DieType; color: keyof typeof DieColor; id?: string }
+import { Rollable } from './DicePool'
 
 export interface RollFormState {
   rollType: string

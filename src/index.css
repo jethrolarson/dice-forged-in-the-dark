@@ -37,8 +37,8 @@ label {
 
 button {
   outline: none;
-  border: 2px solid;
-  border-color: var(--border-color);
+  border: 1px solid;
+  border-color: #084c4a;
   background: transparent;
   color: var(--border-color);
   padding: 4px 6px;

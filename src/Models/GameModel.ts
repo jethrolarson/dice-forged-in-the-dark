@@ -47,7 +47,6 @@ export type LogItem = RollResult | Message
 export interface LoadedGameState extends PersistedState {
   readonly kind: 'LoadedGameState'
   rollsLoaded: boolean
-  mode: 'Roll' | 'Message'
 }
 
 export interface LoadingGameState {
@@ -74,6 +73,7 @@ export interface PersistedState {
   players: string[]
   miroId: string
   theme: string
+  system: string
 }
 
 export const initialPersistedState = (creatorId: string): PersistedState => ({
@@ -83,6 +83,7 @@ export const initialPersistedState = (creatorId: string): PersistedState => ({
   owners: [creatorId],
   players: [],
   miroId: '',
+  system: '',
   theme: '',
 })
 
@@ -96,7 +97,6 @@ export const defaultTheme = Theme.Future
 export const initialLoadedGameState = (persistedState: PersistedState): LoadedGameState => ({
   kind: 'LoadedGameState',
   ...persistedState,
-  mode: 'Roll',
   rollsLoaded: false,
   miroId: persistedState.miroId ?? '',
   theme: persistedState.theme ?? defaultTheme,

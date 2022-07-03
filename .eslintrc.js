@@ -13,18 +13,17 @@ module.exports = {
   rules: {
     'object-shorthand': 2,
     'no-debugger': 1,
+    '@typescript-eslint/indent': 0,
     '@typescript-eslint/strict-boolean-expressions': 0,
     '@typescript-eslint/promise-function-async': 0,
     '@typescript-eslint/unbound-method': 1,
     '@typescript-eslint/no-non-null-assertion': 1,
     '@typescript-eslint/no-unused-vars': 1,
+    '@typescript-eslint/explicit-function-return-type': 0,
+    '@typescript-eslint/naming-convention': 0,
     '@typescript-eslint/member-delimiter-style': [
       1,
       { multiline: { delimiter: 'none' }, singleline: { delimiter: 'semi' } },
-    ],
-    '@typescript-eslint/explicit-function-return-type': [
-      1,
-      { allowTypedFunctionExpressions: true, allowHigherOrderFunctions: true },
     ],
     complexity: [1, 10], // KISS
     'comma-dangle': ['error', 'only-multiline'],
