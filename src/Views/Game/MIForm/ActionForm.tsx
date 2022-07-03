@@ -94,7 +94,7 @@ export const ActionForm = ({
       <DicePool state={dicePool$} sendRoll={rollIt(roll, uid, $)} disableRemove={false} disabled={false} />
       <div className={styles.form}>
         <FormHeading back={back}>Action Roll</FormHeading>
-        <p>PC does something risky or stressful</p>
+        <p>Do something risky or stressful</p>
         <ApproachSelect $={$.prop('approach$')} dicePool$={dicePool$} />
         <PowerSelect $={$.prop('power$')} dicePool$={dicePool$} />
         <FactorSelect $={$.prop('factor$')} dicePool$={dicePool$} />

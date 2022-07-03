@@ -63,6 +63,9 @@ const styles = stylesheet({
       },
     },
   },
+  title_small: {
+    fontSize: 18,
+  },
   settingsButton: {
     border: 'none',
     padding: 10,
@@ -127,6 +130,7 @@ const styles = stylesheet({
   },
   minimize: {
     marginRight: 5,
+    textDecoration: important('none'),
   },
 })
 
@@ -238,7 +242,7 @@ export const LoadedGame: FC<{
                 {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                 <Icon icon={chevronLeft} size={28} />
               </a>
-              <h1 className={styles.title}>{title}</h1>
+              <h1 className={classes(styles.title, title.length > 14 && styles.title_small)}>{title}</h1>
               <a href={`#/game-settings/${gameId}`} className={styles.settingsButton} title="Game Settings">
                 {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
                 <Icon icon={gears} size={28} />

@@ -27,6 +27,5 @@ export enum RollType {
   assist = 'assist',
   fortune = 'fortune',
   quality = 'quality',
-  other = 'other',
   message = 'message',
 }

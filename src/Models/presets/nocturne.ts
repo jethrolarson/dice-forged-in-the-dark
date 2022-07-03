@@ -70,9 +70,8 @@ export const config: RollConfig = {
       valuationType: 'Action',
       sections: [],
     },
+    { ...indulge, name: 'Externalize' },
     other,
-
-    { ...indulge, name: 'externalize' },
   ],
 }
 

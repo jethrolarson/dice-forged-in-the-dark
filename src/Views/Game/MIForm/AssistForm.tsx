@@ -100,7 +100,7 @@ export const AssistForm = ({
       <DicePool state={dicePool$} sendRoll={rollIt(roll, uid, $)} disableRemove={false} disabled={disabled} />
       <div className={styles.form}>
         <FormHeading back={back}>Assist Roll</FormHeading>
-        <p>You dive in to assist another player's action at the last second.</p>
+        <p>Dive in to assist another player's action at the last second</p>
         <p>Spend and roll one die of your choice</p>
         <div className={styles.poolSelect}>
           <TierSelect $={$.prop('tier')} />

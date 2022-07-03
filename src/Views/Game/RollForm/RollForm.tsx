@@ -22,7 +22,7 @@ import { DiceSelection } from '../MIForm/DiceSelection'
 
 const styles = stylesheet({
   form: {
-    padding: '2px 10px 20px',
+    padding: 10,
   },
   formWrap: {
     display: 'grid',

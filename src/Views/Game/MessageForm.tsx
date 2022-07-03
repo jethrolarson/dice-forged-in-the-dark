@@ -4,13 +4,14 @@ import { DocumentReference, addDoc, collection } from '@firebase/firestore'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
 import useFunState from '@fun-land/use-fun-state'
+import { FormHeading } from './MIForm/FormHeading'
 
 interface MessageFormState {
   note: string
   username: string
 }
 
-export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
+export const MessageForm: FC<{ gdoc: DocumentReference; back: () => unknown }> = ({ gdoc, back }) => {
   const state = useFunState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
   const postMessage: React.FormEventHandler<HTMLFormElement> = (e): void => {
@@ -35,6 +36,7 @@ export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
         gridGap: 10,
         margin: 10,
       })}>
+      <FormHeading back={back}>Message</FormHeading>
       <label className={style({ gridArea: 'note' })}>
         <Textarea
           passThroughProps={{

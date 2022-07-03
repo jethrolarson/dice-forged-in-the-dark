@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { style, stylesheet } from 'typestyle'
+import { stylesheet } from 'typestyle'
 import { DocumentReference } from '@firebase/firestore'
 import useFunState from '@fun-land/use-fun-state'
 import { NewRoll, sendRoll } from '../RollForm/FormCommon'
@@ -7,7 +7,6 @@ import { RollType, RollTypes } from './RollTypes'
 import { ActionForm } from './ActionForm'
 import { AssistForm } from './AssistForm'
 import { MessageForm } from '../MessageForm'
-import { FormHeading } from './FormHeading'
 import { FortuneForm } from './FortuneForm'
 import { QualityForm } from './QualityForm'
 
@@ -43,15 +42,7 @@ const FormSwitch = ({ gdoc, uid }: { gdoc: DocumentReference; uid: string }) => 
     case RollType.fortune:
       return <FortuneForm roll={roll} uid={uid} back={back} />
     case RollType.message:
-      return (
-        <div className={style({ marginTop: 10 })}>
-          <FormHeading back={back}>Message</FormHeading>
-          <p className={style({ margin: '10px', fontSize: 14, fontStyle: 'italic' })}>Log something without a roll</p>
-          <MessageForm gdoc={gdoc} />
-        </div>
-      )
-    default:
-      return <>TODO</>
+      return <MessageForm gdoc={gdoc} back={back} />
   }
 }
 
