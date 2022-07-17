@@ -1,3 +1,8 @@
+[title]:not([title='']) {
+  cursor: help;
+  text-decoration: var(--fc) dashed underline;
+}
+
 body {
   padding: 0;
   margin: 0;
@@ -38,23 +43,24 @@ label {
 button {
   outline: none;
   border: 1px solid;
-  border-color: #084c4a;
-  background: transparent;
-  color: var(--border-color);
+  border-color: var(--bc-button);
+  background: var(--bg-button);
+  color: var(--fc-button);
   padding: 4px 6px;
   font-family: inherit;
   cursor: pointer;
 }
-button:hover,
 button:focus {
-  outline: none;
-  background: var(--bg-button);
+  outline: 1px solid var(--bc-focus);
+}
+button:hover {
+  background: var(--bg-button-hover);
+  border-color: var(--bc-button-hover);
   color: var(--fc-button-hover);
 }
 button:disabled {
   cursor: not-allowed;
   color: #9daead;
-  border-color: #9daead;
 }
 button.dangerous {
   color: hsl(0, 60%, 50%);
@@ -123,15 +129,14 @@ a:hover {
   box-shadow: inset 0px 1px 1px hsla(0, 0%, 100%, 0.25), inset -1px -1px 1px rgba(0, 0, 0, 0.25);
 }
 
-[title]:not([title='']) {
-  cursor: help;
-  text-decoration: var(--fc) dashed underline;
-}
-
 .Future {
   --ff: 'Roboto Mono', monospace;
   --border-color: #92d2d0;
-  --bg-button: var(--border-color);
+  --fc-button: var(--border-color);
+  --bc-button: #084c4a;
+  --bg-button: transparent;
+  --bg-button-hover: var(--border-color);
+  --bc-button-hover: var(--border-color);
   --bg-game: radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%));
   --border-game: none;
   --fc: hsl(170, 100%, 86%);
@@ -156,6 +161,11 @@ a:hover {
   --bs-result-mixed: 0 0 5px 0px #ffa547;
   --bs-result-miss: 0 0 10px 0px hsl(0, 60%, 50%);
   --bs-result-critfail: 0 0 10px 0px hsl(0, 60%, 50%);
+  --bg-result-crit: #fff940;
+  --bg-result-success: #49d08b;
+  --bg-result-mixed: #ffa547;
+  --bg-result-miss: hsl(0, 60%, 50%);
+  --bg-result-critfail: hsl(0, 60%, 50%);
 
   --bg-die-white: #92d2d0;
   --bg-die-yellow: hsl(31, 100%, 64%);
@@ -164,9 +174,66 @@ a:hover {
   --bg-die-purple: hsl(230, 65%, 64%);
   font-family: var(--ff);
 }
+.Future2 {
+  --ff: 'Roboto Mono', monospace;
+  --border-color: #5d58a0;
+
+  --bc-focus: #d1773b;
+
+  --fc-button: #bb9deb;
+  --bg-button: transparent;
+  --bc-button: #4f3a68;
+
+  --fc-button-hover: #fff;
+  --bg-button-hover: #4f34a7;
+  --bc-button-hover: var(--bg-button-hover);
+
+  --fc-button-selected: #fff;
+  --bg-button-selected: #d1773b;
+  --bc-button-selected: var(--bg-button-selected);
+
+  --bg-game: radial-gradient(hsl(272, 46%, 17%), hsl(200, 60%, 8%));
+  --border-game: none;
+  --fc: hsl(267, 85%, 95%);
+  --fc-deem: hsl(273, 39%, 58%);
+
+  /* --fc-button: var(--border-color); */
+  --fc-link: hsl(39, 60%, 60%);
+  --fc-link-visited: hsl(34, 60%, 50%);
+  --fc-link-hover: hsl(44, 65%, 62%);
+  --bg-scrollbar: linear-gradient(180deg, #c39237, #83411b);
+  --bg-scrollbar-track: linear-gradient(90deg, #363046, #201c29 1px, rgb(24, 13, 41) 0, rgb(16, 6, 19));
+  --bg-log-meta: rgba(100, 128, 180, 0.11);
+  --br: 8px;
+  --bg-dice: radial-gradient(#111c33 51%, rgb(51, 41, 96));
+  --c-icon-button: #63492b;
+  --c-icon-button-hover: hsl(44, 65%, 62%);
+
+  --bg-input-focus: #3d204e;
+  --bc-deem: rgb(69, 38, 105);
+
+  --bs-result-crit: 0 0 5px 0px #fff940;
+  --bs-result-success: 0 0 5px 0px #49d08b;
+  --bs-result-mixed: 0 0 5px 0px #ffa547;
+  --bs-result-miss: 0 0 10px 0px hsl(352deg 68% 41%);
+  --bs-result-critfail: 0 0 10px 0px hsl(352deg 68% 41%);
+  --bg-result-crit: #fff940;
+  --bg-result-success: #49d075;
+  --bg-result-mixed: #ffa547;
+  --bg-result-miss: hsl(352deg 68% 41%);
+  --bg-result-critfail: hsl(352deg 68% 41%);
+
+  --bg-die-white: #d6cfe7;
+  --bg-die-yellow: hsl(31, 100%, 64%);
+  --bg-die-red: hsl(352deg 68% 41%);
+  --bg-die-green: hsl(149, 59%, 55%);
+  --bg-die-purple: hsl(230, 65%, 64%);
+  font-family: var(--ff);
+}
 .Simple {
   --ff: 'Garamond', serif;
   --border-color: #000;
+  --bc-button: #000;
   --bg-button: #000 url('/charcoal.png');
   --bg-game: #fff;
   --border-game: 2px solid var(--border-color);
@@ -191,6 +258,11 @@ a:hover {
   --bs-result-mixed: none;
   --bs-result-miss: none;
   --bs-result-critfail: none;
+  --bg-result-crit: #fff940;
+  --bg-result-success: #49d08b;
+  --bg-result-mixed: #ffa547;
+  --bg-result-miss: hsl(0, 60%, 50%);
+  --bg-result-critfail: hsl(0, 60%, 50%);
 
   --bg-die-white: #fff;
   --bg-die-yellow: hsl(50deg 92% 52%);

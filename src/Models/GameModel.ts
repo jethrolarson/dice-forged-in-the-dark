@@ -89,6 +89,7 @@ export const initialPersistedState = (creatorId: string): PersistedState => ({
 
 export enum Theme {
   Future = 'Future',
+  Future2 = 'Future2',
   Simple = 'Simple',
 }
 

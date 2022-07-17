@@ -1,13 +1,8 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  parserOptions: {
-    tsconfigRootDir: __dirname,
-    project: ['./tsconfig.json'],
-  },
   extends: [
     'standard-with-typescript',
-    'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:prettier/recommended', // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
   ],
   rules: {
@@ -27,7 +22,7 @@ module.exports = {
     ],
     complexity: [1, 10], // KISS
     'comma-dangle': ['error', 'only-multiline'],
-    'prettier/prettier': [2, { endOfLine: 'auto' }],
-    'no-void': [0],
+    'prettier/prettier': [1, { endOfLine: 'auto' }],
+    'no-void': 0,
   },
 }
