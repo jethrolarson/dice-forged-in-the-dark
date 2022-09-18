@@ -4,7 +4,7 @@ import { classes, keyframes, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
 import { label, e, div, button } from '../../../util'
-import { DicePoolState, removeDiceById, setDiceById } from './DicePool'
+import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
 import { Tier, TierSelect } from './TierSelect'
 
 export interface Approach$ {

@@ -239,7 +239,8 @@ a:hover {
   --border-game: 2px solid var(--border-color);
   --fc: #000;
   --fc-deem: #999;
-  --fc-button-hover: #fff;
+  --fc-button: #fff;
+  --fc-button-hover: #000;
   --fc-link: #444;
   --fc-link-visited: #666;
   --fc-link-hover: #888;

@@ -18,7 +18,7 @@ import { removeAt } from '@fun-land/accessor'
 import { DieResult, DieColor, DieType } from '../../../Models/Die'
 import { sendRoll } from './FormCommon'
 import { DicePool, Rollable } from './DicePool'
-import { DiceSelection } from '../MIForm/DiceSelection'
+import { DiceSelection } from '../../../components/DiceSelection'
 
 const styles = stylesheet({
   form: {

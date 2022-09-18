@@ -5,7 +5,7 @@ import { ComboBox } from '../../../components/ComboBox'
 import { TextInput } from '../../../components/TextInput'
 import { DieColor } from '../../../Models/Die'
 import { e, div, label } from '../../../util'
-import { DicePoolState, removeDiceById, setDiceById } from './DicePool'
+import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
 import { Tier, TierSelect } from './TierSelect'
 
 export interface Power$ {

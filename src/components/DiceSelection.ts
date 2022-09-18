@@ -2,9 +2,9 @@ import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
-import { DieColor } from '../../../Models/Die'
-import { button, div, e } from '../../../util'
-import { Die, nextColor } from '../Die'
+import { DieColor } from '../Models/Die'
+import { button, div, e } from '../util'
+import { Die, nextColor } from '../Views/Game/Die'
 import { addDie, DicePoolState } from './DicePool'
 
 const styles = stylesheet({

@@ -1,16 +1,15 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { stylesheet } from 'typestyle'
+import { style, stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
 import { DicePool, DicePoolState } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Character } from '../../../components/Character'
-import { Factor, factorDie, FactorSelect } from './FactorSelect'
-import { init_Power$, Power$, PowerSelect } from './PowerSelect'
-import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { e, h, div } from '../../../util'
+import { CheckDie, CheckDieState } from '../../../components/CheckDie'
+import { Fragment } from 'react'
 
 const styles = stylesheet({
   ActionForm: {
@@ -35,29 +34,28 @@ const styles = stylesheet({
 })
 
 interface ActionForm$ {
-  approach$: Approach$
-  power$: Power$
-  factor$: Factor
   dicePool: DicePoolState
   note: string
+  gripes: CheckDieState
+  knack: CheckDieState
+  shit: CheckDieState
+  hx: CheckDieState
+  upperHand: CheckDieState
+  amped: CheckDieState
   username: string
 }
 
 const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, approach$, power$, dicePool, username } = state.get()
+    const { note, dicePool, username } = state.get()
     const n = dicePool.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
       note,
       rollType: 'Action',
-      lines: [
-        'Action',
-        approach$.approach ? `${approach$.tier} ${approach$.approach}` : '',
-        power$.power ? `${power$.tier} ${power$.power}` : '',
-      ].filter(Boolean),
+      lines: ['Action'].filter(Boolean),
       username,
       isZero,
       diceRolled,
@@ -70,11 +68,14 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({
-  dicePool: [factorDie],
-  approach$: init_Approach$,
+  dicePool: [],
+  gripes: false,
+  knack: false,
+  shit: false,
+  hx: false,
+  upperHand: false,
+  amped: false,
   note: '',
-  power$: init_Power$,
-  factor$: Factor.Even,
   username: '',
 })
 
@@ -88,54 +89,62 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
       state: dicePool$,
       sendRoll: rollIt(roll, uid, $),
       disableRemove: false,
+      disableAdd: true,
       disabled: !username || !note,
     }),
     div({ key: 'form', className: styles.form }, [
       e(FormHeading, { key: 'head', title: 'Action Roll' }),
       h('p', { key: 'subhead' }, ['Do something risky or stressful']),
-      e(ApproachSelect, { key: 'approach', $: $.prop('approach$'), dicePool$ }),
-      e(PowerSelect, { key: 'power', $: $.prop('power$'), dicePool$ }),
-      e(FactorSelect, { key: 'factor', $: $.prop('factor$'), dicePool$ }),
+      e(CheckDie, {
+        key: 'gripes',
+        id: 'gripes',
+        $: $.prop('gripes'),
+        dicePool$,
+        color: 'white',
+        label: "Your gripes ain't shit?",
+      }),
+      e(CheckDie, {
+        key: 'knack',
+        id: 'knack',
+        $: $.prop('knack'),
+        dicePool$,
+        color: 'white',
+        label: 'You got a knack for this?',
+      }),
+      e(CheckDie, {
+        key: 'shit',
+        id: 'shit',
+        $: $.prop('shit'),
+        dicePool$,
+        color: 'white',
+        label: 'You got the right shit?',
+      }),
+      e(CheckDie, {
+        key: 'hx',
+        id: 'hx',
+        $: $.prop('hx'),
+        dicePool$,
+        color: 'white',
+        label: 'You got Hx?',
+      }),
+      e(CheckDie, {
+        key: 'upperHand',
+        id: 'upperHand',
+        $: $.prop('upperHand'),
+        dicePool$,
+        color: 'white',
+        label: "You fuckin' got this?",
+      }),
+      e(CheckDie, {
+        key: 'amped',
+        id: 'amped',
+        $: $.prop('amped'),
+        dicePool$,
+        color: 'red',
+        label: e('span', null, ['You ', e('b', null, ['amped']), '?']),
+      }),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),
     ]),
   ])
 }
-
-/* <FunButtonSelect
-  columns={1}
-  label="Position"
-  options={[
-    {
-      value: 'Controlled',
-      content: (
-        <>
-          <TierLabel tier="⓵" /> Controlled
-        </>
-      ),
-    },
-    {
-      value: 'Risky',
-      content: (
-        <>
-          <TierLabel tier="⓶" /> Risky
-        </>
-      ),
-    },
-    {
-      value: 'Desperate',
-      content: (
-        <>
-          <TierLabel tier="⓷" /> Desperate
-        </>
-      ),
-    },
-  ]}
-  $={$.prop('position')}
-/>
-<FunButtonSelect
-  columns={1}
-  label="Effect"
-  options={['None', 'Limited', 'Standard', 'Great']}
-  $={$.prop('effect')}
-/> */

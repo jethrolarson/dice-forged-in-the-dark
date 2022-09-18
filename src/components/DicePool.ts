@@ -3,11 +3,11 @@ import { FunState } from '@fun-land/fun-state'
 import { important } from 'csx'
 import { reject, repeat } from 'ramda'
 import { FC } from 'react'
-import { keyframes, style, stylesheet } from 'typestyle'
-import { DieColor, DieResult, DieType } from '../../../Models/Die'
-import { playAddSound } from '../../../sounds'
-import { e, div, button } from '../../../util'
-import { Die, nextColor } from '../Die'
+import { classes, keyframes, style, stylesheet } from 'typestyle'
+import { DieColor, DieResult, DieType } from '../Models/Die'
+import { playAddSound } from '../sounds'
+import { e, div, button } from '../util'
+import { Die, nextColor } from '../Views/Game/Die'
 import { DiceSelection } from './DiceSelection'
 
 const spin = keyframes({
@@ -58,6 +58,9 @@ const styles = stylesheet({
     fontWeight: 'bold',
     borderWidth: '2px 0 0',
     borderRadius: '0 0 5px 5px',
+  },
+  roundTop: {
+    borderRadius: '6px 6px 0 0',
   },
 })
 
@@ -127,16 +130,18 @@ export const DicePool: FC<{
   sendRoll: (results: DieResult[]) => unknown
   disabled: boolean
   disableRemove?: boolean
-}> = ({ state, sendRoll, disabled, disableRemove = false }) => {
+  disableAdd?: boolean
+}> = ({ state, sendRoll, disabled, disableRemove = false, disableAdd = false }) => {
   const dicePool = state.get()
   const roll = () => sendRoll(rollPool(dicePool))
   return div({ className: styles.DicePool }, [
+    !disableAdd &&
+      div(
+        { key: 'diceSelevtion', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
+        [e(DiceSelection, { key: 'dice', $: state })],
+      ),
     div(
-      { key: 'diceSelevtion', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
-      [e(DiceSelection, { key: 'dice', $: state })],
-    ),
-    div(
-      { key: 'diceBox', className: styles.diceBox },
+      { key: 'diceBox', className: classes(styles.diceBox, disableAdd && styles.roundTop) },
       dicePool.map(({ type: d, color: c }, i) =>
         button(
           {

@@ -1,6 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
 import { style } from 'typestyle'
-import { Textarea } from '../../../components/Textarea'
+import { Textarea } from './Textarea'
 
 const className = style({
   width: '100%',

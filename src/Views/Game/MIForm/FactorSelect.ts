@@ -5,7 +5,7 @@ import { classes, keyframes, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
 import { label, div, button } from '../../../util'
-import { addDice, DicePoolState, removeDiceById } from './DicePool'
+import { addDice, DicePoolState, removeDiceById } from '../../../components/DicePool'
 
 const textPulse = keyframes({
   from: {

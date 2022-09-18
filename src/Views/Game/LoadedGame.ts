@@ -23,6 +23,7 @@ import useFunState from '@fun-land/use-fun-state'
 import { mergeRight } from 'ramda'
 import { MIForm } from './MIForm/MIForm'
 import { div, e, h, button } from '../../util'
+import { AshworldForm } from './AshworldForm/AshworldForm'
 
 const styles = stylesheet({
   Game: {},
@@ -289,6 +290,8 @@ export const LoadedGame: FC<{
             div({ key: 'rollForm' }, [
               rollConfig.system === 'mala-incognita'
                 ? e(MIForm, { key: 'miForm', gdoc, uid, scrollToBottom })
+                : rollConfig.system === 'Ash World 0.1'
+                ? e(AshworldForm, { key: 'form', uid, gdoc, scrollToBottom })
                 : e(RollForm, { key: 'oldForm', rollConfig, gdoc, uid }),
             ]),
           ]),

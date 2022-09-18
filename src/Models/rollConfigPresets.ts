@@ -12,5 +12,6 @@ export const presets = [
   xThreat3,
   xThreat4,
   atsfs,
+  { system: 'Ash World 0.1' },
   { system: 'mala-incognita' },
 ] as const
