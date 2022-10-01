@@ -59,6 +59,7 @@ const styles = stylesheet({
     fontWeight: 'bold',
     borderWidth: '2px 0 0',
     borderRadius: '0 0 5px 5px',
+    background: 'var(--bg-button-selected)',
   },
   roundTop: {
     borderRadius: '6px 6px 0 0',

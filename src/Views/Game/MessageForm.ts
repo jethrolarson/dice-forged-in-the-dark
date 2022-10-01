@@ -44,8 +44,6 @@ export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
     state.prop('username').set('')
   }
   return h('form', { onSubmit: postMessage, className: styles.MessageForm }, [
-    e(FormHeading, { key: 'title', title: 'Message' }),
-    h('p', { key: 'subhead' }, ['Log a message without performing a roll']),
     label({ key: 'note' }, [
       e(Textarea, {
         key: 'note',

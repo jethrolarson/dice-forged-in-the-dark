@@ -9,7 +9,6 @@ import { FormHeading } from '../../../components/FormHeading'
 import { Character } from '../../../components/Character'
 import { e, h, div } from '../../../util'
 import { CheckDie, CheckDieState } from '../../../components/CheckDie'
-import { Fragment } from 'react'
 
 const styles = stylesheet({
   ActionForm: {
@@ -93,15 +92,15 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
       disabled: !username || !note,
     }),
     div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Action Roll' }),
-      h('p', { key: 'subhead' }, ['Try something risky or stressful']),
+      e(FormHeading, { key: 'head', title: 'Action' }),
+      h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
       e(CheckDie, {
         key: 'gripes',
         id: 'gripes',
         $: $.prop('gripes'),
         dicePool$,
         color: 'white',
-        label: "Your gripes ain't shit",
+        label: e('span', null, ['Your ', e('b', null, 'gripes'), " ain't buggin"]),
       }),
       e(CheckDie, {
         key: 'knack',
@@ -109,7 +108,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('knack'),
         dicePool$,
         color: 'white',
-        label: 'You got a knack for this',
+        label: e('span', null, ['You got a ', e('b', null, 'knack'), ' for this']),
       }),
       e(CheckDie, {
         key: 'shit',
@@ -125,7 +124,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('hx'),
         dicePool$,
         color: 'white',
-        label: 'You got HX',
+        label: e('span', null, ['You got ', e('b', null, 'Hx')]),
       }),
       e(CheckDie, {
         key: 'upperHand',
@@ -141,7 +140,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('amped'),
         dicePool$,
         color: 'red',
-        label: e('span', null, [`You're fuckin' `, e('b', null, ['amped'])]),
+        label: e('span', null, [`You're `, e('b', null, ['amped']), ' up']),
       }),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),

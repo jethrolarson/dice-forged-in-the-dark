@@ -9,6 +9,7 @@ import { div, e } from '../../../util'
 import { FunState } from '@fun-land/fun-state'
 import { AssistForm } from './AssistForm'
 import { ResistForm } from './ResistForm'
+import { FortuneForm } from './FortuneForm'
 
 type FormState = RollType
 
@@ -42,6 +43,8 @@ export const Form = ({
       return e(AssistForm, { roll, uid })
     case RollType.resist:
       return e(ResistForm, { roll, uid })
+    case RollType.fortune:
+      return e(FortuneForm, { roll, uid })
     case RollType.message:
       return e(MessageForm, { gdoc })
   }
@@ -49,5 +52,5 @@ export const Form = ({
 
 export const AshworldForm = (props: { gdoc: DocumentReference; uid: string; scrollToBottom: () => unknown }) => {
   const $ = useFunState<FormState>(RollType.none)
-  return div(null, [e(Form, { key: 'form', $, ...props }), e(RollTypes, { key: 'types', $ })])
+  return div(null, [e(RollTypes, { key: 'types', $ }), e(Form, { key: 'form', $, ...props })])
 }

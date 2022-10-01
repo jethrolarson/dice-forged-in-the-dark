@@ -88,7 +88,7 @@ export const AssistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
       disabled,
     }),
     div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Assist Roll' }),
+      e(FormHeading, { key: 'head', title: 'Assist' }),
       h('p', { key: 'subhead' }, ['Roll your amp die to save another action']),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),
