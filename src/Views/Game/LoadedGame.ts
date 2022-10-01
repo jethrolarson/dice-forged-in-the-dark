@@ -52,7 +52,7 @@ const styles = stylesheet({
   title: {
     background: 'transparent',
     verticalAlign: 'bottom',
-    fontSize: 30,
+    fontSize: '2.2rem',
     margin: 0,
     appearance: 'none',
     border: '2px solid transparent',
@@ -66,7 +66,7 @@ const styles = stylesheet({
     },
   },
   title_small: {
-    fontSize: 18,
+    fontSize: '1.5rem',
   },
   settingsButton: {
     border: 'none',
@@ -219,7 +219,12 @@ export const LoadedGame: FC<{
     scrollToBottom()
   }, [rolls])
 
-  return div({ className: classes(styles.Game, theme) }, [
+  useEffect(() => {
+    document.documentElement.classList.add(theme)
+    return () => document.documentElement.classList.remove(theme)
+  }, [theme])
+
+  return div({ className: styles.Game }, [
     div({ key: 'body', className: styles.body }, [
       div({ key: 'left', className: styles.left }, [
         miroId &&

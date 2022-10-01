@@ -11,7 +11,7 @@ import { label, e, div } from '../../../util'
 const styles = stylesheet({
   label: {
     margin: '0 0 4px',
-    fontSize: 14,
+    fontSize: '1.17rem',
   },
 })
 export const Modifier = ({

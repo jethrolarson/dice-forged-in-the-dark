@@ -24,7 +24,7 @@ const styles = stylesheet({
     $nest: {
       p: {
         margin: 0,
-        fontSize: 14,
+        fontSize: '1.17rem',
         fontStyle: 'italic',
       },
     },

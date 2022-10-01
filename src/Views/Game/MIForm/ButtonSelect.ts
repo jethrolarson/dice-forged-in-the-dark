@@ -10,7 +10,7 @@ const styles = stylesheet({
   },
   label: {
     margin: '0 0 4px',
-    fontSize: 14,
+    fontSize: '1.17rem',
   },
   option: {
     display: 'block',

@@ -10,7 +10,7 @@ const styles = stylesheet({
     $nest: {
       button: {
         border: 'none',
-        fontSize: 24,
+        fontSize: '2rem',
         padding: '1px 2px 2px',
         fontSmooth: 'always',
         $nest: {

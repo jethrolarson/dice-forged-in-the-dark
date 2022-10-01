@@ -5,7 +5,7 @@ import { div, e } from '../../util'
 import { Note } from './Note'
 
 const messageStyle = style({
-  fontSize: 12,
+  fontSize: '1rem',
   margin: '24px 12px',
   border: `1px solid var(--border-color)`,
   borderRadius: '8px',

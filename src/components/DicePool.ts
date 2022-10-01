@@ -25,6 +25,7 @@ const styles = stylesheet({
     appearance: 'none',
     opacity: 1,
     padding: 0,
+    background: 'transparent',
     backgroundColor: important('transparent'),
     border: 'none',
     animationName: spin,

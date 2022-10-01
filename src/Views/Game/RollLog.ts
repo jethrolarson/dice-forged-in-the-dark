@@ -14,7 +14,7 @@ const styles = stylesheet({
     listStyle: 'none',
     display: 'flex',
     margin: '18px 12px',
-    fontSize: 12,
+    fontSize: '1rem',
   },
   metaWrap: {
     display: 'flex',
@@ -34,7 +34,7 @@ const styles = stylesheet({
   time: {
     textAlign: 'right',
     color: 'var(--fc-deem)',
-    fontSize: 10,
+    fontSize: '0.9rem',
     display: 'block',
     margin: '4px 16px 0',
   },
@@ -60,10 +60,11 @@ const styles = stylesheet({
   },
   line: { fontWeight: 500 },
   rollType: {
-    fontSize: 20,
+    fontSize: '1.7rem',
+    fontFamily: 'var(--ff-heading)',
   },
   smallRollType: {
-    fontSize: 14,
+    fontSize: '1.17rem',
   },
   result: {
     display: 'flex',
@@ -85,7 +86,7 @@ const styles = stylesheet({
     lineHeight: '1',
     borderRadius: '0 0 var(--br) var(--br)',
     margin: '0 -2px -2px',
-    fontSize: 18,
+    fontSize: '1.5rem',
   },
   note: {
     marginTop: 2,

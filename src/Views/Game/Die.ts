@@ -104,7 +104,7 @@ export const Die: FC<DieProps> = ({ value, dotColor, dieColor, border, size = 60
             background: dieColor.toString(),
             width: size,
             height: size,
-            borderRadius: size / 6,
+            borderRadius: size / 8,
             padding: Math.floor(size / 8),
             border: border ? `2px solid ${dotColor.toString()}` : 'none',
           },

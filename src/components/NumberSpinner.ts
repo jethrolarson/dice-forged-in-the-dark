@@ -14,7 +14,7 @@ const styles = stylesheet({
         padding: '3px 8px',
       },
       button: {
-        fontSize: 14,
+        fontSize: '1.17rem',
         padding: '3px 8px',
       },
     },

@@ -10,7 +10,7 @@ const styles = stylesheet({
     margin: 10,
   },
   active: {
-    backgroundColor: 'var(--bg-button-selected)',
+    background: 'var(--bg-button-selected)',
     color: 'var(--fc-button-selected)',
     borderColor: 'var(--bc-button-selected)',
   },

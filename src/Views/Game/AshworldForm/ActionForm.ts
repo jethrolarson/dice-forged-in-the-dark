@@ -21,7 +21,7 @@ const styles = stylesheet({
     $nest: {
       p: {
         margin: 0,
-        fontSize: 14,
+        fontSize: '1.17rem',
         fontStyle: 'italic',
       },
     },
@@ -94,14 +94,14 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
     }),
     div({ key: 'form', className: styles.form }, [
       e(FormHeading, { key: 'head', title: 'Action Roll' }),
-      h('p', { key: 'subhead' }, ['Do something risky or stressful']),
+      h('p', { key: 'subhead' }, ['Try something risky or stressful']),
       e(CheckDie, {
         key: 'gripes',
         id: 'gripes',
         $: $.prop('gripes'),
         dicePool$,
         color: 'white',
-        label: "Your gripes ain't shit?",
+        label: "Your gripes ain't shit",
       }),
       e(CheckDie, {
         key: 'knack',
@@ -109,7 +109,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('knack'),
         dicePool$,
         color: 'white',
-        label: 'You got a knack for this?',
+        label: 'You got a knack for this',
       }),
       e(CheckDie, {
         key: 'shit',
@@ -117,7 +117,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('shit'),
         dicePool$,
         color: 'white',
-        label: 'You got the right shit?',
+        label: 'You got the right shit',
       }),
       e(CheckDie, {
         key: 'hx',
@@ -125,7 +125,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('hx'),
         dicePool$,
         color: 'white',
-        label: 'You got Hx?',
+        label: 'You got HX',
       }),
       e(CheckDie, {
         key: 'upperHand',
@@ -133,7 +133,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('upperHand'),
         dicePool$,
         color: 'white',
-        label: "You fuckin' got this?",
+        label: "You fuckin' got this",
       }),
       e(CheckDie, {
         key: 'amped',
@@ -141,7 +141,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('amped'),
         dicePool$,
         color: 'red',
-        label: e('span', null, ['You ', e('b', null, ['amped']), '?']),
+        label: e('span', null, [`You're fuckin' `, e('b', null, ['amped'])]),
       }),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),

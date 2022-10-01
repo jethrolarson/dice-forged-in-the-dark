@@ -8,7 +8,7 @@ import { addDice, DicePoolState, removeDiceById } from './DicePool'
 
 const styles = stylesheet({
   CheckDie: {
-    fontSize: 12,
+    fontSize: '1rem',
   },
   checkbox: {
     verticalAlign: 'middle',
@@ -20,6 +20,7 @@ const styles = stylesheet({
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    fontFamily: "'Roboto Mono'",
     $nest: {
       '&:checked:before': {
         content: '"×"',

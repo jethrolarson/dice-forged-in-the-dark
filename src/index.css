@@ -3,6 +3,10 @@
   text-decoration: var(--fc) dashed underline;
 }
 
+html {
+  font-size: var(--fs);
+}
+
 body {
   padding: 0;
   margin: 0;
@@ -29,6 +33,7 @@ h4 {
   color: inherit;
   font-weight: normal;
   margin: 0;
+  font-family: var(--ff-heading);
 }
 
 ul,
@@ -130,7 +135,9 @@ a:hover {
 }
 
 .Future {
+  --fs: 12px;
   --ff: 'Roboto Mono', monospace;
+  --ff-heading: var(--ff);
   --border-color: #92d2d0;
   --fc-button: var(--border-color);
   --bc-button: #084c4a;
@@ -175,7 +182,9 @@ a:hover {
   font-family: var(--ff);
 }
 .Future2 {
+  --fs: 12px;
   --ff: 'Roboto Mono', monospace;
+  --ff-heading: var(--ff);
   --border-color: #5d58a0;
 
   --bc-focus: #d1773b;
@@ -231,26 +240,33 @@ a:hover {
   font-family: var(--ff);
 }
 .Simple {
-  --ff: 'Garamond', serif;
+  --fs: 15px;
+  --ff: 'Short Stack', sans-serif;
+  --ff-heading: 'Rock Salt', sans-serif;
   --border-color: #000;
   --bc-button: #000;
   --bg-button: #000 url('/charcoal.png');
+
+  --fc-button-selected: #fff;
+  --bg-button-selected: #c11313;
+  --bc-button-selected: var(--bg-button-selected);
+
   --bg-game: #fff;
   --border-game: 2px solid var(--border-color);
   --fc: #000;
-  --fc-deem: #999;
+  --fc-deem: rgb(115, 115, 115);
   --fc-button: #fff;
   --fc-button-hover: #000;
-  --fc-link: #444;
-  --fc-link-visited: #666;
+  --fc-link: hsl(0, 100%, 33%);
+  --fc-link-visited: hsl(0, 97%, 23%);
   --fc-link-hover: #888;
   --bg-scrollbar: #000 url('/charcoal.png');
   --bg-scrollbar-track: #eee;
   --bg-log-meta: transparent;
   --br: 0;
-  --bg-dice: #bbb;
   --c-icon-button: #666;
   --c-icon-button-hover: var(--fc);
+  --bg-dice: #fff;
 
   --bc-deem: #666;
 
@@ -265,7 +281,7 @@ a:hover {
   --bg-result-miss: hsl(0, 60%, 50%);
   --bg-result-critfail: hsl(0, 60%, 50%);
 
-  --bg-die-white: #fff;
+  --bg-die-white: hsl(0, 0%, 60%);
   --bg-die-yellow: hsl(50deg 92% 52%);
   --bg-die-red: hsl(0deg 82% 57%);
   --bg-die-green: hsl(131deg 60% 41%);
