@@ -89,7 +89,7 @@ export const ResistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
     }),
     div({ key: 'form', className: styles.form }, [
       e(FormHeading, { key: 'head', title: 'Resist Roll' }),
-      h('p', { key: 'subhead' }, ['Roll your amp die to resist bad shit']),
+      h('p', { key: 'subhead' }, ['Spend a pool die to resist bad shit']),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),
     ]),

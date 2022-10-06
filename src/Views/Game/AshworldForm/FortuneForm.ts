@@ -49,7 +49,7 @@ const rollIt =
     roll({
       note,
       rollType: 'Action',
-      lines: ['Assist'],
+      lines: ['Fortune'],
       username,
       isZero,
       diceRolled,
@@ -62,9 +62,9 @@ const rollIt =
   }
 
 const ampDie: Rollable = {
-  color: 'red',
+  color: 'yellow',
   type: 'd6',
-  id: 'amped',
+  id: 'fortune',
 }
 
 const init_ActionForm$ = (): AssistForm$ => ({
