@@ -95,6 +95,14 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
       e(FormHeading, { key: 'head', title: 'Action' }),
       h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
       e(CheckDie, {
+        key: 'gripes',
+        id: 'gripes',
+        $: $.prop('gripes'),
+        dicePool$,
+        color: 'green',
+        label: e('span', null, [`You got `, e('b', null, ['backup'])]),
+      }),
+      e(CheckDie, {
         key: 'knack',
         id: 'knack',
         $: $.prop('knack'),
@@ -117,14 +125,6 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         dicePool$,
         color: 'red',
         label: e('span', null, [`You're `, e('b', null, ['amped']), ' up']),
-      }),
-      e(CheckDie, {
-        key: 'gripes',
-        id: 'gripes',
-        $: $.prop('gripes'),
-        dicePool$,
-        color: 'green',
-        label: e('span', null, [`You got an `, e('b', null, ['assist'])]),
       }),
       e(CheckDie, {
         key: 'upperHand',
