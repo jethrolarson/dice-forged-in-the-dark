@@ -75,7 +75,7 @@ const init_ActionForm$ = (): AssistForm$ => ({
 
 export const FortuneForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
   const $ = useFunState<AssistForm$>(init_ActionForm$())
-  const { username, note } = $.get()
+  const { note } = $.get()
   const disabled = !note
   const dicePool$ = $.prop('dicePool')
   return div({ className: styles.AssistForm }, [

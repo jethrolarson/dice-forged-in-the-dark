@@ -7,7 +7,6 @@ import { ActionForm } from './ActionForm'
 import { MessageForm } from '../MessageForm'
 import { div, e } from '../../../util'
 import { FunState } from '@fun-land/fun-state'
-import { AssistForm } from './AssistForm'
 import { ResistForm } from './ResistForm'
 import { FortuneForm } from './FortuneForm'
 
@@ -39,8 +38,6 @@ export const Form = ({
       return null
     case RollType.action:
       return e(ActionForm, { roll, uid })
-    case RollType.assist:
-      return e(AssistForm, { roll, uid })
     case RollType.resist:
       return e(ResistForm, { roll, uid })
     case RollType.fortune:

@@ -27,7 +27,6 @@ const styles = stylesheet({
 export enum RollType {
   none = 'none',
   action = 'action',
-  assist = 'assist',
   resist = 'resist',
   message = 'message',
   fortune = 'fortune',
@@ -35,7 +34,6 @@ export enum RollType {
 
 const actionMap = [
   [RollType.action, 'Action'],
-  [RollType.assist, 'Assist'],
   [RollType.resist, 'Resist'],
   [RollType.fortune, 'Fortune'],
   [RollType.message, 'Message'],
