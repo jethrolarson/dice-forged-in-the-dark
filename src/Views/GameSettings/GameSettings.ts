@@ -145,7 +145,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
       ),
     ]),
     label({ key: 'presetLabel' }, [
-      'Load Preset: ',
+      'Game system: ',
       h(
         'select',
         {
@@ -169,9 +169,15 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
 
     h('footer', { className: styles.footer }, [
       div({ key: 'left', className: styles.leftButtons }, [
-        button({ key: 'save', onClick: gdoc ? saveSettings : noop, disabled: !title || !rollConfigText }, [
-          'Save Settings',
-        ]),
+        button(
+          {
+            key: 'save',
+            onClick: gdoc ? saveSettings : noop,
+            disabled: !title || !rollConfigText,
+            className: 'primary',
+          },
+          ['Save Settings'],
+        ),
         button({ onClick: () => location.assign(`#/game/${gameId}`) }, ['Cancel']),
       ]),
       button({ key: 'delete', className: 'dangerous', onClick: gdoc ? deleteGame(gdoc) : noop }, ['Delete Game']),

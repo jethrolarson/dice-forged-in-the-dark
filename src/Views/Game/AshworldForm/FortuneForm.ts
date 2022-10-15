@@ -9,6 +9,7 @@ import { Character } from '../../../components/Character'
 import { FormHeading } from '../../../components/FormHeading'
 import { e, h, div } from '../../../util'
 import { Rollable } from '../RollForm/DicePool'
+import { DiceSelection } from '../../../components/DiceSelection'
 
 const styles = stylesheet({
   AssistForm: {
@@ -55,7 +56,7 @@ const rollIt =
       diceRolled,
       date: Date.now(),
       kind: 'Roll',
-      valuationType: 'Highest',
+      valuationType: 'Action',
       uid,
     })
     state.set(init_ActionForm$())
@@ -84,7 +85,7 @@ export const FortuneForm = ({ uid, roll }: { uid: string; roll: (rollResult: New
       state: dicePool$,
       sendRoll: rollIt(roll, uid, $),
       disableRemove: false,
-      disableAdd: true,
+      disableAdd: false,
       disabled,
     }),
     div({ key: 'form', className: styles.form }, [

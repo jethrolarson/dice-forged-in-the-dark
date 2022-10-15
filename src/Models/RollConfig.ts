@@ -53,6 +53,7 @@ const ValuationTypeC = T.union([
   T.literal('Highest'),
   T.literal('Lowest'),
   T.literal('Ask'),
+  T.literal('Quality'),
 ])
 
 export type ValuationType = T.TypeOf<typeof ValuationTypeC>

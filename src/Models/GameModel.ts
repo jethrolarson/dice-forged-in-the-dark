@@ -93,7 +93,7 @@ export enum Theme {
   Simple = 'Simple',
 }
 
-export const defaultTheme = Theme.Future
+export const defaultTheme = Theme.Future2
 
 export const initialLoadedGameState = (persistedState: PersistedState): LoadedGameState => ({
   kind: 'LoadedGameState',

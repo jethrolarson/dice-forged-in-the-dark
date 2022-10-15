@@ -94,14 +94,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
     div({ key: 'form', className: styles.form }, [
       e(FormHeading, { key: 'head', title: 'Action' }),
       h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
-      e(CheckDie, {
-        key: 'gripes',
-        id: 'gripes',
-        $: $.prop('gripes'),
-        dicePool$,
-        color: 'green',
-        label: e('span', null, [`You got `, e('b', null, ['backup'])]),
-      }),
+
       e(CheckDie, {
         key: 'knack',
         id: 'knack',
@@ -124,7 +117,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('amped'),
         dicePool$,
         color: 'red',
-        label: e('span', null, [`You're `, e('b', null, ['amped']), ' up']),
+        label: e('span', null, [`You're `, e('b', null, ['amped']), ' (burn die)']),
       }),
       e(CheckDie, {
         key: 'upperHand',
@@ -132,7 +125,15 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('upperHand'),
         dicePool$,
         color: 'white',
-        label: "You fuckin' got this",
+        label: "You fuckin' got this (Emcee)",
+      }),
+      e(CheckDie, {
+        key: 'gripes',
+        id: 'gripes',
+        $: $.prop('gripes'),
+        dicePool$,
+        color: 'yellow',
+        label: e('span', null, [`You're taking a `, e('b', null, ["Devil's Bargain"])]),
       }),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),

@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react'
+import { FC, useEffect } from 'react'
 import useFunState from '@fun-land/use-fun-state'
 import { AppState, initialState, View } from './Models/Model'
 import { Game } from './Views/Game/Game'

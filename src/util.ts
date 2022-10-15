@@ -16,7 +16,7 @@ const h_ =
 export const e = createElement
 
 export const div = h_('div')
-
 export const button = h_('button')
-
 export const label = h_('label')
+export const h1 = h_('h1')
+export const p = h_('p')

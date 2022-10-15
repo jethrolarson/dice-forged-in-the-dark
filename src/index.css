@@ -14,7 +14,7 @@ body {
   line-height: 1.4;
   font-weight: 300;
   background: black;
-  color: hsl(170, 100%, 86%);
+  color: var(--fc);
 }
 
 body,
@@ -77,6 +77,17 @@ button.dangerous:focus {
   background: hsl(0, 60%, 50%);
   color: #201c29;
 }
+button.primary {
+  border-color: var(--bc-button-primary);
+  background: var(--bg-button-primary);
+  color: var(--fc-button-primary);
+}
+button.primary:hover,
+button.primary:focus {
+  border-color: var(--bc-button-primary-hover);
+  background: var(--bg-button-primary-hover);
+  color: var(--fc-button-primary-hover);
+}
 input,
 textarea,
 select {
@@ -135,6 +146,7 @@ a:hover {
 }
 
 .Future {
+  --fc: hsl(170, 100%, 86%);
   --fs: 12px;
   --ff: 'Roboto Mono', monospace;
   --ff-heading: var(--ff);
@@ -144,6 +156,12 @@ a:hover {
   --bg-button: transparent;
   --bg-button-hover: var(--border-color);
   --bc-button-hover: var(--border-color);
+  --bc-button-primary: #34e4de;
+  --bg-button-primary: #34e4de;
+  --fc-button-primary: rgb(0, 0, 0);
+  --bc-button-primary-hover: #9cfffc;
+  --bg-button-primary-hover: #9cfffc;
+  --fc-button-primary-hover: #084c4a;
   --bg-game: radial-gradient(hsl(170, 80%, 15%), hsl(200, 60%, 8%));
   --border-game: none;
   --fc: hsl(170, 100%, 86%);
@@ -182,6 +200,7 @@ a:hover {
   font-family: var(--ff);
 }
 .Future2 {
+  --fc: hsl(253, 37%, 80%);
   --fs: 12px;
   --ff: 'Roboto Mono', monospace;
   --ff-heading: var(--ff);
@@ -200,6 +219,13 @@ a:hover {
   --fc-button-selected: #fff;
   --bg-button-selected: #d1773b;
   --bc-button-selected: var(--bg-button-selected);
+
+  --bc-button-primary: #d1773b;
+  --bg-button-primary: #d1773b;
+  --fc-button-primary: #fff;
+  --bc-button-primary-hover: #ff954f;
+  --bg-button-primary-hover: #ff954f;
+  --fc-button-primary-hover: #fff;
 
   --bg-game: radial-gradient(hsl(272, 46%, 17%), hsl(200, 60%, 8%));
   --border-game: none;
