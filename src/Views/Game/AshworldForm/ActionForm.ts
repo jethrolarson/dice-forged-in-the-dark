@@ -117,7 +117,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('amped'),
         dicePool$,
         color: 'red',
-        label: e('span', null, [`You're `, e('b', null, ['amped']), ' (burn die)']),
+        label: e('span', null, [`You're `, e('b', null, ['juiced'])]),
       }),
       e(CheckDie, {
         key: 'upperHand',

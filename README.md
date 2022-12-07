@@ -17,6 +17,7 @@ None so far but if you want to use this code talk to me.
 - Custom game configuration
 - User Login (google auth)
 - Support for alternate valuations on rolls (alternates to 1-3=miss, 4,5=mixed, etc)
+- Integration with Miro
 
 # Loosely Planned Features
 
@@ -26,7 +27,3 @@ None so far but if you want to use this code talk to me.
 - Theming
 - Support for dice other than d6
 
-# Gleam in my eye
-
-- Localization
-- Drawing space with support for importing images
