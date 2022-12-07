@@ -1,3 +1,7 @@
+:root{
+  --fc: #fff;
+}
+
 [title]:not([title='']) {
   cursor: help;
   text-decoration: var(--fc) dashed underline;
