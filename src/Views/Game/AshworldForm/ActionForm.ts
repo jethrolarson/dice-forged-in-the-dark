@@ -101,7 +101,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('knack'),
         dicePool$,
         color: 'white',
-        label: e('span', null, ['You got a ', e('b', null, 'knack'), ' for this']),
+        label: e('span', null, ['We got a ', e('b', null, 'knack'), ' for this']),
       }),
       e(CheckDie, {
         key: 'shit',
@@ -109,7 +109,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('shit'),
         dicePool$,
         color: 'white',
-        label: 'You got the right shit',
+        label: 'We got the right shit',
       }),
       e(CheckDie, {
         key: 'amped',
@@ -117,7 +117,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('amped'),
         dicePool$,
         color: 'red',
-        label: e('span', null, [`You're `, e('b', null, ['juiced'])]),
+        label: e('span', null, [`We're `, e('b', null, ['juiced']), ' or in ', e('b', null, 'sync')]),
       }),
       e(CheckDie, {
         key: 'upperHand',
@@ -125,7 +125,7 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('upperHand'),
         dicePool$,
         color: 'white',
-        label: "You fuckin' got this (Emcee)",
+        label: "We fuckin' got this (Emcee)",
       }),
       e(CheckDie, {
         key: 'gripes',
@@ -133,8 +133,9 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
         $: $.prop('gripes'),
         dicePool$,
         color: 'yellow',
-        label: e('span', null, [`You're taking a `, e('b', null, ["Devil's Bargain"])]),
+        label: e('span', null, [`We're taking a `, e('b', null, ["Devil's Bargain"])]),
       }),
+      e('p', {}, ['Emcee tells you ', e('b', null, 'good'), ' and ', e('b', null, 'bad'), ' stuff']),
       e(Character, { key: 'character', $: $.prop('username') }),
       e(Note, { key: 'note', $: $.prop('note') }),
     ]),
