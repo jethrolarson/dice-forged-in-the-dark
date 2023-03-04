@@ -18,16 +18,18 @@ export const Form = ({
   gdoc,
   uid,
   scrollToBottom,
+  userDisplayName,
 }: {
   $: FunState<FormState>
   gdoc: DocumentReference
   uid: string
+  userDisplayName: string | undefined
   scrollToBottom: () => unknown
 }) => {
   const rollType = $.get()
   const roll = useCallback(
     (newRoll: NewRoll) => {
-      sendRoll(gdoc, newRoll)
+      sendRoll(gdoc, userDisplayName, newRoll)
     },
     [gdoc],
   )
@@ -50,7 +52,12 @@ export const Form = ({
   }
 }
 
-export const MIForm = (props: { gdoc: DocumentReference; uid: string; scrollToBottom: () => unknown }) => {
+export const MIForm = (props: {
+  gdoc: DocumentReference
+  userDisplayName: string | undefined
+  uid: string
+  scrollToBottom: () => unknown
+}) => {
   const $ = useFunState<FormState>(RollType.none)
   return div(null, [e(Form, { key: 'form', $, ...props }), e(RollTypes, { key: 'types', $ })])
 }

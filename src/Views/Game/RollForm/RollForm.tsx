@@ -84,38 +84,41 @@ const zeroDicePool: Rollable[] = [
 const reset = (state: FunState<RollFormState>): void =>
   merge(state)({ note: '', rollType: '', rollState: ['', '', '', '', '', '', '', '', '', ''], dicePool: [] })
 
-export const roll = (gdoc: DocumentReference, uid: string, state: FunState<RollFormState>) => (): void => {
-  const { dicePool, rollState, note, rollType, username, valuationType } = state.get()
-  const n = dicePool.length
-  const isZero = n === 0
-  if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
-  const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    dieColor: DieColor[dieColor] as any,
-    dieType,
-    value: rollDie(),
-  })) as DieResult[]
-  const lines = rollState
-  const roll: Omit<RollResult, 'id'> = {
-    note,
-    rollType,
-    lines,
-    username,
-    isZero,
-    diceRolled,
-    date: Date.now(),
-    kind: 'Roll',
-    valuationType,
-    uid,
+export const roll =
+  (gdoc: DocumentReference, uid: string, state: FunState<RollFormState>, userDisplayName?: string) => (): void => {
+    const { dicePool, rollState, note, rollType, username, valuationType } = state.get()
+    const n = dicePool.length
+    const isZero = n === 0
+    if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
+    const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      dieColor: DieColor[dieColor] as any,
+      dieType,
+      value: rollDie(),
+    })) as DieResult[]
+    const lines = rollState
+    const roll: Omit<RollResult, 'id'> = {
+      note,
+      rollType,
+      lines,
+      username,
+      user: userDisplayName,
+      isZero,
+      diceRolled,
+      date: Date.now(),
+      kind: 'Roll',
+      valuationType,
+      uid,
+    }
+    sendRoll(gdoc, userDisplayName, roll)
+    reset(state)
   }
-  sendRoll(gdoc, roll)
-  reset(state)
-}
 
-export const RollForm: FC<{ rollConfig: RollConfig; gdoc: DocumentReference; uid: string }> = ({
+export const RollForm: FC<{ rollConfig: RollConfig; gdoc: DocumentReference; uid: string; username?: string }> = ({
   rollConfig,
   gdoc,
   uid,
+  username: userDisplayName,
 }) => {
   const s = useFunState<RollFormState>({
     note: '',
@@ -144,7 +147,7 @@ export const RollForm: FC<{ rollConfig: RollConfig; gdoc: DocumentReference; uid
         <div className={styles.formWrap}>
           <DicePool
             dicePool={dicePool}
-            roll={roll(gdoc, uid, s)}
+            roll={roll(gdoc, uid, s, userDisplayName)}
             disabled={!currentConfig.excludeCharacter && !username.length}
             removeDie={removeDie}
             changeColor={changeColor}

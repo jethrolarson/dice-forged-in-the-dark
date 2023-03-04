@@ -39,7 +39,11 @@ const saveGameToUser = (userDoc: DocumentReference, gameId: string): void => {
     })
 }
 
-export const GameWithUID: FC<{ gameId: string; uid: string }> = ({ gameId, uid }) => {
+export const GameWithUID: FC<{ gameId: string; uid: string; userDisplayName: string | undefined }> = ({
+  gameId,
+  uid,
+  userDisplayName,
+}) => {
   const gdoc = useDoc(`games/${gameId}`)
   const userDoc = useDoc(`users/${uid}`)
   const [gameState, setGameState] = useState<GameState>(initialGameState)
@@ -60,7 +64,7 @@ export const GameWithUID: FC<{ gameId: string; uid: string }> = ({ gameId, uid }
   }, [gdoc])
   switch (gameState.kind) {
     case 'LoadedGameState':
-      return e(LoadedGame, { initialState: gameState, gameId, gdoc, uid })
+      return e(LoadedGame, { initialState: gameState, gameId, gdoc, uid, userDisplayName })
     case 'MissingGameState':
       return h('h1', null, ['Game not found. Check the url'])
     case 'LoadingGameState':
@@ -71,5 +75,7 @@ export const GameWithUID: FC<{ gameId: string; uid: string }> = ({ gameId, uid }
 
 export const Game: FC<{ gameId: string }> = ({ gameId }) => {
   const user = useUser()
-  return user ? e(GameWithUID, { gameId, uid: user.uid }) : div(null, [e(Login, { key: 'login' })])
+  return user
+    ? e(GameWithUID, { gameId, uid: user.uid, userDisplayName: user.displayName ?? undefined })
+    : div(null, [e(Login, { key: 'login' })])
 }

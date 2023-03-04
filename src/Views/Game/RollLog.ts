@@ -161,7 +161,7 @@ const highestIndexes = (diceRolled: RollResult['diceRolled']): [number, number] 
 }
 
 export const RollLogItem = ({ result, isLast }: { result: RollResult; isLast: boolean }) => {
-  const { isZero, note, diceRolled, date, username, rollType, lines } = result
+  const { isZero, note, diceRolled, date, username, rollType, lines, user } = result
   const valuationMapItem = valuationMap[result.valuationType ?? 'Action']
   const valuation = valuationMapItem.valuation(result)
   const valuationLabel = valuationMapItem.label(result, valuation)
@@ -192,12 +192,13 @@ export const RollLogItem = ({ result, isLast }: { result: RollResult; isLast: bo
     ]),
     div({ key: 'metaWrap', className: styles.metaWrap }, [
       div({ key: 'meta', className: styles.meta }, [
-        username && h('span', { key: 'name', className: styles.name }, [username, ' rolls:']),
+        username && h('span', { key: 'name', className: styles.name }, [username, ':']),
         div({ key: 'rollType', className: title.length > 12 ? styles.smallRollType : styles.rollType }, [title]),
         moreLines.map((line, i) => div({ className: styles.line, key: `line${i}` }, [line])),
         note && e(Note, { key: 'note', text: note }),
       ]),
       h('em', { key: 'time', className: styles.time }, [
+        user,
         !isToday(date) && new Date(date).toLocaleDateString(),
         ' ',
         new Date(date).toLocaleTimeString(),

@@ -1,4 +1,3 @@
-import { ColorHelper } from 'csx'
 import { DieResult } from './Die'
 import { RollConfig, ValuationType } from './RollConfig'
 import { presets } from './rollConfigPresets'
@@ -14,7 +13,8 @@ export interface GameSettingsView {
 }
 
 interface LogItemCommon {
-  username: string
+  user?: string
+  username: string // this is actually character but we can't change for legacy reasons
   note: string
   date: number
   id: string
