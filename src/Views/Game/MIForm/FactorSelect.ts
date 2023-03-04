@@ -16,15 +16,16 @@ const textPulse = keyframes({
 const styles = stylesheet({
   popover: {
     position: 'absolute',
-    width: '100%',
+    width: 135,
     display: 'grid',
     gap: 5,
     zIndex: 1,
     backgroundColor: '#061318',
     padding: 10,
     top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    right: 0,
+    transform: 'translate(0%, -50%)',
+    outline: `1px solid var(--bc-focus)`,
   },
   FactorSelect: { position: 'relative', display: 'flex', alignItems: 'center', gap: 10 },
   option: {
@@ -37,8 +38,12 @@ const styles = stylesheet({
     color: '#000',
     cursor: 'default',
   },
-  button: {
+  label: {
     flexGrow: 1,
+  },
+  button: {
+    width: 135,
+    textAlign: 'left',
   },
   active: {
     color: DieColor.white,
@@ -83,11 +88,11 @@ export const FactorSelect = ({ $, dicePool$ }: { $: FunState<Factor>; dicePool$:
   }
   return div(null, [
     div({ key: 'factorSelect', className: styles.FactorSelect }, [
-      label({ key: 'title', className: isActive ? styles.active : '' }, ['Factor']),
+      label({ key: 'title', className: classes(styles.label, isActive ? styles.active : '') }, ['Factor']),
       button(
         {
           key: 'factor',
-          className: classes(styles.button, isActive && styles.active),
+          className: styles.button,
           onClick: setOpen.bind(null, true),
         },
         [factor],

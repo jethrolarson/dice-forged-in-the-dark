@@ -96,46 +96,8 @@ export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
       e(ApproachSelect, { key: 'approach', $: $.prop('approach$'), dicePool$ }),
       e(PowerSelect, { key: 'power', $: $.prop('power$'), dicePool$ }),
       e(FactorSelect, { key: 'factor', $: $.prop('factor$'), dicePool$ }),
-      e(Character, { key: 'character', $: $.prop('username') }),
-      e(Note, { key: 'note', $: $.prop('note') }),
+      e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
+      e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
     ]),
   ])
 }
-
-/* <FunButtonSelect
-  columns={1}
-  label="Position"
-  options={[
-    {
-      value: 'Controlled',
-      content: (
-        <>
-          <TierLabel tier="⓵" /> Controlled
-        </>
-      ),
-    },
-    {
-      value: 'Risky',
-      content: (
-        <>
-          <TierLabel tier="⓶" /> Risky
-        </>
-      ),
-    },
-    {
-      value: 'Desperate',
-      content: (
-        <>
-          <TierLabel tier="⓷" /> Desperate
-        </>
-      ),
-    },
-  ]}
-  $={$.prop('position')}
-/>
-<FunButtonSelect
-  columns={1}
-  label="Effect"
-  options={['None', 'Limited', 'Standard', 'Great']}
-  $={$.prop('effect')}
-/> */

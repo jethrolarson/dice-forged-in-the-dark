@@ -77,7 +77,7 @@ const dropShadow = (dieColor: string): NestedCSSProperties => ({
   },
 })
 
-export const dieColors = ['white', 'yellow', 'red', 'green', 'purple'] as const
+export const dieColors = ['white', 'green', 'blue', 'purple', 'yellow', 'red'] as const
 
 export const nextColor = (c: keyof typeof DieColor): keyof typeof DieColor => {
   const i = dieColors.indexOf(c) + 1

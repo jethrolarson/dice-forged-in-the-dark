@@ -29,7 +29,7 @@ const styles = stylesheet({
     backgroundColor: important('transparent'),
     border: 'none',
     animationName: spin,
-    animationDuration: '1000ms',
+    animationDuration: '1500ms',
     animationIterationCount: 'infinite',
     animationTimingFunction: 'linear',
     $nest: {

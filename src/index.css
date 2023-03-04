@@ -200,7 +200,8 @@ a:hover {
   --bg-die-yellow: hsl(31, 100%, 64%);
   --bg-die-red: hsl(0, 60%, 50%);
   --bg-die-green: hsl(149, 59%, 55%);
-  --bg-die-purple: hsl(230, 65%, 64%);
+  --bg-die-purple: #b867f2;
+  --bg-die-blue: #1475f2;
   font-family: var(--ff);
 }
 .Future2 {
@@ -263,10 +264,11 @@ a:hover {
   --bg-result-critfail: hsl(352deg 68% 41%);
 
   --bg-die-white: #d6cfe7;
-  --bg-die-yellow: hsl(31, 100%, 64%);
-  --bg-die-red: hsl(352deg 68% 41%);
+  --bg-die-yellow: #c46536;
+  --bg-die-red: #c92c2c;
   --bg-die-green: hsl(149, 59%, 55%);
-  --bg-die-purple: hsl(230, 65%, 64%);
+  --bg-die-purple: #b867f2;
+  --bg-die-blue: #1475f2;
   font-family: var(--ff);
 }
 .Simple {
@@ -317,4 +319,64 @@ a:hover {
   --bg-die-green: hsl(131deg 60% 41%);
   --bg-die-purple: hsl(221deg 95% 68%);
   font-family: var(--ff);
+}
+/* hacking react widgets */
+.rw-widget,
+.rw-widget-input {
+  color: inherit
+}
+.rw-state-focus .rw-widget-picker {
+  border-color: var(--bc-focus);
+  box-shadow: none;
+  transition: none;
+}
+.rw-widget-picker{
+  min-height: 28px;
+}
+
+.rw-list-option {
+  color: var(--fc);
+  border: 0;
+  padding-block: 8px;
+  font-size: var(--fs);
+}
+.rw-list-option:hover {
+  background: var(--bg-button-hover);
+  color: var(--fc-button-hover);
+}
+.rw-popup {
+  border-radius: 0;
+  background-color: #061318;
+  border-color: var(--bc-focus);
+}
+.rw-widget-container {
+  border-radius: 0;
+  background: transparent;
+  border-color: var(--bc-deem);
+}
+input::-webkit-input-placeholder {
+  color: var(--fc-deem);
+  font: inherit;
+}
+.rw-picker-btn{
+  color: var(--fc-button);
+}
+.rw-input {
+  padding: 4px 6px;
+}
+.rw-input-addon.rw-picker-btn {
+  border-color: var(--bc-deem);
+}
+.rw-picker-btn:hover{
+  background: var(--bg-button-hover);
+  color: var(--fc-button-hover);
+}
+.rw-picker-caret {
+  color: 'inherit';
+}
+
+.rw-list-option.rw-state-selected, .rw-state-selected.rw-list-option-create {
+  background-color: var(--bg-button-selected);
+  border-color: transparent;
+  color: var(--fc-button-selected);
 }

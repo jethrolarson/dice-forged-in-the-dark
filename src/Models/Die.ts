@@ -1,5 +1,3 @@
-import { keyof } from 'io-ts'
-
 export type DieType = 'd2' | 'd4' | 'd6' | 'd8' | 'd10' | 'd12' | 'd20'
 
 export const DieColor = {
@@ -8,6 +6,7 @@ export const DieColor = {
   red: 'var(--bg-die-red)',
   green: 'var(--bg-die-green)',
   purple: 'var(--bg-die-purple)',
+  blue: 'var(--bg-die-blue)',
 } as const
 
 export type DieColorType = keyof typeof DieColor

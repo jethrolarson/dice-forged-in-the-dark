@@ -10,7 +10,13 @@ const className = style({
   resize: 'none',
 })
 
-export const Note = ({ $: state }: { $: FunState<string> }) =>
+export const Note = ({
+  $,
+  passThroughProps,
+}: {
+  $: FunState<string>
+  passThroughProps?: React.DetailedHTMLProps<React.TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>
+}) =>
   Textarea({
     passThroughProps: {
       placeholder: 'Description',
@@ -19,6 +25,7 @@ export const Note = ({ $: state }: { $: FunState<string> }) =>
         const target = e.target as HTMLTextAreaElement
         target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
       },
+      ...passThroughProps,
     },
-    state,
+    state: $,
   })

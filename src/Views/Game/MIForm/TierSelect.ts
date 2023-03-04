@@ -57,17 +57,17 @@ export enum Tier {
   T5 = '⓹',
 }
 
-const tierColorMap = {
-  [Tier.T0]: '#888',
-  [Tier.T1]: '#3fc57c',
-  [Tier.T2]: '#1475f2',
-  [Tier.T3]: '#b867f2',
-  [Tier.T4]: '#c46536',
-  [Tier.T5]: '#c92c2c',
+export const tierColorMap = {
+  [Tier.T0]: 'white',
+  [Tier.T1]: 'green',
+  [Tier.T2]: 'blue',
+  [Tier.T3]: 'purple',
+  [Tier.T4]: 'yellow',
+  [Tier.T5]: 'red',
 } as const
 
 export const TierLabel = ({ tier }: { tier: Tier }): ReactElement =>
-  h('span', { className: style({ color: tierColorMap[tier] }) }, [tier])
+  h('span', { className: style({ color: `var(--bg-die-${tierColorMap[tier]})` }) }, [tier])
 
 const tierOpts = [Tier.T0, Tier.T1, Tier.T2, Tier.T3, Tier.T4, Tier.T5] as const
 

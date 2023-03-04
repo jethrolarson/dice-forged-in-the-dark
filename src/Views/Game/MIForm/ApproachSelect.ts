@@ -1,11 +1,11 @@
 import { FunState } from '@fun-land/fun-state'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { classes, keyframes, stylesheet } from 'typestyle'
+import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
 import { label, e, div, button } from '../../../util'
 import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
-import { Tier, TierSelect } from './TierSelect'
+import { Tier, tierColorMap, TierSelect } from './TierSelect'
 
 export interface Approach$ {
   approach: string
@@ -26,38 +26,50 @@ const textPulse = keyframes({
 const styles = stylesheet({
   popover: {
     position: 'absolute',
-    width: '100%',
+    width: 135,
     display: 'grid',
-    gap: 5,
-    zIndex: 1,
+    zIndex: 2,
     backgroundColor: '#061318',
-    padding: 10,
     top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    right: 0,
+    transform: 'translate(0%, -50%)',
+    outline: `1px solid var(--bc-focus)`,
   },
   active: {
-    color: DieColor.purple,
     fontWeight: 'bold',
     animation: '0.8s infinite alternate',
     animationName: textPulse,
   },
-  Approach: { position: 'relative', display: 'flex', alignItems: 'center' },
+  Approach: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    $nest: {
+      label: {
+        flexGrow: 1,
+      },
+    },
+  },
   option: {
     display: 'block',
+    borderWidth: 0,
     width: '100%',
   },
   selected: {
-    backgroundColor: 'var(--bg-die-green) !important',
-    borderColor: 'var(--bg-die-green) !important',
-    color: '#000',
-    cursor: 'default',
+    backgroundColor: 'var(--bg-button-selected) !important',
+    borderColor: 'var(--bc-button-selected) !important',
+    color: 'var(--fc-button-selected) !important',
   },
   approachButton: {
-    flexGrow: 1,
-    color: 'hsl(169deg 50% 45%)',
+    width: 135,
+    textAlign: 'left',
+  },
+  required: {
+    borderColor: 'red !important',
   },
 })
+
+export const approaches = ['Charm', 'Deceit', 'Force', 'Focus', 'Ingenuity'] as const
 
 export const ApproachSelect = ({ $, dicePool$ }: { $: FunState<Approach$>; dicePool$: FunState<DicePoolState> }) => {
   const { approach, tier } = $.get()
@@ -66,25 +78,35 @@ export const ApproachSelect = ({ $, dicePool$ }: { $: FunState<Approach$>; diceP
   const popoverRef = useRef<HTMLDivElement>(null)
   useClickOutside(popoverRef, hide)
   const isActive = !!approach && tier !== Tier.T0
-  useEffect(() => {
-    if (isActive) {
-      dicePool$.mod(setDiceById(1, 'd6', 'purple', 'approach'))
-    } else {
-      dicePool$.mod(removeDiceById('approach'))
-    }
-  }, [isActive])
+  useEffect(
+    () => dicePool$.mod(isActive ? setDiceById(1, 'd6', tierColorMap[tier], 'approach') : removeDiceById('approach')),
+    [isActive, tier],
+  )
   const onSelect = (value: string) => {
     hide()
     $.prop('approach').mod((a) => (a === value ? '' : value))
   }
 
   return div({ className: styles.Approach }, [
-    label({ key: 'label', className: isActive ? styles.active : '' }, ['Approach']),
+    label(
+      {
+        key: 'label',
+        className: isActive
+          ? classes(
+              styles.active,
+              style({
+                color: `var(--bg-die-${tierColorMap[tier]})`,
+              }),
+            )
+          : '',
+      },
+      ['Approach'],
+    ),
     e(TierSelect, { key: 'tier', $: $.prop('tier') }),
     button(
       {
         key: 'approach',
-        className: classes(styles.approachButton, isActive && styles.active),
+        className: classes(styles.approachButton, tier !== Tier.T0 && !approach && styles.required),
         onClick: setOpen.bind(null, true),
       },
       [approach || 'Select'],
@@ -92,16 +114,16 @@ export const ApproachSelect = ({ $, dicePool$ }: { $: FunState<Approach$>; diceP
     open &&
       div(
         { key: 'popover', className: styles.popover, ref: popoverRef },
-        ['Charm', 'Deceit', 'Force', 'Focus', 'Ingenuity'].map((value) =>
+        approaches.map((value) =>
           button(
             {
               key: value,
               onClick: onSelect.bind(null, value),
               value,
               type: 'button',
-              className: classes(styles.option, isActive && styles.selected),
+              className: classes(styles.option, value === approach && styles.selected),
             },
-            [value],
+            [value, ...(value === approach ? [' ❌'] : [])],
           ),
         ),
       ),

@@ -1,40 +1,31 @@
 import { FunState } from '@fun-land/fun-state'
-import { trim } from 'fp-ts/lib/string'
-import { FC } from 'react'
-import { h, label, e } from '../util'
-import { TextInput } from './TextInput'
+import { e } from '../util'
+import Combobox, { ComboboxProps } from 'react-widgets/Combobox'
+import { classes, stylesheet } from 'typestyle'
 
-const DataList: FC<{ id: string; values: string }> = ({ id, values }) =>
-  h(
-    'datalist',
-    { id },
-    values
-      .split(',')
-      .map(trim)
-      .map((v) => {
-        const [val, label] = v.split('|')
-        return h('option', { key: v, value: val }, [label])
-      }),
-  )
-
-export const ComboBox: FC<{
-  name: string
-  $: FunState<string>
-  tooltip?: string
-  options: readonly string[]
-  passThroughProps?: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
-}> = ({ $: state, tooltip, name, options, passThroughProps }) =>
-  label({ title: tooltip }, [
-    e(TextInput, {
-      key: 'input',
-      passThroughProps: {
-        ...passThroughProps,
-        type: 'text',
-        name,
-        onFocus: () => state.set(''),
-        list: `list${name}`,
+const styles = stylesheet({
+  Combobox: {},
+  required: {
+    $nest: {
+      '.rw-widget-container': {
+        border: '1px solid red',
       },
-      state,
-    }),
-    e(DataList, { key: 'datalist', id: `list${name}`, values: options.join(',') }),
-  ])
+    },
+  },
+})
+
+export const ComboBox = ({
+  $,
+  required,
+  ...props
+}: {
+  $: FunState<string>
+  required?: boolean
+} & ComboboxProps<string>) =>
+  e(Combobox<string>, {
+    ...props,
+    className: classes(styles.Combobox, props.className, required && $.get() === '' && styles.required),
+    dropUp: true,
+    onChange: (v) => $.set(v),
+    value: $.get(),
+  })

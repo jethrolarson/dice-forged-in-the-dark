@@ -8,11 +8,14 @@ import { NewRoll } from '../RollForm/FormCommon'
 import { addDice, DicePool, DicePoolState, removeDiceById } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
-import { Tier, TierSelect } from './TierSelect'
+import { Tier, tierColorMap, TierSelect } from './TierSelect'
 import { FormHeading } from '../../../components/FormHeading'
 import { DiceSelection } from '../../../components/DiceSelection'
 import { useEffect } from 'react'
 import { e, h, div } from '../../../util'
+import { ComboBox } from '../../../components/ComboBox'
+import { approaches } from './ApproachSelect'
+import { powers } from './PowerSelect'
 
 const styles = stylesheet({
   AssistForm: {
@@ -84,7 +87,7 @@ export const AssistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
   useEffect(() => {
     _removeDice('assist')
     if (tier && pool) {
-      _addDice([{ type: 'd6', color: 'white', id: 'assist' }])
+      _addDice([{ type: 'd6', color: tierColorMap[tier], id: 'assist' }])
     }
   }, [tier, pool])
   const dicePool$ = $.prop('dicePool')
@@ -102,14 +105,17 @@ export const AssistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
       h('p', { key: 'subhead2' }, ['Spend and roll one die of your choice']),
       div({ key: 'pool', className: styles.poolSelect }, [
         e(TierSelect, { key: 'tier', $: $.prop('tier') }),
-        e(TextInput, {
+        e(ComboBox, {
           key: 'pool',
-          state: $.prop('pool'),
-          passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
+          $: $.prop('pool'),
+          name: 'pool',
+          data: [...approaches, ...powers],
+          placeholder: 'Approach or Power',
+          required: tier !== Tier.T0,
         }),
       ]),
-      e(Character, { key: 'character', $: $.prop('username') }),
-      e(Note, { key: 'note', $: $.prop('note') }),
+      e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
+      e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
     ]),
   ])
 }
