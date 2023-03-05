@@ -69,31 +69,41 @@ const init_QualityForm$ = (): QualityForm$ => ({
   username: '',
 })
 
-export const QualityForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
+export const QualityForm = ({
+  uid,
+  roll,
+  active,
+}: {
+  uid: string
+  roll: (rollResult: NewRoll) => unknown
+  active: boolean
+}) => {
   const $ = useFunState<QualityForm$>(init_QualityForm$())
   const { note } = $.get()
   const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.AssistForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
-      sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
-      disabled: !note,
-    }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Quality Roll' }),
-      h('p', { key: 'subhead' }, ['You succeed but how well?']),
-      h('p', { key: 'subhead2' }, ['Roll T dice where T is highest Tier of your remaining dice']),
-      div({ key: 'poolSelect', className: styles.poolSelect }, [
-        e(TextInput, {
-          key: 'pool',
-          state: $.prop('pool'),
-          passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
+  return active
+    ? div({ className: styles.AssistForm }, [
+        e(DicePool, {
+          key: 'dicepool',
+          state: dicePool$,
+          sendRoll: rollIt(roll, uid, $),
+          disableRemove: false,
+          disabled: !note,
         }),
-      ]),
-      e(Character, { key: 'character', $: $.prop('username') }),
-      e(Note, { key: 'note', $: $.prop('note') }),
-    ]),
-  ])
+        div({ key: 'form', className: styles.form }, [
+          e(FormHeading, { key: 'head', title: 'Quality Roll' }),
+          h('p', { key: 'subhead' }, ['You succeed but how well?']),
+          h('p', { key: 'subhead2' }, ['Roll T dice where T is highest Tier of your remaining dice']),
+          div({ key: 'poolSelect', className: styles.poolSelect }, [
+            e(TextInput, {
+              key: 'pool',
+              state: $.prop('pool'),
+              passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
+            }),
+          ]),
+          e(Character, { key: 'character', $: $.prop('username') }),
+          e(Note, { key: 'note', $: $.prop('note') }),
+        ]),
+      ])
+    : null
 }

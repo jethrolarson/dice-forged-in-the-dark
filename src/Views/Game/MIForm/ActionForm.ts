@@ -78,26 +78,36 @@ const init_ActionForm$ = (): ActionForm$ => ({
   username: '',
 })
 
-export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
+export const ActionForm = ({
+  uid,
+  roll,
+  active,
+}: {
+  uid: string
+  roll: (rollResult: NewRoll) => unknown
+  active: boolean
+}) => {
   const $ = useFunState<ActionForm$>(init_ActionForm$())
   const { username, note } = $.get()
   const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.ActionForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
-      sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
-      disabled: !username || !note,
-    }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Action Roll' }),
-      h('p', { key: 'subhead' }, ['Do something risky or stressful']),
-      e(ApproachSelect, { key: 'approach', $: $.prop('approach$'), dicePool$ }),
-      e(PowerSelect, { key: 'power', $: $.prop('power$'), dicePool$ }),
-      e(FactorSelect, { key: 'factor', $: $.prop('factor$'), dicePool$ }),
-      e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
-      e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
-    ]),
-  ])
+  return active
+    ? div({ className: styles.ActionForm }, [
+        e(DicePool, {
+          key: 'dicepool',
+          state: dicePool$,
+          sendRoll: rollIt(roll, uid, $),
+          disableRemove: false,
+          disabled: !username || !note,
+        }),
+        div({ key: 'form', className: styles.form }, [
+          e(FormHeading, { key: 'head', title: 'Action Roll' }),
+          h('p', { key: 'subhead' }, ['Do something risky or stressful']),
+          e(ApproachSelect, { key: 'approach', $: $.prop('approach$'), dicePool$ }),
+          e(PowerSelect, { key: 'power', $: $.prop('power$'), dicePool$ }),
+          e(FactorSelect, { key: 'factor', $: $.prop('factor$'), dicePool$ }),
+          e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
+          e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
+        ]),
+      ])
+    : null
 }

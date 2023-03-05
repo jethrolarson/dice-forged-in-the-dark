@@ -69,39 +69,49 @@ const init_ActionForm$ = (): AssistForm$ => ({
   username: '',
 })
 
-export const FortuneForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
+export const FortuneForm = ({
+  uid,
+  roll,
+  active,
+}: {
+  uid: string
+  roll: (rollResult: NewRoll) => unknown
+  active: boolean
+}) => {
   const $ = useFunState<AssistForm$>(init_ActionForm$())
   const { note } = $.get()
   const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.AssistForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
-      sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
-      disabled: !note,
-    }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'title', title: 'Fortune Roll' }),
-      h('p', { key: 'subhead' }, ['Did a non-player entity succeed in their plans?']),
-      h('p', { key: 'subhead2' }, ['OP rolls 0-3 dice based on standing of entity']),
-      div({ key: 'poolSelect', className: styles.poolSelect }, [
-        e(TextInput, {
-          key: 'pool',
-          state: $.prop('pool'),
-          passThroughProps: { name: 'pool', placeholder: 'Context' },
+  return active
+    ? div({ className: styles.AssistForm }, [
+        e(DicePool, {
+          key: 'dicepool',
+          state: dicePool$,
+          sendRoll: rollIt(roll, uid, $),
+          disableRemove: false,
+          disabled: !note,
         }),
-      ]),
-      e(TextInput, {
-        key: 'username',
-        passThroughProps: {
-          placeholder: 'Entity',
-          type: 'text',
-          name: 'username',
-        },
-        state: $.prop('username'),
-      }),
-      e(Note, { key: 'note', $: $.prop('note') }),
-    ]),
-  ])
+        div({ key: 'form', className: styles.form }, [
+          e(FormHeading, { key: 'title', title: 'Fortune Roll' }),
+          h('p', { key: 'subhead' }, ['Did a non-player entity succeed in their plans?']),
+          h('p', { key: 'subhead2' }, ['OP rolls 0-3 dice based on standing of entity']),
+          div({ key: 'poolSelect', className: styles.poolSelect }, [
+            e(TextInput, {
+              key: 'pool',
+              state: $.prop('pool'),
+              passThroughProps: { name: 'pool', placeholder: 'Context' },
+            }),
+          ]),
+          e(TextInput, {
+            key: 'username',
+            passThroughProps: {
+              placeholder: 'Entity',
+              type: 'text',
+              name: 'username',
+            },
+            state: $.prop('username'),
+          }),
+          e(Note, { key: 'note', $: $.prop('note') }),
+        ]),
+      ])
+    : null
 }

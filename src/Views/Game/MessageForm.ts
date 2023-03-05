@@ -27,7 +27,7 @@ interface MessageFormState {
   username: string
 }
 
-export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
+export const MessageForm: FC<{ gdoc: DocumentReference; active: boolean }> = ({ gdoc, active }) => {
   const state = useFunState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
   const postMessage: React.FormEventHandler<HTMLFormElement> = (e): void => {
@@ -43,30 +43,32 @@ export const MessageForm: FC<{ gdoc: DocumentReference }> = ({ gdoc }) => {
     })
     state.prop('username').set('')
   }
-  return h('form', { onSubmit: postMessage, className: styles.MessageForm }, [
-    label({ key: 'note' }, [
-      e(Textarea, {
-        key: 'note',
-        passThroughProps: {
-          required: true,
-          placeholder: 'Note',
-          className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
-        },
-        state: state.prop('note'),
-      }),
-    ]),
-    label({ key: 'character' }, [
-      e(TextInput, {
-        key: 'character',
-        passThroughProps: {
-          required: true,
-          placeholder: 'Character',
-          type: 'text',
-          name: 'username',
-        },
-        state: state.prop('username'),
-      }),
-    ]),
-    button({ key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
-  ])
+  return active
+    ? h('form', { onSubmit: postMessage, className: styles.MessageForm }, [
+        label({ key: 'note' }, [
+          e(Textarea, {
+            key: 'note',
+            passThroughProps: {
+              required: true,
+              placeholder: 'Note',
+              className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
+            },
+            state: state.prop('note'),
+          }),
+        ]),
+        label({ key: 'character' }, [
+          e(TextInput, {
+            key: 'character',
+            passThroughProps: {
+              required: true,
+              placeholder: 'Character',
+              type: 'text',
+              name: 'username',
+            },
+            state: state.prop('username'),
+          }),
+        ]),
+        button({ key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
+      ])
+    : null
 }

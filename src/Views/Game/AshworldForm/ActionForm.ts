@@ -78,66 +78,76 @@ const init_ActionForm$ = (): ActionForm$ => ({
   username: '',
 })
 
-export const ActionForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
+export const ActionForm = ({
+  uid,
+  roll,
+  active,
+}: {
+  uid: string
+  roll: (rollResult: NewRoll) => unknown
+  active: boolean
+}) => {
   const $ = useFunState<ActionForm$>(init_ActionForm$())
   const { username, note } = $.get()
   const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.ActionForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
-      sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
-      disableAdd: true,
-      disabled: !username || !note,
-    }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Action' }),
-      h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
+  return active
+    ? div({ className: styles.ActionForm }, [
+        e(DicePool, {
+          key: 'dicepool',
+          state: dicePool$,
+          sendRoll: rollIt(roll, uid, $),
+          disableRemove: false,
+          disableAdd: true,
+          disabled: !username || !note,
+        }),
+        div({ key: 'form', className: styles.form }, [
+          e(FormHeading, { key: 'head', title: 'Action' }),
+          h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
 
-      e(CheckDie, {
-        key: 'knack',
-        id: 'knack',
-        $: $.prop('knack'),
-        dicePool$,
-        color: 'white',
-        label: e('span', null, ['We got a ', e('b', null, 'knack'), ' for this']),
-      }),
-      e(CheckDie, {
-        key: 'shit',
-        id: 'shit',
-        $: $.prop('shit'),
-        dicePool$,
-        color: 'white',
-        label: 'We got the right shit',
-      }),
-      e(CheckDie, {
-        key: 'amped',
-        id: 'amped',
-        $: $.prop('amped'),
-        dicePool$,
-        color: 'red',
-        label: e('span', null, [`We're `, e('b', null, ['juiced']), ' or in ', e('b', null, 'sync')]),
-      }),
-      e(CheckDie, {
-        key: 'upperHand',
-        id: 'upperHand',
-        $: $.prop('upperHand'),
-        dicePool$,
-        color: 'white',
-        label: "We fuckin' got this (Emcee)",
-      }),
-      e(CheckDie, {
-        key: 'gripes',
-        id: 'gripes',
-        $: $.prop('gripes'),
-        dicePool$,
-        color: 'yellow',
-        label: e('span', null, [`We're taking a `, e('b', null, ["Devil's Bargain"])]),
-      }),
-      e('p', {}, ['Emcee tells you ', e('b', null, 'good'), ' and ', e('b', null, 'bad'), ' stuff']),
-      e(Character, { key: 'character', $: $.prop('username') }),
-      e(Note, { key: 'note', $: $.prop('note') }),
-    ]),
-  ])
+          e(CheckDie, {
+            key: 'knack',
+            id: 'knack',
+            $: $.prop('knack'),
+            dicePool$,
+            color: 'white',
+            label: e('span', null, ['We got a ', e('b', null, 'knack'), ' for this']),
+          }),
+          e(CheckDie, {
+            key: 'shit',
+            id: 'shit',
+            $: $.prop('shit'),
+            dicePool$,
+            color: 'white',
+            label: 'We got the right shit',
+          }),
+          e(CheckDie, {
+            key: 'amped',
+            id: 'amped',
+            $: $.prop('amped'),
+            dicePool$,
+            color: 'red',
+            label: e('span', null, [`We're `, e('b', null, ['juiced']), ' or in ', e('b', null, 'sync')]),
+          }),
+          e(CheckDie, {
+            key: 'upperHand',
+            id: 'upperHand',
+            $: $.prop('upperHand'),
+            dicePool$,
+            color: 'white',
+            label: "We fuckin' got this (Emcee)",
+          }),
+          e(CheckDie, {
+            key: 'gripes',
+            id: 'gripes',
+            $: $.prop('gripes'),
+            dicePool$,
+            color: 'yellow',
+            label: e('span', null, [`We're taking a `, e('b', null, ["Devil's Bargain"])]),
+          }),
+          e('p', {}, ['Emcee tells you ', e('b', null, 'good'), ' and ', e('b', null, 'bad'), ' stuff']),
+          e(Character, { key: 'character', $: $.prop('username') }),
+          e(Note, { key: 'note', $: $.prop('note') }),
+        ]),
+      ])
+    : null
 }

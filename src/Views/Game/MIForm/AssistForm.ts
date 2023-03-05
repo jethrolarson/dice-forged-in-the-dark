@@ -78,7 +78,15 @@ const init_ActionForm$ = (): AssistForm$ => ({
   username: '',
 })
 
-export const AssistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
+export const AssistForm = ({
+  uid,
+  roll,
+  active,
+}: {
+  uid: string
+  roll: (rollResult: NewRoll) => unknown
+  active: boolean
+}) => {
   const $ = useFunState<AssistForm$>(init_ActionForm$())
   const { tier, pool, username, note } = $.get()
   const disabled = !username || !note || !pool
@@ -91,31 +99,33 @@ export const AssistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewR
     }
   }, [tier, pool])
   const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.AssistForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
-      sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
-      disabled,
-    }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Assist Roll' }),
-      h('p', { key: 'subhead' }, ["Dive in to assist another player's action at the last second"]),
-      h('p', { key: 'subhead2' }, ['Spend and roll one die of your choice']),
-      div({ key: 'pool', className: styles.poolSelect }, [
-        e(TierSelect, { key: 'tier', $: $.prop('tier') }),
-        e(ComboBox, {
-          key: 'pool',
-          $: $.prop('pool'),
-          name: 'pool',
-          data: [...approaches, ...powers],
-          placeholder: 'Approach or Power',
-          required: tier !== Tier.T0,
+  return active
+    ? div({ className: styles.AssistForm }, [
+        e(DicePool, {
+          key: 'dicepool',
+          state: dicePool$,
+          sendRoll: rollIt(roll, uid, $),
+          disableRemove: false,
+          disabled,
         }),
-      ]),
-      e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
-      e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
-    ]),
-  ])
+        div({ key: 'form', className: styles.form }, [
+          e(FormHeading, { key: 'head', title: 'Assist Roll' }),
+          h('p', { key: 'subhead' }, ["Dive in to assist another player's action at the last second"]),
+          h('p', { key: 'subhead2' }, ['Spend and roll one die of your choice']),
+          div({ key: 'pool', className: styles.poolSelect }, [
+            e(TierSelect, { key: 'tier', $: $.prop('tier') }),
+            e(ComboBox, {
+              key: 'pool',
+              $: $.prop('pool'),
+              name: 'pool',
+              data: [...approaches, ...powers],
+              placeholder: 'Approach or Power',
+              required: tier !== Tier.T0,
+            }),
+          ]),
+          e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
+          e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
+        ]),
+      ])
+    : null
 }

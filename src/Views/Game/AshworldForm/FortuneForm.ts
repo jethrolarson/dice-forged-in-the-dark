@@ -74,25 +74,35 @@ const init_ActionForm$ = (): AssistForm$ => ({
   username: '',
 })
 
-export const FortuneForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
+export const FortuneForm = ({
+  uid,
+  roll,
+  active,
+}: {
+  uid: string
+  roll: (rollResult: NewRoll) => unknown
+  active: boolean
+}) => {
   const $ = useFunState<AssistForm$>(init_ActionForm$())
   const { note } = $.get()
   const disabled = !note
   const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.AssistForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
-      sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
-      disableAdd: false,
-      disabled,
-    }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Fortune' }),
-      h('p', { key: 'subhead' }, ['See what the universe does']),
-      e(Character, { key: 'character', $: $.prop('username') }),
-      e(Note, { key: 'note', $: $.prop('note') }),
-    ]),
-  ])
+  return active
+    ? div({ className: styles.AssistForm }, [
+        e(DicePool, {
+          key: 'dicepool',
+          state: dicePool$,
+          sendRoll: rollIt(roll, uid, $),
+          disableRemove: false,
+          disableAdd: false,
+          disabled,
+        }),
+        div({ key: 'form', className: styles.form }, [
+          e(FormHeading, { key: 'head', title: 'Fortune' }),
+          h('p', { key: 'subhead' }, ['See what the universe does']),
+          e(Character, { key: 'character', $: $.prop('username') }),
+          e(Note, { key: 'note', $: $.prop('note') }),
+        ]),
+      ])
+    : null
 }

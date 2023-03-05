@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { Fragment, useCallback, useEffect } from 'react'
 import { DocumentReference } from '@firebase/firestore'
 import useFunState from '@fun-land/use-fun-state'
 import { NewRoll, sendRoll } from '../RollForm/FormCommon'
@@ -35,18 +35,12 @@ export const Form = ({
   useEffect(() => {
     scrollToBottom()
   }, [rollType])
-  switch (rollType) {
-    case RollType.none:
-      return null
-    case RollType.action:
-      return e(ActionForm, { roll, uid })
-    case RollType.resist:
-      return e(ResistForm, { roll, uid })
-    case RollType.fortune:
-      return e(FortuneForm, { roll, uid })
-    case RollType.message:
-      return e(MessageForm, { gdoc })
-  }
+  return e(Fragment, null, [
+    e(ActionForm, { key: RollType.action, roll, uid, active: rollType === RollType.action }),
+    e(ResistForm, { key: RollType.resist, roll, uid, active: rollType === RollType.resist }),
+    e(FortuneForm, { key: RollType.fortune, roll, uid, active: rollType === RollType.fortune }),
+    e(MessageForm, { key: RollType.message, gdoc, active: rollType === RollType.message }),
+  ])
 }
 
 export const AshworldForm = (props: {
