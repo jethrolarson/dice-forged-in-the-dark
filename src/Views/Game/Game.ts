@@ -39,7 +39,7 @@ const saveGameToUser = (userDoc: DocumentReference, gameId: string): void => {
     })
 }
 
-export const GameWithUID: FC<{ gameId: string; uid: string; userDisplayName: string | undefined }> = ({
+export const GameWithUID: FC<{ gameId: string; uid: string; userDisplayName: string }> = ({
   gameId,
   uid,
   userDisplayName,
@@ -76,6 +76,6 @@ export const GameWithUID: FC<{ gameId: string; uid: string; userDisplayName: str
 export const Game: FC<{ gameId: string }> = ({ gameId }) => {
   const user = useUser()
   return user
-    ? e(GameWithUID, { gameId, uid: user.uid, userDisplayName: user.displayName ?? undefined })
+    ? e(GameWithUID, { gameId, uid: user.uid, userDisplayName: user.displayName ?? '' })
     : div(null, [e(Login, { key: 'login' })])
 }

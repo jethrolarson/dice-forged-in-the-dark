@@ -23,7 +23,7 @@ export const Form = ({
   gdoc: DocumentReference
   uid: string
   scrollToBottom: () => unknown
-  userDisplayName: string | undefined
+  userDisplayName: string
 }) => {
   const rollType = $.get()
   const roll = useCallback(
@@ -47,7 +47,7 @@ export const AshworldForm = (props: {
   gdoc: DocumentReference
   uid: string
   scrollToBottom: () => unknown
-  userDisplayName: string | undefined
+  userDisplayName: string
 }) => {
   const $ = useFunState<FormState>(RollType.none)
   return div(null, [e(RollTypes, { key: 'types', $ }), e(Form, { key: 'form', $, ...props })])

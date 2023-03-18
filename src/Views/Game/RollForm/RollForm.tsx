@@ -85,7 +85,7 @@ const reset = (state: FunState<RollFormState>): void =>
   merge(state)({ note: '', rollType: '', rollState: ['', '', '', '', '', '', '', '', '', ''], dicePool: [] })
 
 export const roll =
-  (gdoc: DocumentReference, uid: string, state: FunState<RollFormState>, userDisplayName?: string) => (): void => {
+  (gdoc: DocumentReference, uid: string, state: FunState<RollFormState>, userDisplayName: string) => (): void => {
     const { dicePool, rollState, note, rollType, username, valuationType } = state.get()
     const n = dicePool.length
     const isZero = n === 0
@@ -114,12 +114,12 @@ export const roll =
     reset(state)
   }
 
-export const RollForm: FC<{ rollConfig: RollConfig; gdoc: DocumentReference; uid: string; username?: string }> = ({
-  rollConfig,
-  gdoc,
-  uid,
-  username: userDisplayName,
-}) => {
+export const RollForm: FC<{
+  rollConfig: RollConfig
+  gdoc: DocumentReference
+  uid: string
+  userDisplayName: string
+}> = ({ rollConfig, gdoc, uid, userDisplayName }) => {
   const s = useFunState<RollFormState>({
     note: '',
     rollState: ['', '', '', '', '', '', '', '', '', ''], // TODO don't flatten this. Use a transform of rollConfig instead

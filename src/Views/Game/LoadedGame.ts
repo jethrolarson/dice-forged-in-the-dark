@@ -195,7 +195,7 @@ export const LoadedGame: FC<{
   gameId: string
   gdoc: DocumentReference
   uid: string
-  userDisplayName: string | undefined
+  userDisplayName: string
 }> = ({ initialState, gameId, gdoc, uid, userDisplayName }) => {
   const state = useFunState<LoadedGameState>(initialState)
   const [hidden, setHidden] = useState(false)
@@ -298,7 +298,7 @@ export const LoadedGame: FC<{
                 ? e(MIForm, { key: 'miForm', gdoc, uid, scrollToBottom, userDisplayName })
                 : rollConfig.system === 'Ash World 0.1'
                 ? e(AshworldForm, { key: 'form', uid, gdoc, scrollToBottom, userDisplayName })
-                : e(RollForm, { key: 'oldForm', rollConfig, gdoc, uid }),
+                : e(RollForm, { key: 'oldForm', rollConfig, gdoc, uid, userDisplayName }),
             ]),
           ]),
     ]),

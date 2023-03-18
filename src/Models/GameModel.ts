@@ -13,7 +13,7 @@ export interface GameSettingsView {
 }
 
 interface LogItemCommon {
-  user?: string
+  user: string
   username: string // this is actually character but we can't change for legacy reasons
   note: string
   date: number

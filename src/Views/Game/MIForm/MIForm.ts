@@ -23,7 +23,7 @@ export const Form = ({
   $: FunState<FormState>
   gdoc: DocumentReference
   uid: string
-  userDisplayName: string | undefined
+  userDisplayName: string
   scrollToBottom: () => unknown
 }) => {
   const rollType = $.get()
@@ -49,7 +49,7 @@ export const Form = ({
 
 export const MIForm = (props: {
   gdoc: DocumentReference
-  userDisplayName: string | undefined
+  userDisplayName: string
   uid: string
   scrollToBottom: () => unknown
 }) => {
