@@ -160,6 +160,10 @@ a:hover {
   --bg-button: transparent;
   --bg-button-hover: var(--border-color);
   --bc-button-hover: var(--border-color);
+  
+  --fc-button-selected: #fff;
+  --bg-button-selected: hsl(31, 100%, 64%);
+  --bc-button-selected: var(--bg-button-selected);
   --bc-button-primary: #34e4de;
   --bg-button-primary: #34e4de;
   --fc-button-primary: rgb(0, 0, 0);
