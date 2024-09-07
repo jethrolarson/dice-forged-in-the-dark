@@ -151,6 +151,7 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
         {
           key: 'presetSelect',
           className: styles.loadPreset,
+          value: state.prop('system').get(),
           onChange: ({ target: { value } }): void => {
             merge(state)({
               rollConfigText: JSON.stringify(

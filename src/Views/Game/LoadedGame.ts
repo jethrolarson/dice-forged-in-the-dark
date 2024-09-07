@@ -128,7 +128,6 @@ const styles = stylesheet({
   },
   showDiceApp: {
     writingMode: 'vertical-rl',
-    display: 'none',
   },
   minimize: {
     marginRight: 5,
@@ -265,15 +264,17 @@ export const LoadedGame: FC<{
                   e(Icon, { key: 'gearicon', icon: gears, size: 28 }),
                 ],
               ),
-              button(
-                {
-                  key: 'minimizeButton',
-                  className: styles.minimize,
-                  onClick: () => setHidden(true),
-                  title: 'Click to Minimize',
-                },
-                ['🗕'],
-              ),
+              !!state.prop('miroId').get()
+                ? button(
+                    {
+                      key: 'minimizeButton',
+                      className: styles.minimize,
+                      onClick: () => setHidden(true),
+                      title: 'Click to Minimize',
+                    },
+                    ['_'],
+                  )
+                : null,
             ]),
             div({ key: 'log', ref: scrollRef, className: styles.log }, [
               !rollsLoaded
