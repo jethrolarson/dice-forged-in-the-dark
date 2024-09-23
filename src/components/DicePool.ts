@@ -52,7 +52,6 @@ const styles = stylesheet({
     alignContent: 'center',
     justifyContent: 'center',
     background: 'var(--bg-dice)',
-    padding: 10,
     flexGrow: 1,
     gap: 20,
     minHeight: 400,
@@ -112,33 +111,13 @@ export const setDiceById =
 
 export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('color').mod(nextColor)
 
-const zeroDicePool: Rollable[] = [
-  { type: 'd6', color: 'red' },
-  { type: 'd6', color: 'red' },
-]
-
-const rollDie = (): number => Math.floor(Math.random() * 6) + 1
-
-const rollPool = (dicePool: DicePoolState): DieResult[] => {
-  const isZero = dicePool.length === 0
-  const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    dieColor: DieColor[dieColor] as any,
-    dieType,
-    value: rollDie(),
-  })) as DieResult[]
-  return diceRolled
-}
-
 export const DicePool: FC<{
   state: FunState<DicePoolState>
   sendRoll: (results: DieResult[]) => unknown
   disabled: boolean
   disableRemove?: boolean
   disableAdd?: boolean
-}> = ({ state, sendRoll, disabled, disableRemove = false, disableAdd = false }) => {
-  const dicePool = state.get()
-  const roll = () => sendRoll(rollPool(dicePool))
+}> = ({ state, sendRoll, disableAdd = false }) => {
   return div({ className: styles.DicePool }, [
     !disableAdd &&
       div(
@@ -151,16 +130,6 @@ export const DicePool: FC<{
         key: 'diceScene',
         onDiceRollComplete: () => undefined,
       }),
-    ),
-    button(
-      {
-        key: 'roll',
-        onClick: roll,
-        className: styles.rollButton,
-        disabled,
-        title: disabled ? 'missing required fields' : undefined,
-      },
-      ['Roll ', serializePool(dicePool)],
     ),
   ])
 }
