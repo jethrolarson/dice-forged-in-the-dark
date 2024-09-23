@@ -9,6 +9,7 @@ import { playAddSound } from '../sounds'
 import { e, div, button } from '../util'
 import { Die, nextColor } from '../Views/Game/Die'
 import { DiceSelection } from './DiceSelection'
+import DiceScene from '../Views/Game/MIForm/DiceScene'
 
 const spin = keyframes({
   from: {
@@ -54,6 +55,8 @@ const styles = stylesheet({
     padding: 10,
     flexGrow: 1,
     gap: 20,
+    minHeight: 400,
+    userSelect: 'none',
   },
   rollButton: {
     fontWeight: 'bold',
@@ -144,25 +147,10 @@ export const DicePool: FC<{
       ),
     div(
       { key: 'diceBox', className: classes(styles.diceBox, disableAdd && styles.roundTop) },
-      dicePool.map(({ type: d, color: c }, i) =>
-        button(
-          {
-            key: String(i) + d + c,
-            onClick: (): unknown => !disableRemove && state.mod(removeDie(i)),
-            className: styles.dieButton,
-            title: 'Click to remove. Right-click to change color.',
-            onContextMenu: (e) => {
-              e.preventDefault()
-              state.mod(changeColor(i))
-            },
-          },
-          [
-            d === 'd6'
-              ? e(Die, { key: 'die', dieColor: DieColor[c], dotColor: '#000', value: 6, size: 38 })
-              : div({ style: { color: c } }, [d]),
-          ],
-        ),
-      ),
+      e(DiceScene, {
+        key: 'diceScene',
+        onDiceRollComplete: () => undefined,
+      }),
     ),
     button(
       {

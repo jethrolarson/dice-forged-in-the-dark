@@ -1,3 +1,5 @@
+// RollForm.ts
+import React from 'react'
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { stylesheet } from 'typestyle'
@@ -11,12 +13,12 @@ import { Factor, factorDie, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { e, h, div } from '../../../util'
+import DiceScene from './DiceScene'
 
 const styles = stylesheet({
   ActionForm: {
     minHeight: 200,
     display: 'grid',
-    gridTemplateColumns: '120px auto',
     gap: 12,
     margin: 12,
     $nest: {
@@ -41,6 +43,7 @@ interface ActionForm$ {
   dicePool: DicePoolState
   note: string
   username: string
+  diceResults: number[]
 }
 
 const rollIt =
@@ -76,6 +79,7 @@ const init_ActionForm$ = (): ActionForm$ => ({
   power$: init_Power$,
   factor$: Factor.Even,
   username: '',
+  diceResults: [],
 })
 
 export const ActionForm = ({
@@ -90,8 +94,10 @@ export const ActionForm = ({
   const $ = useFunState<ActionForm$>(init_ActionForm$())
   const { username, note } = $.get()
   const dicePool$ = $.prop('dicePool')
+
   return active
-    ? div({ className: styles.ActionForm }, [
+    ? div(
+        { className: styles.ActionForm },
         e(DicePool, {
           key: 'dicepool',
           state: dicePool$,
@@ -99,15 +105,16 @@ export const ActionForm = ({
           disableRemove: false,
           disabled: !username || !note,
         }),
-        div({ key: 'form', className: styles.form }, [
+        div(
+          { key: 'form', className: styles.form },
           e(FormHeading, { key: 'head', title: 'Action Roll' }),
-          h('p', { key: 'subhead' }, ['Do something risky or stressful']),
+          h('p', { key: 'subhead' }, 'Do something risky or stressful'),
           e(ApproachSelect, { key: 'approach', $: $.prop('approach$'), dicePool$ }),
           e(PowerSelect, { key: 'power', $: $.prop('power$'), dicePool$ }),
           e(FactorSelect, { key: 'factor', $: $.prop('factor$'), dicePool$ }),
           e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
           e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
-        ]),
-      ])
+        ),
+      )
     : null
 }

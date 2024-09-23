@@ -10,6 +10,12 @@
     "@fun-land/accessor": "^3.2.0",
     "@fun-land/fun-state": "^6.2.3",
     "@fun-land/use-fun-state": "^1.2.6",
+    "@react-three/cannon": "^6.6.0",
+    "@react-three/drei": "^9.112.1",
+    "@react-three/fiber": "^8.17.7",
+    "@types/cannon": "^0.1.13",
+    "@types/three": "^0.168.0",
+    "cannon-es": "^0.20.0",
     "csx": "^10.0.2",
     "firebase": "^9.8.4",
     "firebaseui": "^6.0.1",
@@ -23,6 +29,8 @@
     "react-dom": "^18.2.0",
     "react-icons-kit": "2.0.0",
     "react-widgets": "^5.8.4",
+    "three": "^0.168.0",
+    "threejs-dice": "^1.1.0",
     "typestyle": "^2.3.0"
   },
   "devDependencies": {
