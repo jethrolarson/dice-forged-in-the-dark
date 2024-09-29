@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
   extends: [
-    'standard-with-typescript',
+    'eslint-config-love',
     'plugin:prettier/recommended', // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
   ],
   rules: {
@@ -16,6 +16,7 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 1,
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/naming-convention': 0,
+    'class-methods-use-this': 1,
     '@typescript-eslint/member-delimiter-style': [
       1,
       { multiline: { delimiter: 'none' }, singleline: { delimiter: 'semi' } },

@@ -65,13 +65,20 @@ export const powers = [
   'Swagger',
 ] as const
 
-export const PowerSelect = ({ $, dicePool$ }: { $: FunState<Power$>; dicePool$: FunState<DicePoolState> }) => {
+export const PowerSelect = ({
+  $,
+  addDie,
+  removeDie,
+}: {
+  $: FunState<Power$>
+  removeDie: (id: string) => unknown
+  addDie: (id: string) => unknown
+}) => {
   const { power, tier } = $.get()
   const isActive = !!power && tier !== Tier.T0
-  useEffect(
-    () => dicePool$.mod(isActive ? setDiceById(1, 'd6', tierColorMap[tier], 'power') : removeDiceById('power')),
-    [isActive, tier],
-  )
+  useEffect(() => {
+    isActive ? addDie('power') : removeDie('power')
+  }, [isActive, tier])
   return div({ className: styles.Power }, [
     label(
       {

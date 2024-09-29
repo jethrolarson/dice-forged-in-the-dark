@@ -1,5 +1,5 @@
 // RollForm.ts
-import React from 'react'
+import React, { useRef } from 'react'
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { stylesheet } from 'typestyle'
@@ -13,6 +13,7 @@ import { Factor, factorDie, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { e, h, div } from '../../../util'
+import { DiceSceneRef } from './DiceScene'
 
 const styles = stylesheet({
   ActionForm: {
@@ -93,12 +94,13 @@ export const ActionForm = ({
   const $ = useFunState<ActionForm$>(init_ActionForm$())
   const { username, note } = $.get()
   const dicePool$ = $.prop('dicePool')
-
+  const diceSceneRef = useRef<DiceSceneRef | null>(null)
   return active
     ? div(
         { className: styles.ActionForm },
         e(DicePool, {
           key: 'dicepool',
+          ref: diceSceneRef,
           state: dicePool$,
           sendRoll: rollIt(roll, uid, $),
           disableRemove: false,
@@ -108,9 +110,24 @@ export const ActionForm = ({
           { key: 'form', className: styles.form },
           e(FormHeading, { key: 'head', title: 'Action Roll' }),
           h('p', { key: 'subhead' }, 'Do something risky or stressful'),
-          e(ApproachSelect, { key: 'approach', $: $.prop('approach$'), dicePool$ }),
-          e(PowerSelect, { key: 'power', $: $.prop('power$'), dicePool$ }),
-          e(FactorSelect, { key: 'factor', $: $.prop('factor$'), dicePool$ }),
+          e(ApproachSelect, {
+            key: 'approach',
+            $: $.prop('approach$'),
+            addDie: diceSceneRef.current?.addDie ?? (() => {}),
+            removeDie: diceSceneRef.current?.removeDie ?? (() => {}),
+          }),
+          e(PowerSelect, {
+            key: 'power',
+            $: $.prop('power$'),
+            addDie: diceSceneRef.current?.addDie ?? (() => {}),
+            removeDie: diceSceneRef.current?.removeDie ?? (() => {}),
+          }),
+          e(FactorSelect, {
+            key: 'factor',
+            $: $.prop('factor$'),
+            addDie: diceSceneRef.current?.addDie ?? (() => {}),
+            removeDie: diceSceneRef.current?.removeDie ?? (() => {}),
+          }),
           e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
           e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
         ),

@@ -5,7 +5,6 @@ import { stylesheet } from 'typestyle'
 import { DieColor } from '../Models/Die'
 import { button, div, e } from '../util'
 import { Die, nextColor } from '../Views/Game/Die'
-import { addDie, DicePoolState } from './DicePool'
 
 const styles = stylesheet({
   dieButton: {
@@ -28,12 +27,11 @@ const styles = stylesheet({
   },
 })
 
-export const DiceSelection = ({ $ }: { $: FunState<DicePoolState> }) => {
+export const DiceSelection = ({ addDie }: { addDie: (id?: string) => unknown }) => {
   const s = useFunState<{ dieColor: keyof typeof DieColor }>({
     dieColor: 'white',
   })
   const { dieColor } = s.get()
-  const _addDie = () => $.mod(addDie('d6', dieColor))
   return div({ className: styles.diceButtons }, [
     button(
       {
@@ -45,7 +43,7 @@ export const DiceSelection = ({ $ }: { $: FunState<DicePoolState> }) => {
           s.prop('dieColor').mod(nextColor)
           e.preventDefault()
         },
-        onClick: _addDie,
+        onClick: () => addDie(),
       },
       [
         e(Die, {

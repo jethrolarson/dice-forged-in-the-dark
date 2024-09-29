@@ -5,7 +5,6 @@ import { classes, keyframes, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
 import { label, div, button } from '../../../util'
-import { addDice, DicePoolState, removeDiceById } from '../../../components/DicePool'
 
 const textPulse = keyframes({
   from: {
@@ -61,29 +60,37 @@ export enum Factor {
 
 export const factorDie = { color: 'white', type: 'd6', id: 'factor' } as const
 
-export const FactorSelect = ({ $, dicePool$ }: { $: FunState<Factor>; dicePool$: FunState<DicePoolState> }) => {
+export const FactorSelect = ({
+  $,
+  addDie,
+  removeDie,
+}: {
+  $: FunState<Factor>
+  removeDie: (id: string) => unknown
+  addDie: (id: string) => unknown
+}) => {
   const factor = $.get()
   const [open, setOpen] = useState(false)
   const hide = useCallback(() => setOpen(false), [])
   const popoverRef = useRef<HTMLDivElement>(null)
   useClickOutside(popoverRef, hide)
-  const _addDice = flow(addDice, dicePool$.mod)
-  const _removeDice = flow(removeDiceById, dicePool$.mod)
+
   const isActive = factor !== Factor.Disadvantaged
   const onSelect = (val: string) => {
     hide()
     $.set(val as Factor)
     switch (val) {
       case Factor.Even:
-        _removeDice('factor')
-        _addDice([factorDie])
+        addDie('factor1')
+        removeDie('factor2')
         break
       case Factor.Dominant:
-        _removeDice('factor')
-        _addDice([factorDie, factorDie])
+        addDie('factor1')
+        addDie('factor2')
         break
       default:
-        _removeDice('factor')
+        removeDie('factor1')
+        removeDie('factor2')
     }
   }
   return div(null, [

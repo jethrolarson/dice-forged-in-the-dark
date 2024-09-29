@@ -2,14 +2,15 @@ import { Acc, append, index, removeAt } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
 import { important } from 'csx'
 import { reject, repeat } from 'ramda'
-import { FC } from 'react'
+import { FC, forwardRef, MutableRefObject, useRef } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { DieColor, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
 import { e, div, button } from '../util'
 import { Die, nextColor } from '../Views/Game/Die'
 import { DiceSelection } from './DiceSelection'
-import DiceScene from '../Views/Game/MIForm/DiceScene'
+import DiceScene, { DiceSceneRef } from '../Views/Game/MIForm/DiceScene'
+import { RollResult } from '../Models/GameModel'
 
 const spin = keyframes({
   from: {
@@ -111,40 +112,33 @@ export const setDiceById =
 
 export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('color').mod(nextColor)
 
-export const DicePool: FC<{
-  state: FunState<DicePoolState>
-  sendRoll: (results: DieResult[]) => unknown
-  disabled: boolean
-  disableRemove?: boolean
-  disableAdd?: boolean
-}> = ({ state, sendRoll, disableAdd = false }) => {
+export const DicePool = forwardRef<
+  DiceSceneRef,
+  {
+    state: FunState<DicePoolState>
+    sendRoll: (results: DieResult[]) => unknown
+    disabled: boolean
+    disableRemove?: boolean
+    disableAdd?: boolean
+  }
+>(({ sendRoll, disableAdd = false }, diceSceneRef) => {
+  const addDie = () => {
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie()
+  }
   return div({ className: styles.DicePool }, [
     !disableAdd &&
       div(
         { key: 'diceSelevtion', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
-        [e(DiceSelection, { key: 'dice', $: state })],
+        [e(DiceSelection, { key: 'dice', addDie })],
       ),
     div(
       { key: 'diceBox', className: classes(styles.diceBox, disableAdd && styles.roundTop) },
       e(DiceScene, {
         key: 'diceScene',
-        onDiceRollComplete: () => undefined,
+        ref: diceSceneRef,
+        onDiceRollComplete: (results: number[]) =>
+          sendRoll(results.map((value): DieResult => ({ dieColor: 'white', dieType: 'd6', value }))),
       }),
     ),
   ])
-}
-
-const serializePool = (dp: DicePoolState): string =>
-  Object.entries(
-    dp.reduce<{ d6: number }>(
-      (acc, d) => {
-        if (d.type === 'd6') {
-          acc.d6 += 1
-        }
-        return acc
-      },
-      { d6: 0 },
-    ),
-  )
-    .map(([k, v]) => `${v}${k}`)
-    .join('')
+})

@@ -71,17 +71,24 @@ const styles = stylesheet({
 
 export const approaches = ['Charm', 'Deceit', 'Force', 'Focus', 'Ingenuity'] as const
 
-export const ApproachSelect = ({ $, dicePool$ }: { $: FunState<Approach$>; dicePool$: FunState<DicePoolState> }) => {
+export const ApproachSelect = ({
+  $,
+  addDie,
+  removeDie,
+}: {
+  $: FunState<Approach$>
+  removeDie: (id: string) => unknown
+  addDie: (id: string) => unknown
+}) => {
   const { approach, tier } = $.get()
   const [open, setOpen] = useState(false)
   const hide = useCallback(() => setOpen(false), [])
   const popoverRef = useRef<HTMLDivElement>(null)
   useClickOutside(popoverRef, hide)
   const isActive = !!approach && tier !== Tier.T0
-  useEffect(
-    () => dicePool$.mod(isActive ? setDiceById(1, 'd6', tierColorMap[tier], 'approach') : removeDiceById('approach')),
-    [isActive, tier],
-  )
+  useEffect(() => {
+    isActive ? addDie('approach') : removeDie('approach')
+  }, [isActive, tier])
   const onSelect = (value: string) => {
     hide()
     $.prop('approach').mod((a) => (a === value ? '' : value))
