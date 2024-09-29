@@ -39,7 +39,7 @@ export const loadModel = (filename: string) =>
     ? Promise.resolve(_modelCache[filename].clone())
     : new Promise<THREE.Group<THREE.Object3DEventMap>>((res, rej) =>
         loader.load(
-          'dice_model.glb',
+          filename,
           (gltf) => {
             _modelCache[filename] = gltf.scene
             res(gltf.scene)
@@ -48,6 +48,29 @@ export const loadModel = (filename: string) =>
           rej,
         ),
       )
+
+const _textureCache: Record<string, THREE.Texture> = {}
+
+export const loadTexture = (filename: string): Promise<THREE.Texture> =>
+  _textureCache[filename]
+    ? Promise.resolve(_textureCache[filename])
+    : new Promise<THREE.Texture>((res, rej) => {
+        const textureLoader = new THREE.TextureLoader()
+        textureLoader.load(
+          filename,
+          (texture) => {
+            _textureCache[filename] = texture
+            console.log(`Texture loaded: ${filename}`)
+            res(texture)
+          },
+          undefined,
+          (error) => {
+            console.error(`Failed to load texture: ${filename}`, error)
+            rej(error)
+          },
+        )
+      })
+  
 
 export const setRandomRotation = (body: CANNON.Body) => {
   // Create a random quaternion

@@ -8,7 +8,12 @@ interface DiceSceneProps {
   onDiceRollComplete: (diceResults: number[]) => void
 }
 
-export type DiceSceneRef = { addDie: (id?: string) => void; removeDie: (id: string) => void }
+export type DiceSceneRef = {
+  addDie: (color: number, id?: string) => void
+  removeDie: (id: string) => void
+  enable: () => void
+  disable: () => void
+}
 
 const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete }, ref) => {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -36,11 +41,17 @@ const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete
   }, [])
 
   useImperativeHandle(ref, () => ({
-    addDie(id?: string) {
-      diceRef.current?.addDie(id)
+    addDie(color: number, id?: string) {
+      diceRef.current?.addDie(color, id)
     },
     removeDie(id) {
       diceRef.current?.removeDie(id)
+    },
+    disable() {
+      diceRef.current?.disable()
+    },
+    enable() {
+      diceRef.current?.enable()
     },
   }))
 

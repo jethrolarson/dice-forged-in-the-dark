@@ -5,7 +5,7 @@ import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
 import { label, e, div, button } from '../../../util'
 import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
-import { Tier, tierColorMap, TierSelect } from './TierSelect'
+import { Tier, tierColorMap, tierColorMapHex, TierSelect } from './TierSelect'
 
 export interface Approach$ {
   approach: string
@@ -78,7 +78,7 @@ export const ApproachSelect = ({
 }: {
   $: FunState<Approach$>
   removeDie: (id: string) => unknown
-  addDie: (id: string) => unknown
+  addDie: (color: number, id: string) => unknown
 }) => {
   const { approach, tier } = $.get()
   const [open, setOpen] = useState(false)
@@ -87,7 +87,7 @@ export const ApproachSelect = ({
   useClickOutside(popoverRef, hide)
   const isActive = !!approach && tier !== Tier.T0
   useEffect(() => {
-    isActive ? addDie('approach') : removeDie('approach')
+    isActive ? addDie(tierColorMapHex[tier], 'approach') : removeDie('approach')
   }, [isActive, tier])
   const onSelect = (value: string) => {
     hide()

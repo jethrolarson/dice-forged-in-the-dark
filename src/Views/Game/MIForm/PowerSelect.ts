@@ -6,7 +6,7 @@ import { TextInput } from '../../../components/TextInput'
 import { DieColor } from '../../../Models/Die'
 import { e, div, label } from '../../../util'
 import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
-import { Tier, tierColorMap, TierSelect } from './TierSelect'
+import { Tier, tierColorMap, tierColorMapHex, TierSelect } from './TierSelect'
 import { important } from 'csx'
 
 export interface Power$ {
@@ -72,12 +72,12 @@ export const PowerSelect = ({
 }: {
   $: FunState<Power$>
   removeDie: (id: string) => unknown
-  addDie: (id: string) => unknown
+  addDie: (color: number, id: string) => unknown
 }) => {
   const { power, tier } = $.get()
   const isActive = !!power && tier !== Tier.T0
   useEffect(() => {
-    isActive ? addDie('power') : removeDie('power')
+    isActive ? addDie(tierColorMapHex[tier], 'power') : removeDie('power')
   }, [isActive, tier])
   return div({ className: styles.Power }, [
     label(

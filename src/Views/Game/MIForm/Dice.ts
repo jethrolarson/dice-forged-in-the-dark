@@ -6,7 +6,7 @@ import { Task, TaskManager } from './TaskManager'
 
 type DiceData = {
   bodies: CANNON.Body[]
-  meshes: THREE.Object3D<THREE.Object3DEventMap>[]
+  meshes: THREE.Mesh[]
 }
 
 const dieSize: CANNON.Vec3 = new CANNON.Vec3(1, 1, 1)
@@ -55,32 +55,45 @@ export class Dice implements GameObject {
     this.onRoll = onRoll
     this.boxWidth = boxWidth - 1.6
     this.boxLength = boxLength - 2
-    loadModel('dice_model.glb')
+    loadModel('public/free_dice_model_d6_mid-poly_4k.glb')
     this.createJointBody() // Joint body for dragging
   }
-
-  public async addDie(id?: string) {
-    if (id && this.diceData.meshes.find((m) => m.uuid === id)) return
-    const model = await loadModel('dice_model.glb')
+  public async addDie(color: number, id?: string) {
+    const existingDie = id && this.diceData.meshes.find((m) => m.uuid === id)
+    if (existingDie) {
+      ;(existingDie.material as THREE.MeshStandardMaterial).color.set(color)
+      return
+    }
+    const mesh = findMesh(await loadModel('public/free_dice_model_d6_mid-poly_4k.glb'))!
 
     // Compute the bounding box and center the model
-    const boundingBox = new THREE.Box3().setFromObject(model)
+    const boundingBox = new THREE.Box3().setFromObject(mesh)
     const center = boundingBox.getCenter(new THREE.Vector3())
-    model.position.sub(center)
-    model.scale.setScalar(0.5)
+    mesh.position.sub(center)
+    mesh.scale.setScalar(0.5)
 
-    model.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        const mesh = child
-        mesh.castShadow = true
-        mesh.receiveShadow = true
-      }
-    })
+    mesh.castShadow = true
+    mesh.receiveShadow = true
+    const material = (mesh.material as THREE.MeshStandardMaterial).clone()
 
-    const clonedModel = model.clone()
+    // Adjusting existing material properties
+    material.roughness = 0.3 // Less roughness for more reflectivity
+    material.metalness = 0.0 // Dice aren't metallic
+
+    // Adjust color and brightness
+    material.color.set(color) // Set to white to reflect light better
+    // material.emissive.set(0xffffff) // Add a subtle emissive color for ambient glow
+    // material.emissiveIntensity = 0.1 // Soft glow
+
+    // mesh.castShadow = true
+    // mesh.receiveShadow = true
+
+    const clonedModel = mesh.clone()
+    clonedModel.material = material
     if (id) clonedModel.uuid = id
     const position = randomDiePosition(this.boxWidth, this.boxLength)
     clonedModel.position.copy(position)
+
     this.scene.add(clonedModel)
     this.diceData.meshes.push(clonedModel)
 
@@ -164,6 +177,14 @@ export class Dice implements GameObject {
     })
   }
 
+  private disabled = true
+  disable() {
+    this.disabled = true
+  }
+  enable() {
+    this.disabled = false
+  }
+
   onPointerUp(event: PointerEvent) {
     if (event.button === 2) {
       event.preventDefault()
@@ -176,11 +197,12 @@ export class Dice implements GameObject {
       }
     } else if (this.jointConstraint) {
       this.isDragging = false
-      const diceCheck = this.taskManager.addInterval(100, this.checkDiceStopped)
-      this.diceCheck = diceCheck
+
+      if (!this.disabled) this.diceCheck = this.taskManager.addInterval(100, this.checkDiceStopped)
       const diceBody = this.jointConstraint.bodyA
       this.orbitingDice.concat([diceBody]).forEach((d) => {
         d.type = CANNON.Body.DYNAMIC
+        d.velocity.copy(diceBody.velocity)
         d.applyImpulse(new CANNON.Vec3(0, 4, 0))
         d.applyTorque(randomSpin(200, 400))
       })
@@ -264,7 +286,7 @@ export class Dice implements GameObject {
     const intersected = raycaster.intersectObjects(this.diceData.meshes)
     // If any dice are intersected, add them to the group
     intersected.forEach((intersect) => {
-      const mesh = intersect.object.parent as THREE.Mesh
+      const mesh = intersect.object as THREE.Mesh
       const index = this.diceData.meshes.indexOf(mesh)
       if (index !== -1) {
         const diceBody = this.diceData.bodies[index]!
@@ -439,4 +461,12 @@ const normalizeMouse = (mouse: THREE.Vector2, rect: DOMRect) => {
 
 export default Dice
 
-
+const findMesh = (object: THREE.Object3D): THREE.Mesh | null => {
+  let foundMesh: THREE.Mesh | null = null
+  object.traverse((child) => {
+    if ((child as THREE.Mesh).isMesh) {
+      foundMesh = child as THREE.Mesh
+    }
+  })
+  return foundMesh
+}

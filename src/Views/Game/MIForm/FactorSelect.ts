@@ -67,7 +67,7 @@ export const FactorSelect = ({
 }: {
   $: FunState<Factor>
   removeDie: (id: string) => unknown
-  addDie: (id: string) => unknown
+  addDie: (color: number, id: string) => unknown
 }) => {
   const factor = $.get()
   const [open, setOpen] = useState(false)
@@ -81,12 +81,12 @@ export const FactorSelect = ({
     $.set(val as Factor)
     switch (val) {
       case Factor.Even:
-        addDie('factor1')
+        addDie(0xffffff, 'factor1')
         removeDie('factor2')
         break
       case Factor.Dominant:
-        addDie('factor1')
-        addDie('factor2')
+        addDie(0xffffff, 'factor1')
+        addDie(0xffffff, 'factor2')
         break
       default:
         removeDie('factor1')

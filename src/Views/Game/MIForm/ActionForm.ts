@@ -1,5 +1,5 @@
 // RollForm.ts
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { stylesheet } from 'typestyle'
@@ -95,6 +95,9 @@ export const ActionForm = ({
   const { username, note } = $.get()
   const dicePool$ = $.prop('dicePool')
   const diceSceneRef = useRef<DiceSceneRef | null>(null)
+  useEffect(() => {
+    username && note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
+  }, [username, note])
   return active
     ? div(
         { className: styles.ActionForm },
