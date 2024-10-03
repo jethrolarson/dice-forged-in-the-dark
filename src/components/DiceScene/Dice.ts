@@ -1,8 +1,15 @@
 import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
-import { loadModel, randomSpin, randomWithin, setRandomRotation, vector3ToVec3 } from './gfx_util'
-import { range } from 'ramda'
-import { Task, TaskManager } from './TaskManager'
+import {
+  createInvertedColorMaterial,
+  loadModel,
+  randomSpin,
+  randomWithin,
+  setRandomRotation,
+  vector3ToVec3,
+} from './gfx_util'
+
+import { Task, TaskManager } from '../../Views/Game/MIForm/TaskManager'
 
 type DiceData = {
   bodies: CANNON.Body[]
@@ -19,7 +26,7 @@ export interface DiceParams {
   scene: THREE.Scene
   camera: THREE.Camera
   taskManager: TaskManager
-  onRoll: (results: number[]) => unknown
+  onRoll: (results: { value: number; color: number }[]) => unknown
   boxWidth: number
   boxLength: number
 }
@@ -28,11 +35,15 @@ interface GameObject {
   syncMeshes: Task
 }
 
+interface DieData {
+  body: CANNON.Body
+  mesh: THREE.Mesh
+  color: number
+  id: string
+}
+
 export class Dice implements GameObject {
-  diceData: DiceData = {
-    bodies: [],
-    meshes: [],
-  }
+  dice: DieData[] = []
   jointBody: CANNON.Body | null = null
   jointConstraint: CANNON.PointToPointConstraint | null = null
 
@@ -44,7 +55,7 @@ export class Dice implements GameObject {
 
   private boxWidth: number
   private boxLength: number
-  private onRoll: (results: number[]) => unknown
+  private onRoll: DiceParams['onRoll']
 
   constructor({ diceMaterial, world, scene, camera, taskManager, onRoll, boxWidth, boxLength }: DiceParams) {
     this.diceMaterial = diceMaterial
@@ -55,16 +66,16 @@ export class Dice implements GameObject {
     this.onRoll = onRoll
     this.boxWidth = boxWidth - 1.6
     this.boxLength = boxLength - 2
-    loadModel('public/free_dice_model_d6_mid-poly_4k.glb')
+    loadModel('/free_dice_model_d6_mid-poly_4k.glb')
     this.createJointBody() // Joint body for dragging
   }
-  public async addDie(color: number, id?: string) {
-    const existingDie = id && this.diceData.meshes.find((m) => m.uuid === id)
+  public async addDie(color: number, id?: string): Promise<string> {
+    const existingDie = id && this.dice.find((m) => m.id === id)
     if (existingDie) {
-      ;(existingDie.material as THREE.MeshStandardMaterial).color.set(color)
-      return
+      ;(existingDie.mesh.material as THREE.MeshStandardMaterial).color.set(color)
+      return id
     }
-    const mesh = findMesh(await loadModel('public/free_dice_model_d6_mid-poly_4k.glb'))!
+    const mesh = findMesh(await loadModel('/free_dice_model_d6_mid-poly_4k.glb'))!
 
     // Compute the bounding box and center the model
     const boundingBox = new THREE.Box3().setFromObject(mesh)
@@ -74,28 +85,20 @@ export class Dice implements GameObject {
 
     mesh.castShadow = true
     mesh.receiveShadow = true
-    const material = (mesh.material as THREE.MeshStandardMaterial).clone()
-
-    // Adjusting existing material properties
-    material.roughness = 0.3 // Less roughness for more reflectivity
-    material.metalness = 0.0 // Dice aren't metallic
-
-    // Adjust color and brightness
-    material.color.set(color) // Set to white to reflect light better
-    // material.emissive.set(0xffffff) // Add a subtle emissive color for ambient glow
-    // material.emissiveIntensity = 0.1 // Soft glow
-
-    // mesh.castShadow = true
-    // mesh.receiveShadow = true
-
+    const originalMaterial = mesh.material as THREE.MeshStandardMaterial
     const clonedModel = mesh.clone()
-    clonedModel.material = material
+    if (color === 0x0) {
+      clonedModel.material = createInvertedColorMaterial(originalMaterial.map!)
+    } else {
+      const adjustedMaterial = originalMaterial.clone()
+      adjustedMaterial.color.set(color)
+      clonedModel.material = adjustedMaterial
+    }
     if (id) clonedModel.uuid = id
     const position = randomDiePosition(this.boxWidth, this.boxLength)
     clonedModel.position.copy(position)
 
     this.scene.add(clonedModel)
-    this.diceData.meshes.push(clonedModel)
 
     const diceBody = new CANNON.Body({
       mass: 1,
@@ -106,10 +109,15 @@ export class Dice implements GameObject {
     })
     diceBody.position.copy(position)
     setRandomRotation(diceBody)
-
-    this.diceData.bodies.push(diceBody)
+    this.dice.push({
+      mesh: clonedModel,
+      body: diceBody,
+      id: clonedModel.uuid,
+      color,
+    })
     diceBody.updateMassProperties()
     this.world.addBody(diceBody)
+    return clonedModel.uuid
   }
 
   private createJointBody() {
@@ -121,7 +129,7 @@ export class Dice implements GameObject {
     this.world.addBody(this.jointBody)
   }
 
-  addJointConstraint(diceBody: CANNON.Body) {
+  private addJointConstraint(diceBody: CANNON.Body) {
     if (!this.jointBody) return
 
     const pivot = CANNON.Vec3.ZERO.clone() // Center of dice
@@ -130,7 +138,7 @@ export class Dice implements GameObject {
     this.world.addConstraint(this.jointConstraint)
   }
 
-  moveJoint(position: CANNON.Vec3) {
+  private moveJoint(position: CANNON.Vec3) {
     if (!this.jointBody || !this.jointConstraint) return
     // Clamp the joint position within the play area bounds
     const clampedPosition = new CANNON.Vec3(
@@ -145,8 +153,8 @@ export class Dice implements GameObject {
 
   isDragging = false
 
-  diceCheck: Task | null = null
-  clickDie(event: PointerEvent, x: number, y: number, movementPlane: THREE.Mesh) {
+  private diceCheck: Task | null = null
+  onPointerDown(event: PointerEvent, x: number, y: number, movementPlane: THREE.Mesh) {
     //prevent double clicks
     if (event.button === 2 || this.isDragging) return
     const rect = (event.target as HTMLElement).getBoundingClientRect()
@@ -159,11 +167,11 @@ export class Dice implements GameObject {
     }
     if (this.diceCheck) return
 
-    const [diceBody] = resp
+    const [die] = resp
 
     const targetPos = projectMouseToMovementPlane(x, y, rect, this.camera, movementPlane)
     if (targetPos) {
-      this.liftDieTowardsCamera(diceBody, targetPos, 150)
+      this.liftDieTowardsCamera(die.body, targetPos, 150)
     } else console.error('failed to find target')
 
     this.isDragging = true
@@ -172,7 +180,7 @@ export class Dice implements GameObject {
   bump() {
     // Generate a random force with X and Z components, and always positive Y component (upward)
     const force = new CANNON.Vec3(randomWithin(-1.5, 1.5), randomWithin(2, 3), randomWithin(-1.5, 1.5))
-    this.diceData.bodies.forEach((body) => {
+    this.dice.forEach(({ body }) => {
       body.applyImpulse(force)
     })
   }
@@ -198,7 +206,7 @@ export class Dice implements GameObject {
     } else if (this.jointConstraint) {
       this.isDragging = false
 
-      if (!this.disabled) this.diceCheck = this.taskManager.addInterval(100, this.checkDiceStopped)
+      this.diceCheck = this.taskManager.addInterval(100, this.checkDiceStopped)
       const diceBody = this.jointConstraint.bodyA
       this.orbitingDice.concat([diceBody]).forEach((d) => {
         d.type = CANNON.Body.DYNAMIC
@@ -281,15 +289,15 @@ export class Dice implements GameObject {
     const mouse = normalizeMouse(new THREE.Vector2(clientX, clientY), rect)
     const raycaster = new THREE.Raycaster()
     raycaster.setFromCamera(mouse, camera)
-
+    const meshes = this.dice.map(({ mesh }) => mesh)
     // Loop through the dice and check for intersections
-    const intersected = raycaster.intersectObjects(this.diceData.meshes)
+    const intersected = raycaster.intersectObjects(meshes)
     // If any dice are intersected, add them to the group
     intersected.forEach((intersect) => {
       const mesh = intersect.object as THREE.Mesh
-      const index = this.diceData.meshes.indexOf(mesh)
+      const index = meshes.indexOf(mesh)
       if (index !== -1) {
-        const diceBody = this.diceData.bodies[index]!
+        const diceBody = this.dice[index]!.body
         if (this.jointConstraint?.bodyA === diceBody || this.orbitingDice.includes(diceBody)) return
         this.pickUpDie(diceBody)
       }
@@ -297,7 +305,7 @@ export class Dice implements GameObject {
   }
   orbitingDice: CANNON.Body[] = []
 
-  pickUpDie(diceBody: CANNON.Body) {
+  private pickUpDie(diceBody: CANNON.Body) {
     // Temporarily disable gravity by setting the body type to STATIC
     diceBody.type = CANNON.Body.STATIC
 
@@ -312,77 +320,76 @@ export class Dice implements GameObject {
   }
 
   syncMeshes: Task = () => {
-    for (let i = 0; i < this.diceData.bodies.length; i++) {
-      this.diceData.meshes[i]!.position.copy(this.diceData.bodies[i]!.position)
-      this.diceData.meshes[i]!.quaternion.copy(this.diceData.bodies[i]!.quaternion)
+    for (const die of this.dice) {
+      die.mesh.position.copy(die.body.position)
+      die.mesh.quaternion.copy(die.body.quaternion)
     }
     return false // sync forever
   }
 
   // Method to remove die from scene and physics world
   removeByIndex(index: number) {
-    if (index >= 0 && index < this.diceData.meshes.length) {
-      const diceBody = this.diceData.bodies[index]!
-      const diceMesh = this.diceData.meshes[index]!
+    if (index >= 0 && index < this.dice.length) {
+      const die = this.dice[index]!
       const finalize = () => {
         // Remove from physics world
-        this.world.removeBody(diceBody)
+        this.world.removeBody(die.body)
 
         // Remove from scene
-        this.scene.remove(diceMesh)
+        this.scene.remove(die.mesh)
 
         // Remove from arrays
-        this.diceData.bodies.splice(index, 1)
-        this.diceData.meshes.splice(index, 1)
+        this.dice.splice(index, 1)
       }
       this.taskManager.setTimeout(300, finalize)
-      diceBody.applyImpulse(new CANNON.Vec3(0, 80, 0))
-      diceBody.angularVelocity.set(randomWithin(-10, 10), randomWithin(-10, 10), randomWithin(-10, 10))
+      die.body.applyImpulse(new CANNON.Vec3(0, 70, 0))
+      die.body.angularVelocity.set(randomWithin(-10, 10), randomWithin(-10, 10), randomWithin(-10, 10))
     }
   }
 
   removeDie(id: string) {
-    const index = this.diceData.meshes.findIndex((m) => m.uuid === id)
+    const index = this.dice.findIndex((m) => m.id === id)
     this.removeByIndex(index)
   }
 
-  private getHitDie(clientX: number, clientY: number, rect: DOMRect): [diceBody: CANNON.Body, index: number] | null {
-    if (!this.diceData) return null
+  private getHitDie(clientX: number, clientY: number, rect: DOMRect): [die: DieData, index: number] | null {
     const mouse = normalizeMouse(new THREE.Vector2(clientX, clientY), rect)
     const raycaster = new THREE.Raycaster()
     raycaster.setFromCamera(mouse, this.camera)
 
-    for (let i = 0; i < this.diceData.meshes.length; i++) {
-      if (raycaster.intersectObject(this.diceData.meshes[i]!).length) {
-        return [this.diceData.bodies[i]!, i]
+    for (let i = 0; i < this.dice.length; i++) {
+      if (raycaster.intersectObject(this.dice[i]!.mesh).length) {
+        return [this.dice[i]!, i]
       }
     }
     return null
   }
 
-  checkDiceStopped: Task = () => {
+  private checkDiceStopped: Task = () => {
     let allStopped = true
-    for (let diceBody of this.diceData.bodies) {
-      const speed = diceBody.velocity.length()
-      const angularSpeed = diceBody.angularVelocity.length()
-      if (speed > 0.02 || angularSpeed > 0.02 || diceBody.position.y > 1.02) {
+    for (let die of this.dice) {
+      const speed = die.body.velocity.length()
+      const angularSpeed = die.body.angularVelocity.length()
+      if (speed > 0.02 || angularSpeed > 0.02 || die.body.position.y > 1.02) {
         allStopped = false
         break
       }
     }
 
     if (allStopped) {
+      // TODO cancel roll and return dice to play mat if dice leave the dice tray
       const results = this.determineDiceResults()
       // TODO add some kind of timeout so that if dice land on end the user isn't softlocked
-      if (results.includes(null)) return false
-      this.onRoll(this.determineDiceResults().filter((x): x is number => x !== null))
+      if (results.find((r) => r.value === null)) return false
+      if (!this.disabled) this.onRoll(results as Parameters<DiceParams['onRoll']>[0])
+      console.log(results.map(({ value }) => value))
       this.diceCheck = null
       return true
     }
     return false
   }
 
-  updateOrbitingDice: Task = () => {
+  private updateOrbitingDice: Task = () => {
     if (!this.orbitingDice.length || !this.jointConstraint) return false // No dice to orbit or no joint constraint
 
     const centralDice = this.jointConstraint.bodyA // The original dice being moved
@@ -405,11 +412,11 @@ export class Dice implements GameObject {
     return false // Keep this task running
   }
 
-  private determineDiceResults() {
-    return this.diceData.meshes.map((diceMesh) => {
-      const topFace = getFaceValue(diceMesh)
-      return topFace
-    })
+  private determineDiceResults(): { value: number | null; color: number }[] {
+    return this.dice.map(({ mesh, color }) => ({
+      value: getFaceValue(mesh),
+      color,
+    }))
   }
 }
 
@@ -419,12 +426,12 @@ function getFaceValue(diceMesh: THREE.Object3D<THREE.Object3DEventMap>): number 
 
   // normal vectors for each face of the dice
   const faceNormals = [
-    { face: 1, normal: new THREE.Vector3(0, 1, 0) },
-    { face: 2, normal: new THREE.Vector3(0, 0, -1) },
+    { face: 1, normal: new THREE.Vector3(0, 0, 1) },
+    { face: 2, normal: new THREE.Vector3(0, 1, 0) },
     { face: 3, normal: new THREE.Vector3(-1, 0, 0) },
     { face: 4, normal: new THREE.Vector3(1, 0, 0) },
-    { face: 5, normal: new THREE.Vector3(0, 0, 1) },
-    { face: 6, normal: new THREE.Vector3(0, -1, 0) },
+    { face: 5, normal: new THREE.Vector3(0, -1, 0) },
+    { face: 6, normal: new THREE.Vector3(0, 0, -1) },
   ]
 
   // Apply the dice's current rotation (quaternion) to each face normal

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
-import Dice from './Dice'
-import { TaskManager } from './TaskManager'
+import Dice, { DiceParams } from './Dice'
+import { TaskManager } from '../../Views/Game/MIForm/TaskManager'
 import { loadTexture } from './gfx_util'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
@@ -12,7 +12,7 @@ export class DiceRenderer {
   private movementPlane: THREE.Mesh
   private scene: THREE.Scene
   private world: CANNON.World
-  constructor(element: HTMLElement, onRoll: (results: number[]) => unknown) {
+  constructor(element: HTMLElement, onRoll: DiceParams['onRoll']) {
     this.scene = new THREE.Scene()
     this.scene.fog = new THREE.Fog(0x000000, 500, 1000)
     this.camera = this.setupCamera(element.clientWidth / element.clientHeight)
@@ -178,7 +178,7 @@ export class DiceRenderer {
   onPointerDown = (event: PointerEvent) => {
     if (!this.dice) return
 
-    this.dice.clickDie(event, event.clientX, event.clientY, this.movementPlane)
+    this.dice.onPointerDown(event, event.clientX, event.clientY, this.movementPlane)
   }
 
   onPointerUp = (event: PointerEvent) => {

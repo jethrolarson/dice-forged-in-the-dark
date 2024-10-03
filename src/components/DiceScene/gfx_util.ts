@@ -3,6 +3,7 @@ import * as CANNON from 'cannon-es'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 export const vector3ToVec3 = (vec: THREE.Vector3): CANNON.Vec3 => new CANNON.Vec3(vec.x, vec.y, vec.z)
+export const vec3ToVector3 = (vec: CANNON.Vec3): THREE.Vector3 => new THREE.Vector3(vec.x, vec.y, vec.z)
 
 export const applyRandomAngularVelocityIfZero = (body: CANNON.Body) => {
   if (body.angularVelocity.lengthSquared() < 0.01) {
@@ -70,7 +71,6 @@ export const loadTexture = (filename: string): Promise<THREE.Texture> =>
           },
         )
       })
-  
 
 export const setRandomRotation = (body: CANNON.Body) => {
   // Create a random quaternion
@@ -86,4 +86,36 @@ export const setRandomRotation = (body: CANNON.Body) => {
 
   // Apply the random quaternion to the body
   body.quaternion.copy(randomQuaternion)
+}
+
+/**
+ * Utility function to create a material with inverted texture colors.
+ * @param texture - The texture to apply and invert the colors for.
+ * @returns Inverted color shader material.
+ */
+export function createInvertedColorMaterial(texture: THREE.Texture): THREE.ShaderMaterial {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uTexture: { value: texture || null },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D uTexture;
+      varying vec2 vUv;
+
+      void main() {
+        vec4 texColor = texture2D(uTexture, vUv);
+        vec3 invertedColor = vec3(1.0) - texColor.rgb; // Invert color
+        gl_FragColor = vec4(invertedColor, texColor.a); // Preserve original alpha
+      }
+    `,
+    transparent: false,
+    opacity: 1, // Ensure full opacity
+  })
 }

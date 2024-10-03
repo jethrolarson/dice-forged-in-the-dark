@@ -2,10 +2,8 @@ import { FunState } from '@fun-land/fun-state'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
-import { DieColor } from '../../../Models/Die'
 import { label, e, div, button } from '../../../util'
-import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
-import { Tier, tierColorMap, tierColorMapHex, TierSelect } from './TierSelect'
+import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
 
 export interface Approach$ {
   approach: string
@@ -87,7 +85,7 @@ export const ApproachSelect = ({
   useClickOutside(popoverRef, hide)
   const isActive = !!approach && tier !== Tier.T0
   useEffect(() => {
-    isActive ? addDie(tierColorMapHex[tier], 'approach') : removeDie('approach')
+    isActive ? addDie(tierColor(tier), 'approach') : removeDie('approach')
   }, [isActive, tier])
   const onSelect = (value: string) => {
     hide()

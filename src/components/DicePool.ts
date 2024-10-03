@@ -4,12 +4,12 @@ import { important } from 'csx'
 import { reject, repeat } from 'ramda'
 import { FC, forwardRef, MutableRefObject, useRef } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
-import { DieColor, DieResult, DieType } from '../Models/Die'
+import { colorNameFromHex, DieColor, dieColors, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
 import { e, div, button } from '../util'
 import { Die, nextColor } from '../Views/Game/Die'
 import { DiceSelection } from './DiceSelection'
-import DiceScene, { DiceSceneRef } from '../Views/Game/MIForm/DiceScene'
+import DiceScene, { DiceSceneRef } from './DiceScene/DiceScene'
 import { RollResult } from '../Models/GameModel'
 
 const spin = keyframes({
@@ -122,8 +122,8 @@ export const DicePool = forwardRef<
     disableAdd?: boolean
   }
 >(({ sendRoll, disableAdd = false }, diceSceneRef) => {
-  const addDie = () => {
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie()
+  const addDie = (color: string) => {
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(0xffffff)
   }
   return div({ className: styles.DicePool }, [
     !disableAdd &&
@@ -136,8 +136,10 @@ export const DicePool = forwardRef<
       e(DiceScene, {
         key: 'diceScene',
         ref: diceSceneRef,
-        onDiceRollComplete: (results: number[]) =>
-          sendRoll(results.map((value): DieResult => ({ dieColor: 'white', dieType: 'd6', value }))),
+        onDiceRollComplete: (results) =>
+          sendRoll(
+            results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),
+          ),
       }),
     ),
   ])

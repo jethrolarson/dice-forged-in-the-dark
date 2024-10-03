@@ -3,6 +3,7 @@ import { ReactElement, useCallback, useRef, useState } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { h, div, e, button } from '../../../util'
+import { dieColors, DieColorType } from '../../../Models/Die'
 
 const styles = stylesheet({
   TierSelect: {
@@ -48,6 +49,7 @@ const styles = stylesheet({
     cursor: 'default',
   },
 })
+
 export enum Tier {
   T0 = '⨷',
   T1 = '⓵',
@@ -57,7 +59,6 @@ export enum Tier {
   T5 = '⓹',
 }
 
-// TODO use better colors
 export const tierColorMap = {
   [Tier.T0]: 'white',
   [Tier.T1]: 'green',
@@ -65,16 +66,9 @@ export const tierColorMap = {
   [Tier.T3]: 'purple',
   [Tier.T4]: 'yellow',
   [Tier.T5]: 'red',
-} as const
+} satisfies Record<Tier, DieColorType>
 
-export const tierColorMapHex = {
-  [Tier.T0]: 0xffffff,
-  [Tier.T1]: 0x00ff00,
-  [Tier.T2]: 0x0000ff,
-  [Tier.T3]: 0xaa00ff,
-  [Tier.T4]: 0xffff00,
-  [Tier.T5]: 0xff0000,
-} as const
+export const tierColor = (tier: Tier): number => dieColors[tierColorMap[tier]]
 
 export const TierLabel = ({ tier }: { tier: Tier }): ReactElement =>
   h('span', { className: style({ color: `var(--bg-die-${tierColorMap[tier]})` }) }, [tier])

@@ -45,7 +45,6 @@ const rollIt =
     const { note, dicePool, username } = state.get()
     const n = dicePool.length
     const isZero = n === 0
-    if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
       note,
       rollType: 'Action',

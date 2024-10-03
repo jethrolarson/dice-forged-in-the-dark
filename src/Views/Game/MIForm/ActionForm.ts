@@ -13,7 +13,7 @@ import { Factor, factorDie, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { e, h, div } from '../../../util'
-import { DiceSceneRef } from './DiceScene'
+import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
 
 const styles = stylesheet({
   ActionForm: {

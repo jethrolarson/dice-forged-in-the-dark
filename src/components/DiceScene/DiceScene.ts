@@ -1,11 +1,11 @@
 import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
-import { div } from '../../../util'
-import Dice from './Dice'
+import { div } from '../../util'
+import Dice, { DiceParams } from './Dice'
 import { DiceRenderer } from './DiceRenderer'
 
 interface DiceSceneProps {
-  onDiceRollComplete: (diceResults: number[]) => void
+  onDiceRollComplete: DiceParams['onRoll']
 }
 
 export type DiceSceneRef = {
@@ -27,14 +27,14 @@ const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete
     diceRef.current = dice
     const onContextMenu = (e: MouseEvent) => e.preventDefault()
     mountRef.current.addEventListener('pointerdown', onPointerDown)
-    mountRef.current.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointerup', onPointerUp)
     mountRef.current.addEventListener('contextmenu', onContextMenu)
     window.addEventListener('pointermove', onPointerMove)
     window.addEventListener('resize', onResize)
     return () => {
       window.removeEventListener('resize', onResize)
       window.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('pointerup', onPointerDown)
+      window.removeEventListener('pointerup', onPointerUp)
       mountRef.current?.removeEventListener('pointerdown', onPointerDown)
       mountRef.current?.removeEventListener('contextmenu', onContextMenu)
     }

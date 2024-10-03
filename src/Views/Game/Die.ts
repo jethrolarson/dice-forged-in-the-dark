@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'
-import { DieColor } from '../../Models/Die'
+import { DieColor, DieColorType } from '../../Models/Die'
 import { div, h } from '../../util'
 
 const styles = stylesheet({
@@ -79,9 +79,9 @@ const dropShadow = (dieColor: string): NestedCSSProperties => ({
 
 export const dieColors = ['white', 'green', 'blue', 'purple', 'yellow', 'red'] as const
 
-export const nextColor = (c: keyof typeof DieColor): keyof typeof DieColor => {
+export const nextColor = (c: DieColorType): Exclude<DieColorType, 'black'> => {
+  if (c === 'black') return 'white' //exluding red as it's the 0d color
   const i = dieColors.indexOf(c) + 1
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   return dieColors[i === dieColors.length ? 0 : i]!
 }
 

@@ -1,8 +1,7 @@
-import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
-import { DieColor } from '../Models/Die'
+import { DieColor, DieColorType } from '../Models/Die'
 import { button, div, e } from '../util'
 import { Die, nextColor } from '../Views/Game/Die'
 
@@ -27,7 +26,7 @@ const styles = stylesheet({
   },
 })
 
-export const DiceSelection = ({ addDie }: { addDie: (id?: string) => unknown }) => {
+export const DiceSelection = ({ addDie }: { addDie: (color: DieColorType) => unknown }) => {
   const s = useFunState<{ dieColor: keyof typeof DieColor }>({
     dieColor: 'white',
   })
@@ -43,7 +42,7 @@ export const DiceSelection = ({ addDie }: { addDie: (id?: string) => unknown }) 
           s.prop('dieColor').mod(nextColor)
           e.preventDefault()
         },
-        onClick: () => addDie(),
+        onClick: () => addDie(s.prop('dieColor').get()),
       },
       [
         e(Die, {

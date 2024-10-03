@@ -9,12 +9,13 @@ import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
 import { h, div, e } from '../../../util'
+import { useRef, useEffect } from 'react'
+import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
 
 const styles = stylesheet({
   AssistForm: {
     minHeight: 200,
     display: 'grid',
-    gridTemplateColumns: '120px auto',
     gap: 12,
     margin: 12,
     $nest: {
@@ -30,7 +31,6 @@ const styles = stylesheet({
     flexDirection: 'column',
     gap: 12,
   },
-  poolSelect: { display: 'flex', alignItems: 'center' },
 })
 
 interface QualityForm$ {
@@ -43,8 +43,8 @@ interface QualityForm$ {
 const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<QualityForm$>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, dicePool, pool, username } = state.get()
-    const n = dicePool.length
+    const { note, pool, username } = state.get()
+    const n = diceRolled.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
@@ -81,11 +81,16 @@ export const QualityForm = ({
   const $ = useFunState<QualityForm$>(init_QualityForm$())
   const { note } = $.get()
   const dicePool$ = $.prop('dicePool')
+  const diceSceneRef = useRef<DiceSceneRef | null>(null)
+  useEffect(() => {
+    note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
+  }, [note])
   return active
     ? div({ className: styles.AssistForm }, [
         e(DicePool, {
           key: 'dicepool',
           state: dicePool$,
+          ref: diceSceneRef,
           sendRoll: rollIt(roll, uid, $),
           disableRemove: false,
           disabled: !note,
@@ -94,7 +99,7 @@ export const QualityForm = ({
           e(FormHeading, { key: 'head', title: 'Quality Roll' }),
           h('p', { key: 'subhead' }, ['You succeed but how well?']),
           h('p', { key: 'subhead2' }, ['Roll T dice where T is highest Tier of your remaining dice']),
-          div({ key: 'poolSelect', className: styles.poolSelect }, [
+          div({ key: 'poolSelect' }, [
             e(TextInput, {
               key: 'pool',
               state: $.prop('pool'),
