@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'
-import { DieColor, DieColorType } from '../../Models/Die'
+import { DieColor, dieColors, DieColorType } from '../../Models/Die'
 import { div, h } from '../../util'
 
 const styles = stylesheet({
@@ -77,17 +77,17 @@ const dropShadow = (dieColor: string): NestedCSSProperties => ({
   },
 })
 
-export const dieColors = ['white', 'green', 'blue', 'purple', 'yellow', 'red'] as const
+export const availableDieColors = ['white', 'green', 'blue', 'purple', 'yellow', 'red'] as const
 
 export const nextColor = (c: DieColorType): Exclude<DieColorType, 'black'> => {
   if (c === 'black') return 'white' //exluding red as it's the 0d color
-  const i = dieColors.indexOf(c) + 1
-  return dieColors[i === dieColors.length ? 0 : i]!
+  const i = availableDieColors.indexOf(c) + 1
+  return availableDieColors[i === availableDieColors.length ? 0 : i]!
 }
 
 export interface DieProps {
   value: number
-  dieColor: string
+  dieColor: DieColorType
   dotColor: string
   border?: boolean
   size?: number
@@ -101,7 +101,7 @@ export const Die: FC<DieProps> = ({ value, dotColor, dieColor, border, size = 60
         styles.Die,
         style(
           {
-            background: dieColor.toString(),
+            background: DieColor[dieColor],
             width: size,
             height: size,
             borderRadius: size / 8,

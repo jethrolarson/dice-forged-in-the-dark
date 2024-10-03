@@ -13,6 +13,7 @@ export type DiceSceneRef = {
   removeDie: (id: string) => void
   enable: () => void
   disable: () => void
+  reset: () => unknown
 }
 
 const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete }, ref) => {
@@ -52,6 +53,9 @@ const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete
     },
     enable() {
       diceRef.current?.enable()
+    },
+    reset() {
+      diceRef.current?.reset()
     },
   }))
 

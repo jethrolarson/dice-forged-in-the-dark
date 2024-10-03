@@ -1,16 +1,15 @@
 import { Acc, append, index, removeAt } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
 import { important } from 'csx'
-import { reject, repeat } from 'ramda'
-import { FC, forwardRef, MutableRefObject, useRef } from 'react'
+import { reject } from 'ramda'
+import { forwardRef, MutableRefObject } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
-import { colorNameFromHex, DieColor, dieColors, DieResult, DieType } from '../Models/Die'
+import { colorNameFromHex, DieColor, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
-import { e, div, button } from '../util'
-import { Die, nextColor } from '../Views/Game/Die'
+import { e, div } from '../util'
+import { nextColor } from '../Views/Game/Die'
 import { DiceSelection } from './DiceSelection'
 import DiceScene, { DiceSceneRef } from './DiceScene/DiceScene'
-import { RollResult } from '../Models/GameModel'
 
 const spin = keyframes({
   from: {
@@ -71,7 +70,7 @@ const styles = stylesheet({
 
 export interface Rollable {
   type: DieType
-  color: keyof typeof DieColor
+  color: DieColorType
   id?: string
 }
 
@@ -82,7 +81,7 @@ export const removeDie = removeAt
 export const removeDiceById = (id: string) => reject((r: Rollable) => r.id === id)
 
 export const addDie =
-  (type: DieType, color: keyof typeof DieColor, id?: string) =>
+  (type: DieType, color: DieColorType, id?: string) =>
   (state: DicePoolState): DicePoolState => {
     void playAddSound()
     return append<Rollable>({ type, color, id })(state)
@@ -100,16 +99,6 @@ const idEquals =
   (r: Rollable): boolean =>
     r.id === id
 
-export const setDiceById =
-  (quantity: number, type: DieType, color: keyof typeof DieColor, id: string) =>
-  (state: DicePoolState): DicePoolState => {
-    const withoutOld = reject(idEquals(id), state)
-    if (withoutOld.length + quantity !== state.length) {
-      void playAddSound()
-    }
-    return withoutOld.concat(repeat({ type, color, id }, quantity))
-  }
-
 export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('color').mod(nextColor)
 
 export const DicePool = forwardRef<
@@ -122,14 +111,24 @@ export const DicePool = forwardRef<
     disableAdd?: boolean
   }
 >(({ sendRoll, disableAdd = false }, diceSceneRef) => {
-  const addDie = (color: string) => {
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(0xffffff)
+  const addDie = (color: DieColorType) => {
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors[color])
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.removeDie('zero')
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.removeDie('zero2')
+  }
+  const add0Dice = () => {
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.reset()
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors.black, 'zero')
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors.black, 'zero2')
+  }
+  const reset = () => {
+    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.reset()
   }
   return div({ className: styles.DicePool }, [
     !disableAdd &&
       div(
-        { key: 'diceSelevtion', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
-        [e(DiceSelection, { key: 'dice', addDie })],
+        { key: 'diceSelection', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
+        e(DiceSelection, { key: 'dice', addDie, add0Dice, reset }),
       ),
     div(
       { key: 'diceBox', className: classes(styles.diceBox, disableAdd && styles.roundTop) },

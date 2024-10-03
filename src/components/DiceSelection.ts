@@ -23,15 +23,25 @@ const styles = stylesheet({
     justifySelf: 'center',
     display: 'flex',
     justifyContent: 'space-between',
+    gap: 10,
   },
 })
 
-export const DiceSelection = ({ addDie }: { addDie: (color: DieColorType) => unknown }) => {
+export const DiceSelection = ({
+  addDie,
+  add0Dice,
+  reset,
+}: {
+  addDie: (color: DieColorType) => unknown
+  add0Dice: () => unknown
+  reset: () => unknown
+}) => {
   const s = useFunState<{ dieColor: keyof typeof DieColor }>({
     dieColor: 'white',
   })
   const { dieColor } = s.get()
-  return div({ className: styles.diceButtons }, [
+  return div(
+    { className: styles.diceButtons },
     button(
       {
         key: 'd6',
@@ -44,17 +54,42 @@ export const DiceSelection = ({ addDie }: { addDie: (color: DieColorType) => unk
         },
         onClick: () => addDie(s.prop('dieColor').get()),
       },
-      [
-        e(Die, {
-          key: 'd6_die',
-          value: 6,
-          dieColor: DieColor[dieColor],
-          glow: false,
-          pulse: false,
-          dotColor: '#000',
-          size: 28,
-        }),
-      ],
+      e(Die, {
+        key: 'd6_die',
+        value: 6,
+        dieColor,
+        glow: false,
+        pulse: false,
+        dotColor: '#000',
+        size: 28,
+      }),
     ),
-  ])
+    button(
+      {
+        key: '0d6',
+        className: styles.dieButton,
+        type: 'button',
+        title: '0d (roll 2 take lowest)',
+        onClick: add0Dice,
+      },
+      e(Die, {
+        key: '0d6_die',
+        value: 6,
+        dieColor: 'black',
+        glow: false,
+        pulse: false,
+        dotColor: '#000',
+        size: 28,
+      }),
+    ),
+    button(
+      {
+        key: 'reset',
+        className: styles.dieButton,
+        type: 'button',
+        onClick: reset,
+      },
+      'reset',
+    ),
+  )
 }

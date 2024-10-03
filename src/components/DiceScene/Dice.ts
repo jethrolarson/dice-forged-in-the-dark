@@ -365,6 +365,12 @@ export class Dice implements GameObject {
     return null
   }
 
+  reset() {
+    for (let i = 0; i < this.dice.length; i++) {
+      this.removeByIndex(i)
+    }
+  }
+
   private checkDiceStopped: Task = () => {
     let allStopped = true
     for (let die of this.dice) {

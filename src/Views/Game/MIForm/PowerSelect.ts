@@ -2,12 +2,8 @@ import { FunState } from '@fun-land/fun-state'
 import { useEffect } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { ComboBox } from '../../../components/ComboBox'
-import { TextInput } from '../../../components/TextInput'
-import { DieColor } from '../../../Models/Die'
 import { e, div, label } from '../../../util'
-import { DicePoolState, removeDiceById, setDiceById } from '../../../components/DicePool'
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
-import { important } from 'csx'
 
 export interface Power$ {
   power: string

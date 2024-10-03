@@ -12,18 +12,21 @@ export class DiceRenderer {
   private movementPlane: THREE.Mesh
   private scene: THREE.Scene
   private world: CANNON.World
-  constructor(element: HTMLElement, onRoll: DiceParams['onRoll']) {
+  taskManager: TaskManager
+  meshSyncManager: TaskManager
+  previousTime: number
+  constructor(
+    element: HTMLElement,
+    onRoll: DiceParams['onRoll'],
+    private isDebug: boolean = false,
+  ) {
     this.scene = new THREE.Scene()
-    this.scene.fog = new THREE.Fog(0x000000, 500, 1000)
-    this.camera = this.setupCamera(element.clientWidth / element.clientHeight)
+    const fog = new THREE.Fog(0x000000, 500, 1000)
+    this.scene.fog = fog
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: true })
-    this.renderer.setSize(element.clientWidth, element.clientHeight)
-    this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    this.renderer.setClearColor(this.scene.fog.color)
-    element.appendChild(this.renderer.domElement)
-    // this.debug()
+    this.renderer = this.setupRenderer(element, fog)
+
+    this.camera = this.setupCamera(element.clientWidth / element.clientHeight)
     // Lights
     this.setupLights()
 
@@ -65,40 +68,45 @@ export class DiceRenderer {
     const boxLength = 12.6
     createCubeConstraints(boxWidth, boxLength, 14, this.world, diceMaterial, this.scene)
 
-    const taskManager = new TaskManager()
-    const meshSyncManager = new TaskManager()
+    this.taskManager = new TaskManager()
+    this.meshSyncManager = new TaskManager()
     // Dice
     this.dice = new Dice({
       diceMaterial,
       world: this.world,
       scene: this.scene,
       camera: this.camera,
-      taskManager,
+      taskManager: this.taskManager,
       onRoll,
       boxWidth,
       boxLength,
     })
-    meshSyncManager.addTask(this.dice.syncMeshes)
+    this.meshSyncManager.addTask(this.dice.syncMeshes)
 
-    let previousTime = performance.now()
+    this.previousTime = performance.now()
+  }
+  setupRenderer(element: HTMLElement, fog: THREE.Fog) {
+    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(element.clientWidth, element.clientHeight)
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.setClearColor(fog.color)
+    renderer.setAnimationLoop(this.animate)
+    element.appendChild(renderer.domElement)
+    return renderer
+  }
 
-    const animate = () => {
-      // Calculate the time elapsed between frames (delta)
-      const currentTime = performance.now()
-      const delta = currentTime - previousTime // Convert to seconds
-      previousTime = currentTime
-      this.world.fixedStep()
-      // Run all tasks in the update manager with delta
-      taskManager.update(delta)
-      meshSyncManager.update(delta)
-      // Render the scene
-      this.renderer.render(this.scene, this.camera)
-
-      // Request the next frame
-      requestAnimationFrame(animate)
-    }
-
-    animate()
+  animate = () => {
+    // Calculate the time elapsed between frames (delta)
+    const currentTime = performance.now()
+    const delta = currentTime - this.previousTime // Convert to seconds
+    this.previousTime = currentTime
+    this.world.fixedStep()
+    // Run all tasks in the update manager with delta
+    this.taskManager.update(delta)
+    this.meshSyncManager.update(delta)
+    this.renderer.render(this.scene, this.camera)
   }
 
   setupCamera(aspect: number) {
@@ -106,6 +114,7 @@ export class DiceRenderer {
     camera.position.set(0, 10, -7)
     camera.lookAt(new THREE.Vector3(0, 0, 0.4))
     this.scene.add(camera)
+    if (this.isDebug) this.addDebugControls(camera)
     return camera
   }
 
@@ -133,13 +142,20 @@ export class DiceRenderer {
     this.scene.add(ambientLight)
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
-    directionalLight.position.set(0, 20, 3)
+    directionalLight.position.set(0.1, 20, 3)
     directionalLight.castShadow = true
     directionalLight.shadow.bias = -0.001
     directionalLight.shadow.mapSize.width = 2048
     directionalLight.shadow.mapSize.height = 2048
     this.scene.add(directionalLight)
-    this.scene.add(new THREE.DirectionalLightHelper(directionalLight, 3))
+    // const directionalLight2 = new THREE.DirectionalLight(0xfffffa, 1)
+    // directionalLight2.position.set(0.5, 20, -1)
+    // directionalLight2.castShadow = true
+    // directionalLight2.shadow.bias = -0.001
+    // directionalLight2.shadow.mapSize.width = 2048
+    // directionalLight2.shadow.mapSize.height = 2048
+    // this.scene.add(directionalLight2)
+    // if (this.isDebug) this.scene.add(new THREE.DirectionalLightHelper(directionalLight, 3))
   }
 
   async createFloor() {
@@ -204,8 +220,8 @@ export class DiceRenderer {
     )
   }
 
-  debug() {
-    const controls = new OrbitControls(this.camera, this.renderer.domElement)
+  addDebugControls(camera: THREE.Camera) {
+    const controls = new OrbitControls(camera, this.renderer.domElement)
     controls.enableDamping = true // Enable smooth camera movement
     controls.dampingFactor = 0.05 // Damping factor for smoother movement
   }
@@ -236,21 +252,22 @@ export const createCubeConstraints = (
     wallBody.position.copy(position)
     world.addBody(wallBody)
     if (transparent) return
-    const baseTexture = await loadTexture('arroway-textures_leather-004/leather-004-brown_d.jpg')
-    const normalMap = await loadTexture('arroway-textures_leather-004/leather-004_n.png')
-    const roughnessMap = await loadTexture('arroway-textures_leather-004/leather-004_r.png')
+    const baseTexture = await loadTexture('fabric-016_felt-100x100cm_b.png')
+    const normalMap = await loadTexture('fabric-016_felt-100x100cm_n.png')
+    const roughnessMap = await loadTexture('fabric-016_felt-100x100cm_s.png')
 
-    const leatherMaterial = new THREE.MeshStandardMaterial({
+    const floorMaterial = new THREE.MeshStandardMaterial({
       map: baseTexture,
       normalMap: normalMap,
       roughnessMap: roughnessMap,
-      roughness: 1.0, // Adjust for roughness
-      metalness: 0.0, // No metalness for leather
+      color: 0x440478,
+      roughness: 1.6, // Adjust for felt-like roughness
+      metalness: 0.0, // No metalness for fabric
     })
 
     // Create a THREE.Mesh for the wall with the leather texture
     const geometry = new THREE.BoxGeometry(dimensions.x * 2, dimensions.y * 2, dimensions.z * 2)
-    const wallMesh = new THREE.Mesh(geometry, leatherMaterial)
+    const wallMesh = new THREE.Mesh(geometry, floorMaterial)
 
     wallMesh.position.copy(position)
     wallMesh.castShadow = true
