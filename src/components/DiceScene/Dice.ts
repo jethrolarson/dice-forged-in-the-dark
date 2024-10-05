@@ -72,7 +72,7 @@ export class Dice implements GameObject {
   public async addDie(color: number, id?: string): Promise<string> {
     const existingDie = id && this.dice.find((m) => m.id === id)
     if (existingDie) {
-      ;(existingDie.mesh.material as THREE.MeshStandardMaterial).color.set(color)
+      if(color) (existingDie.mesh.material as THREE.MeshStandardMaterial).color.set(color)
       return id
     }
     const mesh = findMesh(await loadModel('/free_dice_model_d6_mid-poly_4k.glb'))!
@@ -115,7 +115,7 @@ export class Dice implements GameObject {
       id: clonedModel.uuid,
       color,
     })
-    diceBody.updateMassProperties()
+    // diceBody.updateMassProperties()
     this.world.addBody(diceBody)
     return clonedModel.uuid
   }
@@ -331,19 +331,14 @@ export class Dice implements GameObject {
   removeByIndex(index: number) {
     if (index >= 0 && index < this.dice.length) {
       const die = this.dice[index]!
-      const finalize = () => {
-        // Remove from physics world
-        this.world.removeBody(die.body)
+      this.dice.splice(index, 1)
+      // Remove from physics world
+      this.world.removeBody(die.body)
 
-        // Remove from scene
-        this.scene.remove(die.mesh)
+      // Remove from scene
+      this.scene.remove(die.mesh)
 
-        // Remove from arrays
-        this.dice.splice(index, 1)
-      }
-      this.taskManager.setTimeout(300, finalize)
-      die.body.applyImpulse(new CANNON.Vec3(0, 70, 0))
-      die.body.angularVelocity.set(randomWithin(-10, 10), randomWithin(-10, 10), randomWithin(-10, 10))
+      // Remove from arrays
     }
   }
 
@@ -388,7 +383,7 @@ export class Dice implements GameObject {
       // TODO add some kind of timeout so that if dice land on end the user isn't softlocked
       if (results.find((r) => r.value === null)) return false
       if (!this.disabled) this.onRoll(results as Parameters<DiceParams['onRoll']>[0])
-      console.log(results.map(({ value }) => value))
+      console.log(results)
       this.diceCheck = null
       return true
     }
@@ -418,10 +413,11 @@ export class Dice implements GameObject {
     return false // Keep this task running
   }
 
-  private determineDiceResults(): { value: number | null; color: number }[] {
-    return this.dice.map(({ mesh, color }) => ({
+  private determineDiceResults(): { value: number | null; color: number; id: string }[] {
+    return this.dice.map(({ mesh, color, id }) => ({
       value: getFaceValue(mesh),
       color,
+      id,
     }))
   }
 }

@@ -46,7 +46,7 @@ export const CheckDie = ({
   dicePool$: FunState<DicePoolState>
 }) => {
   const _addDice = flow(addDice, dicePool$.mod)
-  const _removeDice = flow(removeDiceById, dicePool$.mod)
+  const _removeDice = flow(removeDiceById, dicePool$.prop('pool').mod)
   return e('label', { className: styles.CheckDie }, [
     e('input', {
       className: styles.checkbox,

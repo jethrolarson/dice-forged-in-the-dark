@@ -74,7 +74,9 @@ export interface Rollable {
   id?: string
 }
 
-export type DicePoolState = Rollable[]
+export type DicePoolState = {
+  pool: Rollable[]
+}
 
 export const removeDie = removeAt
 
@@ -84,20 +86,17 @@ export const addDie =
   (type: DieType, color: DieColorType, id?: string) =>
   (state: DicePoolState): DicePoolState => {
     void playAddSound()
-    return append<Rollable>({ type, color, id })(state)
+    return Acc<DicePoolState>().prop('pool').mod(append<Rollable>({ type, color, id }))(state)
   }
 
 export const addDice =
   (dice: Rollable[]) =>
   (state: DicePoolState): DicePoolState => {
     void playAddSound()
-    return state.concat(dice)
+    return Acc<DicePoolState>()
+      .prop('pool')
+      .mod((pool) => pool.concat(dice))(state)
   }
-
-const idEquals =
-  (id: string) =>
-  (r: Rollable): boolean =>
-    r.id === id
 
 export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('color').mod(nextColor)
 

@@ -1,13 +1,13 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { flow } from 'fp-ts/lib/function'
-import { style, stylesheet } from 'typestyle'
+
+import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { addDice, DicePool, DicePoolState, removeDiceById } from '../../../components/DicePool'
+import { DicePool, DicePoolState } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
-import { Tier, tierColor, tierColorMap, TierSelect } from './TierSelect'
+import { Tier, tierColor, TierSelect } from './TierSelect'
 import { FormHeading } from '../../../components/FormHeading'
 import { useEffect, useRef } from 'react'
 import { e, h, div } from '../../../util'
@@ -50,7 +50,6 @@ const rollIt =
   (diceRolled: DieResult[]): void => {
     const { note, tier, pool, username } = state.get()
     const isZero = diceRolled.some((d) => d.dieColor === 'black')
-    if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
       note,
       rollType: 'Action',
@@ -67,7 +66,7 @@ const rollIt =
   }
 
 const init_AssistForm$ = (): AssistForm$ => ({
-  dicePool: [],
+  dicePool: { pool: [] },
   note: '',
   pool: '',
   tier: Tier.T0,
@@ -93,13 +92,13 @@ export const AssistForm = ({
   }, [username, note])
   useEffect(() => {
     if (tier === Tier.T0) {
-      diceSceneRef.current?.addDie(dieColors.black, 'badAssist1')
-      diceSceneRef.current?.addDie(dieColors.black, 'badAssist2')
+      diceSceneRef.current?.addDie(dieColors.black, 'zero')
+      diceSceneRef.current?.addDie(dieColors.black, 'zero2')
       diceSceneRef.current?.removeDie('assist')
     } else {
       diceSceneRef.current?.addDie(tierColor(tier), 'assist')
-      diceSceneRef.current?.removeDie('badAssist1')
-      diceSceneRef.current?.removeDie('badAssist2')
+      diceSceneRef.current?.removeDie('zero')
+      diceSceneRef.current?.removeDie('zero2')
     }
   }, [tier, active])
   return active

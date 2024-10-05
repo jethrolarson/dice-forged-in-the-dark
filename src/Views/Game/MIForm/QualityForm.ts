@@ -1,6 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { style, stylesheet } from 'typestyle'
+import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
@@ -63,7 +63,7 @@ const rollIt =
   }
 
 const init_QualityForm$ = (): QualityForm$ => ({
-  dicePool: [],
+  dicePool: { pool: [] },
   note: '',
   pool: '',
   username: '',

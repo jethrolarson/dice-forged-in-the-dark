@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react'
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { stylesheet } from 'typestyle'
-import { DieResult } from '../../../Models/Die'
+import { dieColors, DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
 import { DicePool, DicePoolState } from '../../../components/DicePool'
@@ -14,6 +14,7 @@ import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { e, h, div } from '../../../util'
 import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
+import { Tier } from './TierSelect'
 
 const styles = stylesheet({
   ActionForm: {
@@ -50,7 +51,7 @@ const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>) =>
   (diceRolled: DieResult[]): void => {
     const { note, approach$, power$, dicePool, username } = state.get()
-    const n = dicePool.length
+    const n = dicePool.pool.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
@@ -73,7 +74,7 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({
-  dicePool: [factorDie],
+  dicePool: { pool: [factorDie] },
   approach$: init_Approach$,
   note: '',
   power$: init_Power$,
@@ -93,11 +94,23 @@ export const ActionForm = ({
 }) => {
   const $ = useFunState<ActionForm$>(init_ActionForm$())
   const { username, note } = $.get()
+  const approchTier = $.prop('approach$').prop('tier').get()
+  const powerTier = $.prop('power$').prop('tier').get()
+  const factor = $.prop('factor$').get()
   const dicePool$ = $.prop('dicePool')
   const diceSceneRef = useRef<DiceSceneRef | null>(null)
   useEffect(() => {
     username && note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
   }, [username, note])
+  useEffect(() => {
+    if (active && approchTier === Tier.T0 && powerTier === Tier.T0 && factor === Factor.Disadvantaged) {
+      diceSceneRef.current?.addDie(dieColors.black, 'zero')
+      diceSceneRef.current?.addDie(dieColors.black, 'zero2')
+    } else {
+      diceSceneRef.current?.removeDie('zero')
+      diceSceneRef.current?.removeDie('zero2')
+    }
+  }, [approchTier, powerTier, factor, active])
   return active
     ? div(
         { className: styles.ActionForm },

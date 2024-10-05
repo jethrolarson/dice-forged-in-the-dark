@@ -63,7 +63,7 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): AssistForm$ => ({
-  dicePool: [],
+  dicePool: { pool: [] },
   note: '',
   pool: '',
   username: '',
