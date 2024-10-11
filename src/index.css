@@ -273,7 +273,7 @@ a:hover {
   --bg-die-green: hsl(149, 59%, 55%);
   --bg-die-purple: #b867f2;
   --bg-die-blue: #1475f2;
-  --bg-die-black: #555;
+  --bg-die-black: #543f6d;
   font-family: var(--ff);
 }
 .Simple {

@@ -1,5 +1,5 @@
 import { constant } from 'fp-ts/lib/function'
-import { equals, max, min, sum, prop, map, reduce } from 'ramda'
+import { equals, max, min, sum, map, reduce } from 'ramda'
 import { RollResult } from '../../Models/GameModel'
 import { DieResult } from '../../Models/Die'
 import { ValuationType } from '../../Models/RollConfig'
@@ -29,7 +29,7 @@ export const valuateActionRoll = ({ diceRolled, isZero }: RollResult): RollValua
   return 'Miss'
 }
 
-const getResults = map(prop('value'))
+const getResults = map((d: DieResult) => d.value)
 
 export const sumRoll = ({ diceRolled }: RollResult): string => sum(getResults(diceRolled)).toString()
 export const valuateSumRoll = (): RollValuation => 'Success'

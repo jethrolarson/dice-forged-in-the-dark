@@ -87,7 +87,7 @@ export const nextColor = (c: DieColorType): Exclude<DieColorType, 'black'> => {
 
 export interface DieProps {
   value: number
-  dieColor: DieColorType
+  dieColor: string
   dotColor: string
   border?: boolean
   size?: number
@@ -101,7 +101,7 @@ export const Die: FC<DieProps> = ({ value, dotColor, dieColor, border, size = 60
         styles.Die,
         style(
           {
-            background: DieColor[dieColor],
+            background: dieColor,
             width: size,
             height: size,
             borderRadius: size / 8,

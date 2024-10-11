@@ -1,6 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { repeat, tap } from 'ramda'
+import { repeat } from 'ramda'
 import React, { FC, useEffect } from 'react'
 import { stylesheet } from 'typestyle'
 import { NumberSpinner } from '../../../components/NumberSpinner'
@@ -27,7 +27,7 @@ export const Modifier = ({
     setDice(section.name, repeat(section.dieType, v), section.dieColor)
     v !== 0 && state?.set(`${section.name}: ${v}`)
   }
-  const s = useFunState(section.baseModifier, tap(updateDice))
+  const s = useFunState(section.baseModifier)
   useEffect(() => updateDice(s.get()), [section])
   return div(null, [
     section.showLabel && label({ className: styles.label, title: section.tooltip }, [section.name]),

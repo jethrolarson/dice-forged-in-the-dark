@@ -6,6 +6,7 @@ import { RollValuation, valuationMap } from './RollValuation'
 import { Note } from './Note'
 import { map, prop } from 'ramda'
 import { div, e, h } from '../../util'
+import { DieColor, DieColorType, DieResult } from '../../Models/Die'
 
 const circleSize = 120
 
@@ -126,13 +127,14 @@ const dieStyles = (
   isLast: boolean,
   dieColor: string,
 ): { dieColor: string; dotColor: string; border?: boolean; glow?: boolean; pulse?: boolean } => {
+  const _color = DieColor[dieColor as DieColorType] ?? dieColor
   if (excluded) {
-    return { dieColor: 'transparent', dotColor: dieColor, border: true }
+    return { dieColor: 'transparent', dotColor: _color, border: true }
   }
   if (highest || value === 6) {
-    return { dieColor, dotColor: '#000', pulse: isLast }
+    return { dieColor: _color, dotColor: '#000', pulse: isLast }
   }
-  return { dieColor: 'transparent', dotColor: dieColor, border: true }
+  return { dieColor: 'transparent', dotColor: _color, border: true }
 }
 
 const ResultDie: FC<{
@@ -145,7 +147,7 @@ const ResultDie: FC<{
 }> = ({ value, size, highest, excluded, isLast, dieColor }) =>
   e(Die, { value, size, ...dieStyles(value, excluded, highest, isLast, dieColor) })
 
-const getResults = map(prop('value'))
+const getResults = map((d: DieResult) => d.value)
 
 const highestIndexes = (diceRolled: RollResult['diceRolled']): [number, number] => {
   const results = getResults(diceRolled)

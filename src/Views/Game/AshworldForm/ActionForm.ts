@@ -4,7 +4,7 @@ import { style, stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePool$ } from '../../../components/DicePool'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Character } from '../../../components/Character'
 import { e, h, div } from '../../../util'
@@ -48,7 +48,7 @@ const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>) =>
   (diceRolled: DieResult[]): void => {
     const { note, dicePool, username } = state.get()
-    const n = dicePool.length
+    const n = dicePool.pool.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
@@ -67,7 +67,7 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({
-  dicePool: [],
+  dicePool: init_DicePool$(),
   gripes: false,
   knack: false,
   shit: false,

@@ -17,9 +17,10 @@ export type DiceSceneRef = {
   enable: () => void
   disable: () => void
   reset: () => unknown
+  enabled: boolean
 }
 
-const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete }, ref) => {
+const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete, dicePool$ }, ref) => {
   const mountRef = useRef<HTMLDivElement>(null)
   const diceRef = useRef<Dice | null>(null)
   useEffect(() => {
@@ -27,6 +28,7 @@ const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete
     const { onPointerDown, onPointerMove, onResize, onPointerUp, dice } = new DiceRenderer(
       mountRef.current,
       onDiceRollComplete,
+      false,
     )
     diceRef.current = dice
     const onContextMenu = (e: MouseEvent) => e.preventDefault()
@@ -60,6 +62,7 @@ const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete
     reset() {
       diceRef.current?.reset()
     },
+    enabled: false,
   }))
 
   return div({ ref: mountRef, style: { width: '100%', height: '100%', overflow: 'hidden' } }, null)

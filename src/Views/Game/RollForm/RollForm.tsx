@@ -206,7 +206,7 @@ export const RollForm: FC<{
                 state={s.prop('note')}
               />
             </label>
-            {!currentConfig.hideDice && <DiceSelection $={s.prop('dicePool')} />}
+            {/* {!currentConfig.hideDice && <DiceSelection $={s.prop('dicePool')} />} */}
           </div>
         </div>
       ) : (

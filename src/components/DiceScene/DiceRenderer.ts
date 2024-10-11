@@ -21,7 +21,6 @@ export class DiceRenderer {
     element: HTMLElement,
     onRoll: DiceParams['onRoll'],
     private isDebug: boolean = false,
-    private dicePool$: FunState<DicePool$>,
   ) {
     this.scene = new THREE.Scene()
     const fog = new THREE.Fog(0x000000, 500, 1000)

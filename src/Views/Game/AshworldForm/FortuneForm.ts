@@ -4,7 +4,7 @@ import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePool$ } from '../../../components/DicePool'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { FormHeading } from '../../../components/FormHeading'
 import { e, h, div } from '../../../util'
@@ -44,7 +44,7 @@ const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>) =>
   (diceRolled: DieResult[]): void => {
     const { note, dicePool, username } = state.get()
-    const n = dicePool.length
+    const n = dicePool.pool.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
@@ -69,7 +69,7 @@ const ampDie: Rollable = {
 }
 
 const init_ActionForm$ = (): AssistForm$ => ({
-  dicePool: [ampDie],
+  dicePool: { ...init_DicePool$(), pool: [ampDie] },
   note: '',
   username: '',
 })
