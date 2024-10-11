@@ -5,11 +5,11 @@ import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePoolState } from '../../../components/DicePool'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { Tier, tierColor, TierSelect } from './TierSelect'
 import { FormHeading } from '../../../components/FormHeading'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { e, h, div } from '../../../util'
 import { ComboBox } from '../../../components/ComboBox'
 import { approaches } from './ApproachSelect'
@@ -40,7 +40,7 @@ const styles = stylesheet({
 interface AssistForm$ {
   pool: string
   tier: Tier
-  dicePool: DicePoolState
+  dicePool: DicePool$
   note: string
   username: string
 }
@@ -66,7 +66,7 @@ const rollIt =
   }
 
 const init_AssistForm$ = (): AssistForm$ => ({
-  dicePool: { pool: [] },
+  dicePool: init_DicePool$(),
   note: '',
   pool: '',
   tier: Tier.T0,
@@ -87,18 +87,30 @@ export const AssistForm = ({
   const disabled = !username || !note || !pool
   const dicePool$ = $.prop('dicePool')
   const diceSceneRef = useRef<DiceSceneRef | null>(null)
+  const addDie = (color: number, id?: string) => {
+    diceSceneRef.current?.addDie(color, id)
+  }
+  const removeDie = useCallback((id: string) => {
+    diceSceneRef.current?.removeDie(id)
+  }, [])
+  const enable = useCallback(() => {
+    diceSceneRef.current?.enable()
+  }, [])
+  const disable = useCallback(() => {
+    diceSceneRef.current?.disable()
+  }, [])
   useEffect(() => {
-    username && note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
+    username && note ? enable() : disable()
   }, [username, note])
   useEffect(() => {
     if (tier === Tier.T0) {
-      diceSceneRef.current?.addDie(dieColors.black, 'zero')
-      diceSceneRef.current?.addDie(dieColors.black, 'zero2')
-      diceSceneRef.current?.removeDie('assist')
+      addDie(dieColors.black, 'zero')
+      addDie(dieColors.black, 'zero2')
+      removeDie('assist')
     } else {
-      diceSceneRef.current?.addDie(tierColor(tier), 'assist')
-      diceSceneRef.current?.removeDie('zero')
-      diceSceneRef.current?.removeDie('zero2')
+      addDie(tierColor(tier), 'assist')
+      removeDie('zero')
+      removeDie('zero2')
     }
   }, [tier, active])
   return active

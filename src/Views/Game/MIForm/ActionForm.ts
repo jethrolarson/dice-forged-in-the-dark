@@ -1,15 +1,14 @@
-// RollForm.ts
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePoolState } from '../../../components/DicePool'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Character } from '../../../components/Character'
-import { Factor, factorDie, FactorSelect } from './FactorSelect'
+import { Factor, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { e, h, div } from '../../../util'
@@ -41,7 +40,7 @@ interface ActionForm$ {
   approach$: Approach$
   power$: Power$
   factor$: Factor
-  dicePool: DicePoolState
+  dicePool: DicePool$
   note: string
   username: string
   diceResults: number[]
@@ -50,10 +49,9 @@ interface ActionForm$ {
 const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, approach$, power$, dicePool, username } = state.get()
-    const n = dicePool.pool.length
-    const isZero = n === 0
-    if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
+    const { note, approach$, power$, username } = state.get()
+
+    const isZero = diceRolled.some((d) => d.dieColor === 'black')
     roll({
       note,
       rollType: 'Action',
@@ -74,7 +72,7 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({
-  dicePool: { pool: [factorDie] },
+  dicePool: init_DicePool$(),
   approach$: init_Approach$,
   note: '',
   power$: init_Power$,
@@ -99,16 +97,23 @@ export const ActionForm = ({
   const factor = $.prop('factor$').get()
   const dicePool$ = $.prop('dicePool')
   const diceSceneRef = useRef<DiceSceneRef | null>(null)
+  const addDie = (color: number, id?: string) => {
+    if (diceSceneRef.current) diceSceneRef.current.addDie(color, id)
+  }
+  const removeDie = (id: string) => {
+    if (diceSceneRef.current) diceSceneRef.current.removeDie(id)
+  }
   useEffect(() => {
     username && note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
   }, [username, note])
   useEffect(() => {
-    if (active && approchTier === Tier.T0 && powerTier === Tier.T0 && factor === Factor.Disadvantaged) {
-      diceSceneRef.current?.addDie(dieColors.black, 'zero')
-      diceSceneRef.current?.addDie(dieColors.black, 'zero2')
+    if (!active) return
+    if (approchTier === Tier.T0 && powerTier === Tier.T0 && factor === Factor.Disadvantaged) {
+      addDie(dieColors.black, 'zero')
+      addDie(dieColors.black, 'zero2')
     } else {
-      diceSceneRef.current?.removeDie('zero')
-      diceSceneRef.current?.removeDie('zero2')
+      removeDie('zero')
+      removeDie('zero2')
     }
   }, [approchTier, powerTier, factor, active])
   return active
@@ -129,20 +134,21 @@ export const ActionForm = ({
           e(ApproachSelect, {
             key: 'approach',
             $: $.prop('approach$'),
-            addDie: diceSceneRef.current?.addDie ?? (() => {}),
-            removeDie: diceSceneRef.current?.removeDie ?? (() => {}),
+            addDie,
+            removeDie,
           }),
           e(PowerSelect, {
             key: 'power',
             $: $.prop('power$'),
-            addDie: diceSceneRef.current?.addDie ?? (() => {}),
-            removeDie: diceSceneRef.current?.removeDie ?? (() => {}),
+            addDie,
+            removeDie,
           }),
           e(FactorSelect, {
             key: 'factor',
             $: $.prop('factor$'),
-            addDie: diceSceneRef.current?.addDie ?? (() => {}),
-            removeDie: diceSceneRef.current?.removeDie ?? (() => {}),
+            addDie,
+            removeDie,
+            active,
           }),
           e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
           e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),

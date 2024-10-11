@@ -119,3 +119,17 @@ export function createInvertedColorMaterial(texture: THREE.Texture): THREE.Shade
     opacity: 1, // Ensure full opacity
   })
 }
+
+/** Axis-aligned Boundary Box */
+export interface AABB {
+  min: CANNON.Vec3
+  max: CANNON.Vec3
+}
+
+export function isWithinBox(position: CANNON.Vec3, box: AABB): boolean {
+  return (
+    position.x >= box.min.x && position.x <= box.max.x &&
+    position.y >= box.min.y && position.y <= box.max.y &&
+    position.z >= box.min.z && position.z <= box.max.z
+  );
+}

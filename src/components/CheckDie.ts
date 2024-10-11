@@ -4,7 +4,7 @@ import { ReactElement } from 'react'
 import { stylesheet } from 'typestyle'
 import { DieColorType } from '../Models/Die'
 import { e } from '../util'
-import { addDice, DicePoolState, removeDiceById } from './DicePool'
+import { addDice, DicePool$, removeDiceById } from './DicePool'
 
 const styles = stylesheet({
   CheckDie: {
@@ -43,7 +43,7 @@ export const CheckDie = ({
   label: ReactElement | string
   color: DieColorType
   $: FunState<CheckDieState>
-  dicePool$: FunState<DicePoolState>
+  dicePool$: FunState<DicePool$>
 }) => {
   const _addDice = flow(addDice, dicePool$.mod)
   const _removeDice = flow(removeDiceById, dicePool$.prop('pool').mod)

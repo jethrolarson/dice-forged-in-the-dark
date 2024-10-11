@@ -4,7 +4,7 @@ import { style, stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePoolState } from '../../../components/DicePool'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
 import { DiceSelection } from '../../../components/DiceSelection'
@@ -35,7 +35,7 @@ const styles = stylesheet({
 
 interface AssistForm$ {
   pool: string
-  dicePool: DicePoolState
+  dicePool: DicePool$
   note: string
   username: string
 }
@@ -63,7 +63,7 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): AssistForm$ => ({
-  dicePool: { pool: [] },
+  dicePool: init_DicePool$(),
   note: '',
   pool: '',
   username: '',

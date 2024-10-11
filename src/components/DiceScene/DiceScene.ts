@@ -3,9 +3,12 @@ import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react
 import { div } from '../../util'
 import Dice, { DiceParams } from './Dice'
 import { DiceRenderer } from './DiceRenderer'
+import { DicePool$ } from '../DicePool'
+import { FunState } from '@fun-land/fun-state'
 
 interface DiceSceneProps {
   onDiceRollComplete: DiceParams['onRoll']
+  dicePool$: FunState<DicePool$>
 }
 
 export type DiceSceneRef = {

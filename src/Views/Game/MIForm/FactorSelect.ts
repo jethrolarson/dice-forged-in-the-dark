@@ -1,6 +1,6 @@
 import { flow } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { classes, keyframes, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
@@ -64,10 +64,12 @@ export const FactorSelect = ({
   $,
   addDie,
   removeDie,
+  active,
 }: {
   $: FunState<Factor>
   removeDie: (id: string) => unknown
   addDie: (color: number, id: string) => unknown
+  active: boolean
 }) => {
   const factor = $.get()
   const [open, setOpen] = useState(false)
@@ -75,23 +77,28 @@ export const FactorSelect = ({
   const popoverRef = useRef<HTMLDivElement>(null)
   useClickOutside(popoverRef, hide)
 
+  useEffect(() => {
+    if (active) {
+      switch (factor) {
+        case Factor.Even:
+          addDie(0xffffff, 'factor1')
+          removeDie('factor2')
+          break
+        case Factor.Dominant:
+          addDie(0xffffff, 'factor1')
+          addDie(0xffffff, 'factor2')
+          break
+        case Factor.Disadvantaged:
+          removeDie('factor1')
+          removeDie('factor2')
+      }
+    }
+  }, [factor, active])
+
   const isActive = factor !== Factor.Disadvantaged
   const onSelect = (val: string) => {
     hide()
     $.set(val as Factor)
-    switch (val) {
-      case Factor.Even:
-        addDie(0xffffff, 'factor1')
-        removeDie('factor2')
-        break
-      case Factor.Dominant:
-        addDie(0xffffff, 'factor1')
-        addDie(0xffffff, 'factor2')
-        break
-      default:
-        removeDie('factor1')
-        removeDie('factor2')
-    }
   }
   return div(null, [
     div({ key: 'factorSelect', className: styles.FactorSelect }, [

@@ -4,7 +4,7 @@ import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePoolState } from '../../../components/DicePool'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
@@ -35,7 +35,7 @@ const styles = stylesheet({
 
 interface QualityForm$ {
   pool: string
-  dicePool: DicePoolState
+  dicePool: DicePool$
   note: string
   username: string
 }
@@ -63,7 +63,7 @@ const rollIt =
   }
 
 const init_QualityForm$ = (): QualityForm$ => ({
-  dicePool: { pool: [] },
+  dicePool: init_DicePool$(),
   note: '',
   pool: '',
   username: '',

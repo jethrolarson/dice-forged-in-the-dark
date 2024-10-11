@@ -4,6 +4,8 @@ import Dice, { DiceParams } from './Dice'
 import { TaskManager } from '../../Views/Game/MIForm/TaskManager'
 import { loadTexture } from './gfx_util'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { DicePool$ } from '../DicePool'
+import { FunState } from '@fun-land/fun-state'
 
 export class DiceRenderer {
   dice: Dice
@@ -19,6 +21,7 @@ export class DiceRenderer {
     element: HTMLElement,
     onRoll: DiceParams['onRoll'],
     private isDebug: boolean = false,
+    private dicePool$: FunState<DicePool$>,
   ) {
     this.scene = new THREE.Scene()
     const fog = new THREE.Fog(0x000000, 500, 1000)

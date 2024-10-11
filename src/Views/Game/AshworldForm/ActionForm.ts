@@ -4,7 +4,7 @@ import { style, stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePoolState } from '../../../components/DicePool'
+import { DicePool, DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Character } from '../../../components/Character'
 import { e, h, div } from '../../../util'
@@ -33,7 +33,7 @@ const styles = stylesheet({
 })
 
 interface ActionForm$ {
-  dicePool: DicePoolState
+  dicePool: DicePool$
   note: string
   gripes: CheckDieState
   knack: CheckDieState

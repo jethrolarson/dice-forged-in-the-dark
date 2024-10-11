@@ -74,9 +74,18 @@ export interface Rollable {
   id?: string
 }
 
-export type DicePoolState = {
+export type DicePool$ = {
+  /** @deprecated */
   pool: Rollable[]
+  sceneLoaded: boolean
+  enabled: boolean
 }
+
+export const init_DicePool$ = (): DicePool$ => ({
+  pool: [],
+  sceneLoaded: false,
+  enabled: false,
+})
 
 export const removeDie = removeAt
 
@@ -84,16 +93,16 @@ export const removeDiceById = (id: string) => reject((r: Rollable) => r.id === i
 
 export const addDie =
   (type: DieType, color: DieColorType, id?: string) =>
-  (state: DicePoolState): DicePoolState => {
+  (state: DicePool$): DicePool$ => {
     void playAddSound()
-    return Acc<DicePoolState>().prop('pool').mod(append<Rollable>({ type, color, id }))(state)
+    return Acc<DicePool$>().prop('pool').mod(append<Rollable>({ type, color, id }))(state)
   }
 
 export const addDice =
   (dice: Rollable[]) =>
-  (state: DicePoolState): DicePoolState => {
+  (state: DicePool$): DicePool$ => {
     void playAddSound()
-    return Acc<DicePoolState>()
+    return Acc<DicePool$>()
       .prop('pool')
       .mod((pool) => pool.concat(dice))(state)
   }
@@ -103,13 +112,13 @@ export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('colo
 export const DicePool = forwardRef<
   DiceSceneRef,
   {
-    state: FunState<DicePoolState>
+    state: FunState<DicePool$>
     sendRoll: (results: DieResult[]) => unknown
     disabled: boolean
     disableRemove?: boolean
     disableAdd?: boolean
   }
->(({ sendRoll, disableAdd = false }, diceSceneRef) => {
+>(({ sendRoll, disableAdd = false, state }, diceSceneRef) => {
   const addDie = (color: DieColorType) => {
     ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors[color])
     ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.removeDie('zero')
@@ -134,6 +143,7 @@ export const DicePool = forwardRef<
       e(DiceScene, {
         key: 'diceScene',
         ref: diceSceneRef,
+        dicePool$: state,
         onDiceRollComplete: (results) =>
           sendRoll(
             results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),

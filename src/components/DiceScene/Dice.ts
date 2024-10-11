@@ -40,6 +40,7 @@ interface DieData {
   mesh: THREE.Mesh
   color: number
   id: string
+  rolled: boolean
 }
 
 export class Dice implements GameObject {
@@ -56,7 +57,7 @@ export class Dice implements GameObject {
   private boxWidth: number
   private boxLength: number
   private onRoll: DiceParams['onRoll']
-
+  private playBox: CANNON.AABB
   constructor({ diceMaterial, world, scene, camera, taskManager, onRoll, boxWidth, boxLength }: DiceParams) {
     this.diceMaterial = diceMaterial
     this.world = world
@@ -68,11 +69,30 @@ export class Dice implements GameObject {
     this.boxLength = boxLength - 2
     loadModel('/free_dice_model_d6_mid-poly_4k.glb')
     this.createJointBody() // Joint body for dragging
+    this.playBox = this.createPlayBox(boxWidth, boxLength)
+  }
+
+  private createPlayBox(boxWidth: number, boxLength: number) {
+    const playBox = new CANNON.AABB({
+      lowerBound: new CANNON.Vec3(-boxWidth / 2, 0, -boxLength / 2), // min point
+      upperBound: new CANNON.Vec3(boxWidth / 2, 20, boxLength / 2), // max point
+    })
+    const scaleFactor = 1.5 // Scale box up so that collisions don't count as OOB
+
+    // Compute half extents and scale the bounds
+    const halfExtents = playBox.upperBound.vsub(playBox.lowerBound).scale(0.5 * scaleFactor)
+
+    // Update lower and upper bounds
+    const center = playBox.lowerBound.vadd(playBox.upperBound).scale(0.5)
+    playBox.lowerBound = center.vsub(halfExtents)
+    playBox.upperBound = center.vadd(halfExtents)
+    this.taskManager.addTask(this.checkDiceBoundsTask)
+    return playBox
   }
   public async addDie(color: number, id?: string): Promise<string> {
     const existingDie = id && this.dice.find((m) => m.id === id)
     if (existingDie) {
-      if(color) (existingDie.mesh.material as THREE.MeshStandardMaterial).color.set(color)
+      if (color) (existingDie.mesh.material as THREE.MeshStandardMaterial).color.set(color)
       return id
     }
     const mesh = findMesh(await loadModel('/free_dice_model_d6_mid-poly_4k.glb'))!
@@ -114,6 +134,7 @@ export class Dice implements GameObject {
       body: diceBody,
       id: clonedModel.uuid,
       color,
+      rolled: false,
     })
     // diceBody.updateMassProperties()
     this.world.addBody(diceBody)
@@ -171,7 +192,7 @@ export class Dice implements GameObject {
 
     const targetPos = projectMouseToMovementPlane(x, y, rect, this.camera, movementPlane)
     if (targetPos) {
-      this.liftDieTowardsCamera(die.body, targetPos, 150)
+      this.liftDieTowardsCamera(die, targetPos, 150)
     } else console.error('failed to find target')
 
     this.isDragging = true
@@ -223,8 +244,8 @@ export class Dice implements GameObject {
 
   private currentLiftTask: Task | null = null
 
-  liftDieTowardsCamera(diceBody: CANNON.Body, targetPosition: THREE.Vector3, duration: number) {
-    const startPosition = diceBody.position.clone()
+  liftDieTowardsCamera(die: DieData, targetPosition: THREE.Vector3, duration: number) {
+    const startPosition = die.body.position.clone()
     let startTime: number | null = null
 
     // If a lift task is already running, remove it
@@ -233,7 +254,7 @@ export class Dice implements GameObject {
     }
 
     // Temporarily disable gravity by setting the body type to STATIC
-    diceBody.type = CANNON.Body.STATIC
+    die.body.type = CANNON.Body.STATIC
 
     // Define the new lift task
     const liftTask: Task = () => {
@@ -242,7 +263,7 @@ export class Dice implements GameObject {
       const t = Math.min(elapsed / duration, 1)
 
       // Manually interpolate between start and target position
-      diceBody.position.set(
+      die.body.position.set(
         THREE.MathUtils.lerp(startPosition.x, targetPosition.x, t),
         THREE.MathUtils.lerp(startPosition.y, targetPosition.y, t),
         THREE.MathUtils.lerp(startPosition.z, targetPosition.z, t),
@@ -250,10 +271,11 @@ export class Dice implements GameObject {
 
       // If the animation is complete, reset gravity, remove the task, and apply spin
       if (t >= 1) {
-        diceBody.type = CANNON.Body.DYNAMIC
-        diceBody.velocity.set(0, 0, 0) // Reset velocity
-        diceBody.angularVelocity.set(0, 0, 0) // Reset angular velocity
-        diceBody.applyTorque(randomSpin(200, 300))
+        die.body.type = CANNON.Body.DYNAMIC
+        die.rolled = true
+        die.body.velocity.set(0, 0, 0) // Reset velocity
+        die.body.angularVelocity.set(0, 0, 0) // Reset angular velocity
+        die.body.applyTorque(randomSpin(200, 300))
         return true // Task complete
       }
 
@@ -267,7 +289,7 @@ export class Dice implements GameObject {
     this.taskManager.addTask(liftTask)
 
     // Attach the joint constraint after the die is lifted
-    this.addJointConstraint(diceBody)
+    this.addJointConstraint(die.body)
   }
 
   move(x: number, y: number, camera: THREE.Camera, rect: DOMRect, movementPlane: THREE.Mesh) {
@@ -297,8 +319,10 @@ export class Dice implements GameObject {
       const mesh = intersect.object as THREE.Mesh
       const index = meshes.indexOf(mesh)
       if (index !== -1) {
-        const diceBody = this.dice[index]!.body
+        const die = this.dice[index]!
+        const diceBody = die.body
         if (this.jointConstraint?.bodyA === diceBody || this.orbitingDice.includes(diceBody)) return
+        die.rolled = true
         this.pickUpDie(diceBody)
       }
     })
@@ -361,8 +385,13 @@ export class Dice implements GameObject {
   }
 
   reset() {
-    for (let i = 0; i < this.dice.length; i++) {
-      this.removeByIndex(i)
+    while (this.dice.length) {
+      const die = this.dice.pop()!
+      this.world.removeBody(die.body)
+      this.scene.remove(die.mesh)
+
+      // Optional: Clear event listeners or additional cleanup
+      // die.body.removeEventListener(...); // If you have any event listeners
     }
   }
 
@@ -378,11 +407,22 @@ export class Dice implements GameObject {
     }
 
     if (allStopped) {
-      // TODO cancel roll and return dice to play mat if dice leave the dice tray
       const results = this.determineDiceResults()
-      // TODO add some kind of timeout so that if dice land on end the user isn't softlocked
-      if (results.find((r) => r.value === null)) return false
-      if (!this.disabled) this.onRoll(results as Parameters<DiceParams['onRoll']>[0])
+      if (results.find((r) => r.value === null)) {
+        console.info('One or more dice arent level. Try bumping the table.')
+        return false
+      }
+
+      if (!this.disabled) {
+        if (this.dice.every((d) => d.rolled)) {
+          this.onRoll(results as Parameters<DiceParams['onRoll']>[0])
+        } else {
+          alert('not all dice were rolled')
+        }
+      }
+      this.dice.forEach((d) => {
+        d.rolled = false
+      })
       console.log(results)
       this.diceCheck = null
       return true
@@ -419,6 +459,22 @@ export class Dice implements GameObject {
       color,
       id,
     }))
+  }
+
+  private checkDiceBoundsTask: Task = () => {
+    this.dice.forEach((die, index) => {
+      const { body } = die
+      body.updateAABB()
+      // Check if the die's AABB is fully contained within the playbox's AABB
+      if (!this.playBox.contains(body.aabb)) {
+        die.rolled = false
+        body.position.copy(randomDiePosition(this.boxWidth, this.boxLength))
+        body.velocity.setZero() // Reset linear velocity
+        body.angularVelocity.setZero() // Reset angular velocity
+      }
+    })
+
+    return false // Keep task running
   }
 }
 
