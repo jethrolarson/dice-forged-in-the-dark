@@ -75,7 +75,7 @@ export const DiceSelection = ({
       e(Die, {
         key: '0d6_die',
         value: 6,
-        dieColor: 'black',
+        dieColor: DieColor['black'],
         glow: false,
         pulse: false,
         dotColor: '#000',
