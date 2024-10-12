@@ -31,6 +31,7 @@ export const randomUnitVector = (): CANNON.Vec3 => {
 export const randomSpin = (min: number, max: number): CANNON.Vec3 => randomUnitVector().scale(randomWithin(min, max))
 
 export const randomWithin = (min: number, max: number): number => Math.random() * (max - min) + min
+export const randomInt = (min: number, max: number): number => Math.floor(Math.random() * (max - min) + min)
 
 // Create the loader
 const loader = new GLTFLoader()
@@ -128,8 +129,25 @@ export interface AABB {
 
 export function isWithinBox(position: CANNON.Vec3, box: AABB): boolean {
   return (
-    position.x >= box.min.x && position.x <= box.max.x &&
-    position.y >= box.min.y && position.y <= box.max.y &&
-    position.z >= box.min.z && position.z <= box.max.z
-  );
+    position.x >= box.min.x &&
+    position.x <= box.max.x &&
+    position.y >= box.min.y &&
+    position.y <= box.max.y &&
+    position.z >= box.min.z &&
+    position.z <= box.max.z
+  )
+}
+
+/** maps a value from in range to out range */
+export function mapValue(value: number, inMin: number, inMax: number, outMin: number, outMax: number): number {
+  // Avoid division by zero
+  if (inMin >= inMax) {
+    throw Error('inMin >= inMax which makes no sense')
+  }
+
+  // Calculate the normalized value (can be less than 0 or greater than 1)
+  const normalized = (value - inMin) / (inMax - inMin)
+
+  // Map the normalized value to the output range (may be outside outMin and outMax)
+  return outMin + normalized * (outMax - outMin)
 }

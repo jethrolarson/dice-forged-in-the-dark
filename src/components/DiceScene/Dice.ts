@@ -3,18 +3,15 @@ import * as CANNON from 'cannon-es'
 import {
   createInvertedColorMaterial,
   loadModel,
+  mapValue,
+  randomInt,
   randomSpin,
   randomWithin,
   setRandomRotation,
-  vector3ToVec3,
 } from './gfx_util'
 
 import { Task, TaskManager } from '../../Views/Game/MIForm/TaskManager'
-
-type DiceData = {
-  bodies: CANNON.Body[]
-  meshes: THREE.Mesh[]
-}
+import { SoundManager } from './SoundManager'
 
 const dieSize: CANNON.Vec3 = new CANNON.Vec3(1, 1, 1)
 const randomDiePosition = (width: number, length: number): CANNON.Vec3 =>
@@ -58,6 +55,8 @@ export class Dice implements GameObject {
   private boxLength: number
   private onRoll: DiceParams['onRoll']
   private playBox: CANNON.AABB
+
+  private diceHitSounds: SoundManager
   constructor({ diceMaterial, world, scene, camera, taskManager, onRoll, boxWidth, boxLength }: DiceParams) {
     this.diceMaterial = diceMaterial
     this.world = world
@@ -70,6 +69,13 @@ export class Dice implements GameObject {
     loadModel('/free_dice_model_d6_mid-poly_4k.glb')
     this.createJointBody() // Joint body for dragging
     this.playBox = this.createPlayBox(boxWidth, boxLength)
+
+    this.diceHitSounds = new SoundManager('dice_sounds.ogg', 1, 1)
+    this.diceHitSounds.loadAudio()
+    const cameraForward = new THREE.Vector3()
+    this.camera.getWorldDirection(cameraForward)
+    const cameraUp = this.camera.up
+    this.diceHitSounds.updateListenerPosition(camera.position, cameraForward, cameraUp)
   }
 
   private createPlayBox(boxWidth: number, boxLength: number) {
@@ -129,16 +135,50 @@ export class Dice implements GameObject {
     })
     diceBody.position.copy(position)
     setRandomRotation(diceBody)
-    this.dice.push({
+    const die = {
       mesh: clonedModel,
       body: diceBody,
       id: clonedModel.uuid,
       color,
       rolled: false,
+    }
+    this.dice.push(die)
+
+    diceBody.addEventListener('collide', (event: { body: CANNON.Body }) => {
+      this.handleCollision(die, event)
     })
-    // diceBody.updateMassProperties()
+
     this.world.addBody(diceBody)
     return clonedModel.uuid
+  }
+
+  private handleCollision(die: DieData, event: { body: CANNON.Body }) {
+    const collidedBody = event.body
+
+    const isDiceCollision = this.dice.some((die) => die.body === collidedBody)
+    // Trigger side effects for hitting a surface
+    this.triggerCollisionEffect(die, isDiceCollision)
+  }
+
+  private lastSound: number = 0
+  private triggerCollisionEffect(die: DieData, isDiceCollision: boolean) {
+    const impactStrength = die.body.velocity.length()
+    const now = performance.now()
+    if (impactStrength < 3 || now - this.lastSound < 16) return
+    this.lastSound = now
+    const maxImpact = 120
+    const volume = isDiceCollision
+      ? mapValue(impactStrength, 0, maxImpact, 0, 10)
+      : mapValue(impactStrength, 0, maxImpact, 0, 2)
+
+    // Get the die's position
+    const position = die.body.position
+
+    // Convert position to a plain object if necessary
+    const diePosition = { x: position.x, y: position.y, z: position.z }
+    const soundIndex = isDiceCollision ? randomInt(10, 11) : randomInt(0, 2)
+    // Play the sound at the die's position
+    this.diceHitSounds.playSound(soundIndex, volume, diePosition)
   }
 
   private createJointBody() {
@@ -186,7 +226,12 @@ export class Dice implements GameObject {
       this.bump()
       return
     }
-    if (this.diceCheck) return
+
+    // Let players fiddle with the dice freely if the roll isn't active
+    if (this.diceCheck) {
+      if (this.disabled) this.diceCheck = null
+      else return
+    }
 
     const [die] = resp
 
@@ -206,7 +251,7 @@ export class Dice implements GameObject {
     })
   }
 
-  private disabled = true
+  public disabled = true
   disable() {
     this.disabled = true
   }
@@ -233,7 +278,7 @@ export class Dice implements GameObject {
         d.type = CANNON.Body.DYNAMIC
         d.velocity.copy(diceBody.velocity)
         d.applyImpulse(new CANNON.Vec3(0, 4, 0))
-        d.applyTorque(randomSpin(200, 400))
+        d.applyTorque(randomSpin(150, 220))
       })
       this.orbitingDice = []
 
@@ -275,7 +320,7 @@ export class Dice implements GameObject {
         die.rolled = true
         die.body.velocity.set(0, 0, 0) // Reset velocity
         die.body.angularVelocity.set(0, 0, 0) // Reset angular velocity
-        die.body.applyTorque(randomSpin(200, 300))
+        die.body.applyTorque(randomSpin(150, 200))
         return true // Task complete
       }
 
@@ -423,7 +468,6 @@ export class Dice implements GameObject {
       this.dice.forEach((d) => {
         d.rolled = false
       })
-      console.log(results)
       this.diceCheck = null
       return true
     }
@@ -462,7 +506,7 @@ export class Dice implements GameObject {
   }
 
   private checkDiceBoundsTask: Task = () => {
-    this.dice.forEach((die, index) => {
+    this.dice.forEach((die) => {
       const { body } = die
       body.updateAABB()
       // Check if the die's AABB is fully contained within the playbox's AABB

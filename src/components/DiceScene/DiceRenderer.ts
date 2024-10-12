@@ -4,8 +4,7 @@ import Dice, { DiceParams } from './Dice'
 import { TaskManager } from '../../Views/Game/MIForm/TaskManager'
 import { loadTexture } from './gfx_util'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { DicePool$ } from '../DicePool'
-import { FunState } from '@fun-land/fun-state'
+
 
 export class DiceRenderer {
   dice: Dice
@@ -44,9 +43,6 @@ export class DiceRenderer {
       solver,
     })
 
-    // Floor
-    this.createFloor()
-
     // Movement Plane (for dragging dice)
     this.movementPlane = new THREE.Mesh(
       new THREE.PlaneGeometry(500, 500),
@@ -55,13 +51,17 @@ export class DiceRenderer {
     this.movementPlane.rotateX(-Math.PI / 2) // Set it horizontal
     this.movementPlane.position.set(0, 2.5, 0) // Start slightly above the floor
     this.scene.add(this.movementPlane)
+
     // Materials
     const groundMaterial = new CANNON.Material('groundMaterial')
     const diceMaterial = new CANNON.Material('diceMaterial')
 
+    // Floor
+    this.createFloor(groundMaterial)
+
     this.world.addContactMaterial(
       new CANNON.ContactMaterial(diceMaterial, groundMaterial, {
-        friction: 0.00001, // Adjusted friction
+        friction: 0.01, // Adjusted friction
         restitution: 0.1, // Adjusted restitution (bounciness),
       }),
     )
@@ -160,7 +160,7 @@ export class DiceRenderer {
     // if (this.isDebug) this.scene.add(new THREE.DirectionalLightHelper(directionalLight, 3))
   }
 
-  async createFloor() {
+  async createFloor(groundMaterial: CANNON.Material) {
     const baseTexture = await loadTexture('fabric-016_felt-100x100cm_b.png')
     const normalMap = await loadTexture('fabric-016_felt-100x100cm_n.png')
     const roughnessMap = await loadTexture('fabric-016_felt-100x100cm_s.png')
@@ -185,7 +185,7 @@ export class DiceRenderer {
     const floor = new THREE.Mesh(floorGeometry, floorMaterial)
     floor.receiveShadow = true
 
-    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() })
+    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: groundMaterial })
     floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0)
     this.world.addBody(floorBody)
 

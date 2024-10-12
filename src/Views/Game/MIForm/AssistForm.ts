@@ -114,7 +114,7 @@ export const AssistForm = ({
     }
   }, [tier, active])
   return active
-    ? div({ className: styles.AssistForm }, [
+    ? div({ className: styles.AssistForm, key: 'assistForm' }, [
         e(DicePool, {
           key: 'dicepool',
           state: dicePool$,
@@ -128,7 +128,11 @@ export const AssistForm = ({
           h('p', { key: 'subhead' }, ["Dive in to assist another player's action at the last second"]),
           h('p', { key: 'subhead2' }, ['Spend and roll one die of your choice']),
           div({ key: 'pool' }, [
-            div(null, e(TierSelect, { key: 'tier', $: $.prop('tier') }), h('label', null, 'Tier')),
+            div(
+              { key: 'tierWrap' },
+              e(TierSelect, { key: 'tier', $: $.prop('tier') }),
+              h('label', { key: 'tierLabel' }, 'Tier'),
+            ),
             e(ComboBox, {
               key: 'pool',
               $: $.prop('pool'),
