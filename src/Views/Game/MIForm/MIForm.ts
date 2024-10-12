@@ -30,6 +30,7 @@ export const Form = ({
   const roll = useCallback(
     (newRoll: NewRoll) => {
       sendRoll(gdoc, userDisplayName, newRoll)
+      $.set(RollType.none)
     },
     [gdoc],
   )

@@ -415,7 +415,7 @@ export class Dice implements GameObject {
 
       if (!this.disabled) {
         if (this.dice.every((d) => d.rolled)) {
-          this.onRoll(results as Parameters<DiceParams['onRoll']>[0])
+          setTimeout(() => this.onRoll(results as Parameters<DiceParams['onRoll']>[0]), 500)
         } else {
           alert('not all dice were rolled')
         }

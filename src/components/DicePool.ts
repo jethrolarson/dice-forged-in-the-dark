@@ -144,10 +144,11 @@ export const DicePool = forwardRef<
         key: 'diceScene',
         ref: diceSceneRef,
         dicePool$: state,
-        onDiceRollComplete: (results) =>
+        onDiceRollComplete: (results) => {
           sendRoll(
             results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),
-          ),
+          )
+        },
       }),
     ),
   ])
