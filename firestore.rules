@@ -1,48 +1,47 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write;
-    }
-    match /games/{game} {
-      allow read: if canReadGame()
-      allow delete: if false;
-      allow create, update: if canUpdateGame()
-    }
 
-    function isLoggedIn () {
+    function isLoggedIn() {
       return request.auth != null;
     }
-    
-    function canReadGame(){
-      let isPlayer = request.auth.uid in request.resource.data.players;
-      return isLoggedIn() && isPlayer;
+
+    function isOwner(uid, gameData) {
+      return uid in gameData.owners;
     }
-    
-    function canUpdateGame(){
-      let isOwner = request.auth.uid in request.resource.data.owners;
-      return isLoggedIn() && isOwner;
+
+    function canCreateGame() {
+      // `request.auth.uid in request.resource.data.owners` checks whether the UID
+      // of the user trying to create the game is included in the owners field of
+      // the new game data being submitted.
+      return isLoggedIn() && request.auth.uid in request.resource.data.owners;
     }
-    
+
+    function canUpdateGame() {
+      return isLoggedIn() && isOwner(request.auth.uid, resource.data);
+    }
+
+    // Rules for /games/{game}
+    match /games/{game} {
+      allow read: if isLoggedIn();
+      allow create: if canCreateGame();
+      allow update: if canUpdateGame();
+      allow delete: if false;
+    }
+
+    // Rules for /games/{game}/rolls/{roll}
     match /games/{game}/rolls/{roll} {
-     	allow read;
+      allow read: if isLoggedIn();
       allow create: if isLoggedIn();
-      allow update: if false;
+      allow update, delete: if false;
     }
 
-    function canPlayGame(database, gameId){
-      let game = get(/databases/$(database)/documents/games/$(gameId));
-      return isLoggedIn() && isPlayer(request.auth.uid, game);
-    }
-
-    function isPlayer(uid, game){
-      return uid in game.data.players || uid in game.data.owners;
-    }
-
+    // Rules for /users/{uid}
     match /users/{uid} {
-      allow read: if true
+      allow read: if true;
       allow create: if request.auth.uid == uid;
-      allow update, delete: if request.auth.uid == uid;
+      allow update: if request.auth.uid == uid;
+      allow delete: if false;
     }
   }
 }
