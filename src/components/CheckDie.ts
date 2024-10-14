@@ -1,4 +1,4 @@
-import { flow, not } from '@fun-land/accessor'
+import { flow } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
 import { ReactElement } from 'react'
 import { stylesheet } from 'typestyle'
@@ -53,7 +53,7 @@ export const CheckDie = ({
       checked: $.get(),
       type: 'checkbox',
       onChange: ({ currentTarget: { checked } }) => {
-        checked ? _addDice([{ color: color, type: 'd6', id }]) : _removeDice(id)
+        checked ? _addDice([{ color, type: 'd6', id }]) : _removeDice(id)
         $.set(checked)
       },
     }),

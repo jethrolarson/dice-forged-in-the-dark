@@ -3,7 +3,7 @@ import { LoginView } from '../Views/Login/LoginModel'
 
 export interface AppState {
   view: View
-  games: Array<{ id: string; title: string }>
+  games: { id: string; title: string }[]
 }
 
 export interface Error404View {

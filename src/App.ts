@@ -12,8 +12,8 @@ import { e, h } from './util'
 const updateView = (): View => route(window.location.hash.slice(1))
 
 /** App components should be the only things that instantiate state */
-// eslint-disable-next-line complexity
-export const App: FC<{}> = () => {
+ 
+export const App: FC = () => {
   const state = useFunState<AppState>(initialState(updateView()))
 
   useEffect(() => {

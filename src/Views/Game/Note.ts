@@ -1,4 +1,3 @@
-import React, { FC } from 'react'
 import { stylesheet } from 'typestyle'
 import Markdown from '../../markdown'
 import { e } from '../../util'

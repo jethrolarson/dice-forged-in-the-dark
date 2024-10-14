@@ -1,7 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 import { FC, ReactNode } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
-import { h, div, button, label } from '../../../util'
+import { button, div, label } from '../../../util'
 
 const styles = stylesheet({
   buttons: {

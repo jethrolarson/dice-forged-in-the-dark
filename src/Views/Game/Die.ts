@@ -1,8 +1,8 @@
-import React, { FC } from 'react'
+import { FC } from 'react'
 
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'
-import { DieColor, dieColors, DieColorType } from '../../Models/Die'
+import { DieColorType } from '../../Models/Die'
 import { div, h } from '../../util'
 
 const styles = stylesheet({

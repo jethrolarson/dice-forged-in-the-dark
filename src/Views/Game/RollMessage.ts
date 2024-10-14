@@ -1,4 +1,3 @@
-import React, { FC } from 'react'
 import { style } from 'typestyle'
 import { Message } from '../../Models/GameModel'
 import { div, e } from '../../util'

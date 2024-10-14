@@ -1,15 +1,15 @@
-import { Acc, append, index, removeAt } from '@fun-land/accessor'
+import { Acc, append, index } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
 import { important } from 'csx'
 import { reject } from 'ramda'
 import { forwardRef, MutableRefObject } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
-import { colorNameFromHex, DieColor, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
+import { colorNameFromHex, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
-import { e, div } from '../util'
+import { div, e } from '../util'
 import { nextColor } from '../Views/Game/Die'
-import { DiceSelection } from './DiceSelection'
 import DiceScene, { DiceSceneRef } from './DiceScene/DiceScene'
+import { DiceSelection } from './DiceSelection'
 
 const spin = keyframes({
   from: {
@@ -74,7 +74,7 @@ export interface Rollable {
   id?: string
 }
 
-export type DicePool$ = {
+export interface DicePool$ {
   /** @deprecated */
   pool: Rollable[]
   sceneLoaded: boolean
@@ -87,10 +87,10 @@ export const init_DicePool$ = (): DicePool$ => ({
   enabled: false,
 })
 
-export const removeDie = removeAt
-
+/** @deprecated */
 export const removeDiceById = (id: string) => reject((r: Rollable) => r.id === id)
 
+/** @deprecated */
 export const addDie =
   (type: DieType, color: DieColorType, id?: string) =>
   (state: DicePool$): DicePool$ => {
@@ -98,6 +98,7 @@ export const addDie =
     return Acc<DicePool$>().prop('pool').mod(append<Rollable>({ type, color, id }))(state)
   }
 
+/** @deprecated */
 export const addDice =
   (dice: Rollable[]) =>
   (state: DicePool$): DicePool$ => {
@@ -118,7 +119,7 @@ export const DicePool = forwardRef<
     disableRemove?: boolean
     disableAdd?: boolean
   }
->(({ sendRoll, disableAdd = false, state }, diceSceneRef) => {
+>(({ sendRoll, disableAdd = false }, diceSceneRef) => {
   const addDie = (color: DieColorType) => {
     ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors[color])
     ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.removeDie('zero')
@@ -143,7 +144,6 @@ export const DicePool = forwardRef<
       e(DiceScene, {
         key: 'diceScene',
         ref: diceSceneRef,
-        dicePool$: state,
         onDiceRollComplete: (results) => {
           sendRoll(
             results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),

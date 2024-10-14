@@ -1,5 +1,5 @@
-import * as THREE from 'three'
 import * as CANNON from 'cannon-es'
+import * as THREE from 'three'
 import {
   createInvertedColorMaterial,
   loadModel,
@@ -101,8 +101,8 @@ export class Dice implements GameObject {
       if (color) (existingDie.mesh.material as THREE.MeshStandardMaterial).color.set(color)
       return id
     }
-    const mesh = findMesh(await loadModel('/free_dice_model_d6_mid-poly_4k.glb'))!
-
+    const mesh = findMesh(await loadModel('/free_dice_model_d6_mid-poly_4k.glb'))
+    if (!mesh) throw Error('failed to load dice mesh')
     // Compute the bounding box and center the model
     const boundingBox = new THREE.Box3().setFromObject(mesh)
     const center = boundingBox.getCenter(new THREE.Vector3())
@@ -144,23 +144,23 @@ export class Dice implements GameObject {
     }
     this.dice.push(die)
 
-    diceBody.addEventListener('collide', (event: { body: CANNON.Body }) => {
-      this.handleCollision(die, event)
-    })
+    diceBody.addEventListener('collide', this.handleCollision)
 
     this.world.addBody(diceBody)
     return clonedModel.uuid
   }
 
-  private handleCollision(die: DieData, event: { body: CANNON.Body }) {
+  private handleCollision = (event: { body: CANNON.Body; target: CANNON.Body }) => {
     const collidedBody = event.body
+    const die = this.dice.find((d) => d.body === event.target)
+    if (!die) throw Error('collided die doesnt exist?')
 
     const isDiceCollision = this.dice.some((die) => die.body === collidedBody)
     // Trigger side effects for hitting a surface
     this.triggerCollisionEffect(die, isDiceCollision)
   }
 
-  private lastSound: number = 0
+  private lastSound = 0
   private triggerCollisionEffect(die: DieData, isDiceCollision: boolean) {
     const impactStrength = die.body.velocity.length()
     const now = performance.now()
@@ -363,8 +363,8 @@ export class Dice implements GameObject {
     intersected.forEach((intersect) => {
       const mesh = intersect.object as THREE.Mesh
       const index = meshes.indexOf(mesh)
-      if (index !== -1) {
-        const die = this.dice[index]!
+      if (index !== -1 && this.dice[index]) {
+        const die = this.dice[index]
         const diceBody = die.body
         if (this.jointConstraint?.bodyA === diceBody || this.orbitingDice.includes(diceBody)) return
         die.rolled = true
@@ -399,7 +399,8 @@ export class Dice implements GameObject {
   // Method to remove die from scene and physics world
   removeByIndex(index: number) {
     if (index >= 0 && index < this.dice.length) {
-      const die = this.dice[index]!
+      const die = this.dice[index]
+      if (!die) throw Error(`no die found to remove at index ${index}`)
       this.dice.splice(index, 1)
       // Remove from physics world
       this.world.removeBody(die.body)
@@ -422,8 +423,9 @@ export class Dice implements GameObject {
     raycaster.setFromCamera(mouse, this.camera)
 
     for (let i = 0; i < this.dice.length; i++) {
-      if (raycaster.intersectObject(this.dice[i]!.mesh).length) {
-        return [this.dice[i]!, i]
+      const die = this.dice[i]
+      if (die && raycaster.intersectObject(die.mesh).length > 0) {
+        return [die, i]
       }
     }
     return null
@@ -434,15 +436,13 @@ export class Dice implements GameObject {
       const die = this.dice.pop()!
       this.world.removeBody(die.body)
       this.scene.remove(die.mesh)
-
-      // Optional: Clear event listeners or additional cleanup
-      // die.body.removeEventListener(...); // If you have any event listeners
+      die.body.removeEventListener('collide', this.handleCollision)
     }
   }
 
   private checkDiceStopped: Task = () => {
     let allStopped = true
-    for (let die of this.dice) {
+    for (const die of this.dice) {
       const speed = die.body.velocity.length()
       const angularSpeed = die.body.angularVelocity.length()
       if (speed > 0.02 || angularSpeed > 0.02 || die.body.position.y > 1.02) {

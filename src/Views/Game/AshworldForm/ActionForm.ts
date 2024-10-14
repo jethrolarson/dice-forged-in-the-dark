@@ -1,14 +1,14 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { style, stylesheet } from 'typestyle'
+import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
-import { Note } from '../../../components/Note'
-import { NewRoll } from '../RollForm/FormCommon'
+import { Character } from '../../../components/Character'
+import { CheckDie, CheckDieState } from '../../../components/CheckDie'
 import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
-import { Character } from '../../../components/Character'
-import { e, h, div } from '../../../util'
-import { CheckDie, CheckDieState } from '../../../components/CheckDie'
+import { Note } from '../../../components/Note'
+import { div, e, h } from '../../../util'
+import { NewRoll } from '../RollForm/FormCommon'
 
 const styles = stylesheet({
   ActionForm: {

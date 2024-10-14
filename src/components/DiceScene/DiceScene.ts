@@ -1,17 +1,14 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
 import { div } from '../../util'
 import Dice, { DiceParams } from './Dice'
 import { DiceRenderer } from './DiceRenderer'
-import { DicePool$ } from '../DicePool'
-import { FunState } from '@fun-land/fun-state'
 
 interface DiceSceneProps {
   onDiceRollComplete: DiceParams['onRoll']
-  dicePool$: FunState<DicePool$>
 }
 
-export type DiceSceneRef = {
+export interface DiceSceneRef {
   addDie: (color: number, id?: string) => void
   removeDie: (id: string) => void
   enable: () => void
@@ -20,7 +17,7 @@ export type DiceSceneRef = {
   enabled: boolean
 }
 
-const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete, dicePool$ }, ref) => {
+const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete }, ref) => {
   const mountRef = useRef<HTMLDivElement>(null)
   const diceRef = useRef<Dice | null>(null)
   useEffect(() => {

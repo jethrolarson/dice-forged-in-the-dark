@@ -1,12 +1,12 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { repeat } from 'ramda'
-import React, { FC, useEffect } from 'react'
+import { useEffect } from 'react'
 import { stylesheet } from 'typestyle'
 import { NumberSpinner } from '../../../components/NumberSpinner'
-import { DieType, DieColor } from '../../../Models/Die'
+import { DieColor, DieType } from '../../../Models/Die'
 import { ModifierT } from '../../../Models/RollConfig'
-import { label, e, div } from '../../../util'
+import { div, e, label } from '../../../util'
 
 const styles = stylesheet({
   label: {

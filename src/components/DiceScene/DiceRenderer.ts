@@ -19,7 +19,7 @@ export class DiceRenderer {
   constructor(
     element: HTMLElement,
     onRoll: DiceParams['onRoll'],
-    private isDebug: boolean = false,
+    private isDebug = false,
   ) {
     this.scene = new THREE.Scene()
     const fog = new THREE.Fog(0x000000, 500, 1000)
@@ -62,7 +62,7 @@ export class DiceRenderer {
     this.world.addContactMaterial(
       new CANNON.ContactMaterial(diceMaterial, groundMaterial, {
         friction: 0.01, // Adjusted friction
-        restitution: 0.1, // Adjusted restitution (bounciness),
+        restitution: 0.2, // Adjusted restitution (bounciness),
       }),
     )
 
@@ -167,8 +167,8 @@ export class DiceRenderer {
 
     const floorMaterial = new THREE.MeshStandardMaterial({
       map: baseTexture,
-      normalMap: normalMap,
-      roughnessMap: roughnessMap,
+      normalMap,
+      roughnessMap,
       color: 0x440478,
       roughness: 1.6, // Adjust for felt-like roughness
       metalness: 0.0, // No metalness for fabric
@@ -242,12 +242,12 @@ export const createCubeConstraints = (
 
   // Low friction contact material between dice and walls
   const lowFrictionContactMaterial = new CANNON.ContactMaterial(wallMaterial, diceMaterial, {
-    friction: 0.00001, // Low friction value
-    restitution: 0.3, // Adjusted for realistic bounce
+    friction: 0.08,
+    restitution: 0.15,
   })
   world.addContactMaterial(lowFrictionContactMaterial)
 
-  const createBoxWall = async (position: CANNON.Vec3, dimensions: CANNON.Vec3, transparent: boolean = false) => {
+  const createBoxWall = async (position: CANNON.Vec3, dimensions: CANNON.Vec3, transparent = false) => {
     const wallBody = new CANNON.Body({ mass: 0, material: wallMaterial })
     const wallShape = new CANNON.Box(dimensions)
     wallBody.addShape(wallShape)
@@ -260,8 +260,8 @@ export const createCubeConstraints = (
 
     const floorMaterial = new THREE.MeshStandardMaterial({
       map: baseTexture,
-      normalMap: normalMap,
-      roughnessMap: roughnessMap,
+      normalMap,
+      roughnessMap,
       color: 0x440478,
       roughness: 1.6, // Adjust for felt-like roughness
       metalness: 0.0, // No metalness for fabric

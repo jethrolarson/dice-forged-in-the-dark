@@ -1,12 +1,12 @@
+import { map } from 'ramda'
 import { FC } from 'react'
 import { classes, style, stylesheet } from 'typestyle'
-import { RollResult } from '../../Models/GameModel'
-import { Die } from './Die'
-import { RollValuation, valuationMap } from './RollValuation'
-import { Note } from './Note'
-import { map, prop } from 'ramda'
-import { div, e, h } from '../../util'
 import { DieColor, DieColorType, DieResult } from '../../Models/Die'
+import { RollResult } from '../../Models/GameModel'
+import { div, e, h } from '../../util'
+import { Die } from './Die'
+import { Note } from './Note'
+import { RollValuation, valuationMap } from './RollValuation'
 
 const circleSize = 120
 
@@ -155,7 +155,7 @@ const highestIndexes = (diceRolled: RollResult['diceRolled']): [number, number] 
   return results.slice(1).reduce<[number, number]>(
     ([fst, snd], d, i) => {
       if (d > (results[fst] ?? 0)) return [i + 1, fst]
-      if (d > (snd >= 0 ? results[snd] ?? 0 : 0)) return [fst, i + 1]
+      if (d > (snd >= 0 ? (results[snd] ?? 0) : 0)) return [fst, i + 1]
       return [fst, snd]
     },
     [0, -1],
@@ -170,7 +170,6 @@ export const RollLogItem = ({ result, isLast }: { result: RollResult; isLast: bo
   const [highest, secondHighest] = highestIndexes(diceRolled)
   const excludedIndex = isZero ? highest : -1
 
-  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
   const title = lines?.[0] || rollType
   const moreLines = lines.slice(1)
   const len = diceRolled.length

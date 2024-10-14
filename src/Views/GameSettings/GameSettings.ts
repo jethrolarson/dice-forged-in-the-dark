@@ -66,7 +66,7 @@ const styles = stylesheet({
   footer: { display: 'flex', justifyContent: 'space-between' },
 })
 
-const noop = (): void => {}
+const noop = (): void => undefined
 
 const deleteGame = (gdoc: DocumentReference) => (): void => {
   if (window.confirm('Are you sure you want to delete this game permanently?')) {

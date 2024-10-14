@@ -1,10 +1,9 @@
-import { flow } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { classes, keyframes, stylesheet } from 'typestyle'
 import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
-import { label, div, button } from '../../../util'
+import { button, div, label } from '../../../util'
 
 const textPulse = keyframes({
   from: {

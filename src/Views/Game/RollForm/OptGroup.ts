@@ -1,12 +1,11 @@
 import { FunState } from '@fun-land/fun-state'
 import { trim } from 'fp-ts/lib/string'
-import { FC } from 'react'
 import { style } from 'typestyle'
 import { ButtonSelect } from '../../../components/ButtonSelect'
 import { TextInput } from '../../../components/TextInput'
 import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderOptionGroup } from '../../../Models/RollConfig'
-import { toArray, h, e, label } from '../../../util'
+import { e, h, label, toArray } from '../../../util'
 
 const DataList = ({ id, values }: { id: string; values: string }) =>
   h(

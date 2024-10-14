@@ -1,29 +1,29 @@
-import React, { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { classes, stylesheet } from 'typestyle'
+import {
+  collection,
+  DocumentData,
+  DocumentReference,
+  onSnapshot,
+  orderBy,
+  query,
+  QueryDocumentSnapshot,
+} from '@firebase/firestore'
+import useFunState from '@fun-land/use-fun-state'
 import { important } from 'csx'
+import { mergeRight } from 'ramda'
+import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
-import {
-  onSnapshot,
-  DocumentReference,
-  collection,
-  query,
-  orderBy,
-  QueryDocumentSnapshot,
-  DocumentData,
-} from '@firebase/firestore'
+import { classes, stylesheet } from 'typestyle'
 import { LoadedGameState, LogItem } from '../../Models/GameModel'
-import { RollLogItem } from './RollLog'
-import { RollForm } from './RollForm/RollForm'
-import { RollMessage } from './RollMessage'
-import { playWarnSound, playRollSound, playWinSound, playCritSound, playMessageSound } from '../../sounds'
-import { valuateActionRoll } from './RollValuation'
-import useFunState from '@fun-land/use-fun-state'
-import { mergeRight } from 'ramda'
-import { MIForm } from './MIForm/MIForm'
-import { div, e, h, button } from '../../util'
+import { playCritSound, playMessageSound, playRollSound, playWarnSound, playWinSound } from '../../sounds'
+import { button, div, e, h } from '../../util'
 import { AshworldForm } from './AshworldForm/AshworldForm'
+import { MIForm } from './MIForm/MIForm'
+import { RollForm } from './RollForm/RollForm'
+import { RollLogItem } from './RollLog'
+import { RollMessage } from './RollMessage'
+import { valuateActionRoll } from './RollValuation'
 
 const styles = stylesheet({
   Game: {},
@@ -172,13 +172,13 @@ const parseRoll = (d: LogItem & { results?: number[]; effect?: string[]; positio
         lines: d.lines ?? [d.position, d.effect],
         diceRolled: d.diceRolled
           ? d.diceRolled
-          : d.results?.map((value) => ({ value, dieType: 'd6', dieColor: 'white' })) ?? [],
+          : (d.results?.map((value) => ({ value, dieType: 'd6', dieColor: 'white' })) ?? []),
       }
   }
 }
 
 const updateLogItems =
-  (docs: Array<QueryDocumentSnapshot<DocumentData>>) =>
+  (docs: QueryDocumentSnapshot<DocumentData>[]) =>
   (oldRolls: LogItem[]): LogItem[] => {
     const newRolls = docs.map((d): LogItem => parseRoll({ ...(d.data() as LogItem), id: d.id }))
     const latestRoll = newRolls[newRolls.length - 1]
@@ -244,10 +244,7 @@ export const LoadedGame: FC<{
           ])
         : h('section', { key: 'diceCol', className: styles.right }, [
             div({ key: 'head', className: styles.heading }, [
-              h('a', { key: 'back', href: '#/' }, [
-                /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
-                e(Icon, { key: 'backIcon', icon: chevronLeft, size: 28 }),
-              ]),
+              h('a', { key: 'back', href: '#/' }, [e(Icon, { key: 'backIcon', icon: chevronLeft, size: 28 })]),
               h('h1', { key: 'heading', className: classes(styles.title, title.length > 14 && styles.title_small) }, [
                 title,
               ]),
@@ -259,12 +256,9 @@ export const LoadedGame: FC<{
                   className: styles.settingsButton,
                   title: 'Game Settings',
                 },
-                [
-                  /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
-                  e(Icon, { key: 'gearicon', icon: gears, size: 28 }),
-                ],
+                [e(Icon, { key: 'gearicon', icon: gears, size: 28 })],
               ),
-              !!state.prop('miroId').get()
+              state.prop('miroId').get()
                 ? button(
                     {
                       key: 'minimizeButton',
@@ -280,26 +274,26 @@ export const LoadedGame: FC<{
               !rollsLoaded
                 ? h('p', { key: 'loading' }, ['Loading...'])
                 : rolls.length
-                ? div(
-                    { key: 'rolls', className: styles.rolls },
-                    rolls.map((r, i) =>
-                      h('article', { key: `roll_${r.id}` }, [
-                        r.kind === 'Message'
-                          ? e(RollMessage, { key: 'message', result: r })
-                          : r.kind === 'Roll'
-                          ? e(RollLogItem, { key: 'logItem', result: r, isLast: i === rolls.length - 1 })
-                          : null,
-                      ]),
-                    ),
-                  )
-                : null,
+                  ? div(
+                      { key: 'rolls', className: styles.rolls },
+                      rolls.map((r, i) =>
+                        h('article', { key: `roll_${r.id}` }, [
+                          r.kind === 'Message'
+                            ? e(RollMessage, { key: 'message', result: r })
+                            : r.kind === 'Roll'
+                              ? e(RollLogItem, { key: 'logItem', result: r, isLast: i === rolls.length - 1 })
+                              : null,
+                        ]),
+                      ),
+                    )
+                  : null,
             ]),
             div({ key: 'rollForm' }, [
               rollConfig.system === 'mala-incognita'
                 ? e(MIForm, { key: 'miForm', gdoc, uid, scrollToBottom, userDisplayName })
                 : rollConfig.system === 'Ash World 0.1'
-                ? e(AshworldForm, { key: 'form', uid, gdoc, scrollToBottom, userDisplayName })
-                : e(RollForm, { key: 'oldForm', rollConfig, gdoc, uid, userDisplayName }),
+                  ? e(AshworldForm, { key: 'form', uid, gdoc, scrollToBottom, userDisplayName })
+                  : e(RollForm, { key: 'oldForm', rollConfig, gdoc, uid, userDisplayName }),
             ]),
           ]),
     ]),

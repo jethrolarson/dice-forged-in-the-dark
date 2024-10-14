@@ -1,7 +1,7 @@
 export type Task = (delta: number) => boolean
 
 export class TaskManager {
-  tasks: Array<Task> = []
+  tasks: Task[] = []
 
   addTask(task: Task) {
     this.tasks.push(task)
