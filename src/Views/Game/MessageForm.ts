@@ -1,11 +1,10 @@
+import { DocumentReference, addDoc, collection } from '@firebase/firestore'
+import useFunState from '@fun-land/use-fun-state'
 import React, { FC } from 'react'
 import { style, stylesheet } from 'typestyle'
-import { DocumentReference, addDoc, collection } from '@firebase/firestore'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
-import useFunState from '@fun-land/use-fun-state'
-import { FormHeading } from '../../components/FormHeading'
-import { h, button, label, e } from '../../util'
+import { button, e, h, label } from '../../util'
 
 const styles = stylesheet({
   MessageForm: {

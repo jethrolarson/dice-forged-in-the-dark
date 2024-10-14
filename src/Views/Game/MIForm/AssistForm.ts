@@ -1,20 +1,20 @@
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 
+import { useCallback, useEffect, useRef } from 'react'
 import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
-import { Note } from '../../../components/Note'
-import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
-import { Tier, tierColor, TierSelect } from './TierSelect'
-import { FormHeading } from '../../../components/FormHeading'
-import { useCallback, useEffect, useRef } from 'react'
-import { e, h, div } from '../../../util'
 import { ComboBox } from '../../../components/ComboBox'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
+import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
+import { FormHeading } from '../../../components/FormHeading'
+import { Note } from '../../../components/Note'
+import { div, e, h } from '../../../util'
+import { NewRoll } from '../RollForm/FormCommon'
 import { approaches } from './ApproachSelect'
 import { powers } from './PowerSelect'
-import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
+import { Tier, tierColor, TierSelect } from './TierSelect'
 
 const styles = stylesheet({
   AssistForm: {
@@ -100,8 +100,8 @@ export const AssistForm = ({
     diceSceneRef.current?.disable()
   }, [])
   useEffect(() => {
-    username && note ? enable() : disable()
-  }, [username, note])
+    username && note && pool ? enable() : disable()
+  }, [username, note, pool])
   useEffect(() => {
     if (tier === Tier.T0) {
       addDie(dieColors.black, 'zero')
@@ -139,7 +139,7 @@ export const AssistForm = ({
               name: 'pool',
               data: [...approaches, ...powers],
               placeholder: 'Approach or Power',
-              required: tier !== Tier.T0,
+              required: true,
             }),
           ]),
           e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),

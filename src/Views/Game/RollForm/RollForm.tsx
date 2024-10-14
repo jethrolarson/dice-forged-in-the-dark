@@ -1,24 +1,23 @@
-import React, { FC } from 'react'
-import { stylesheet } from 'typestyle'
-import { important } from 'csx'
-import { nextColor } from '../Die'
-import { RollResult } from '../../../Models/GameModel'
 import { DocumentReference } from '@firebase/firestore'
-import { pipeVal } from '../../../common'
-import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
-import Icon from 'react-icons-kit'
-import { RollConfig, RollType, ValuationType } from '../../../Models/RollConfig'
-import { Textarea } from '../../../components/Textarea'
-import { TextInput } from '../../../components/TextInput'
-import { accessDieColor, RollFormState } from './RollForm.state'
-import { Sections } from './Sections'
+import { removeAt } from '@fun-land/accessor'
 import { FunState, merge } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { removeAt } from '@fun-land/accessor'
-import { DieResult, DieColor, DieType } from '../../../Models/Die'
-import { sendRoll } from './FormCommon'
+import { important } from 'csx'
+import { FC } from 'react'
+import Icon from 'react-icons-kit'
+import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
+import { stylesheet } from 'typestyle'
+import { pipeVal } from '../../../common'
+import { Textarea } from '../../../components/Textarea'
+import { TextInput } from '../../../components/TextInput'
+import { DieColor, DieResult, DieType } from '../../../Models/Die'
+import { RollResult } from '../../../Models/GameModel'
+import { RollConfig, RollType, ValuationType } from '../../../Models/RollConfig'
+import { nextColor } from '../Die'
 import { DicePool, Rollable } from './DicePool'
-import { DiceSelection } from '../../../components/DiceSelection'
+import { sendRoll } from './FormCommon'
+import { accessDieColor, RollFormState } from './RollForm.state'
+import { Sections } from './Sections'
 
 const styles = stylesheet({
   form: {
@@ -91,8 +90,7 @@ export const roll =
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      dieColor: DieColor[dieColor] as any,
+      dieColor: DieColor[dieColor],
       dieType,
       value: rollDie(),
     })) as DieResult[]
@@ -129,8 +127,8 @@ export const RollForm: FC<{
     dicePool: [],
   })
   const { rollType, username, valuationType, dicePool } = s.get()
-
-  const currentConfig = rollConfig.rollTypes!.find((rt) => rt.name === rollType)
+  const rollTypes = rollConfig.rollTypes ?? []
+  const currentConfig = rollTypes.find((rt) => rt.name === rollType)
   const removeDie = (idx: number): void => s.prop('dicePool').mod(removeAt(idx))
   const setDice = (id: string, dice: DieType[], color: keyof typeof DieColor): void => {
     s.prop('dicePool').mod((ds) => {
@@ -160,7 +158,7 @@ export const RollForm: FC<{
                   e.preventDefault()
                   reset(s)
                 }}>
-                {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
+                {}
                 <Icon icon={chevronLeft} size={18} className={styles.backButtonIcon} />
               </button>
               {currentConfig.name}
@@ -210,7 +208,7 @@ export const RollForm: FC<{
           </div>
         </div>
       ) : (
-        <RollTypes s={s} rollTypes={rollConfig.rollTypes!} />
+        <RollTypes s={s} rollTypes={rollTypes} />
       )}
     </form>
   )

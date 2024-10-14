@@ -4,12 +4,12 @@ import { important } from 'csx'
 import { reject } from 'ramda'
 import { forwardRef, MutableRefObject } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
-import { colorNameFromHex, DieColor, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
+import { colorNameFromHex, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
-import { e, div } from '../util'
+import { div, e } from '../util'
 import { nextColor } from '../Views/Game/Die'
-import { DiceSelection } from './DiceSelection'
 import DiceScene, { DiceSceneRef } from './DiceScene/DiceScene'
+import { DiceSelection } from './DiceSelection'
 
 const spin = keyframes({
   from: {
@@ -74,7 +74,7 @@ export interface Rollable {
   id?: string
 }
 
-export type DicePool$ = {
+export interface DicePool$ {
   /** @deprecated */
   pool: Rollable[]
   sceneLoaded: boolean

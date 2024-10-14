@@ -147,7 +147,7 @@ export const parseRollConfig = flow((str: string): E.Either<T.Errors, unknown> =
   try {
     return E.right(JSON.parse(str))
   } catch (e) {
-    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     return E.left([{ context: [], message: `json parse failed: ${e}`, value: '' }])
   }
+  // eslint-disable-next-line @typescript-eslint/unbound-method
 }, E.chain(RollConfigC.decode))

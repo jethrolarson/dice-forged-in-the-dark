@@ -1,12 +1,12 @@
+import type { User as FSUser } from '@firebase/auth'
+import { getAuth } from '@firebase/auth'
+import { addDoc, collection, getFirestore } from '@firebase/firestore'
 import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
-import { style, classes, stylesheet } from 'typestyle'
+import { stylesheet } from 'typestyle'
 import { defaultTheme, PersistedState } from '../Models/GameModel'
 import { presets } from '../Models/rollConfigPresets'
-import { div, h, button } from '../util'
-import { collection, addDoc, getFirestore } from '@firebase/firestore'
-import { getAuth } from '@firebase/auth'
-import type { User as FSUser } from '@firebase/auth'
+import { button, div, h } from '../util'
 
 type GameState = PersistedState & { id: string }
 

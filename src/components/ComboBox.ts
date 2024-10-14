@@ -26,6 +26,6 @@ export const ComboBox = ({
     ...props,
     className: classes(styles.Combobox, props.className, required && $.get() === '' && styles.required),
     dropUp: true,
-    onChange: (v) => $.set(v),
+    onChange: $.set,
     value: $.get(),
   })

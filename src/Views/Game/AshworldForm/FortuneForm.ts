@@ -2,14 +2,13 @@ import { FunState } from '@fun-land/fun-state'
 import useFunState from '@fun-land/use-fun-state'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
-import { Note } from '../../../components/Note'
-import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
+import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
-import { e, h, div } from '../../../util'
+import { Note } from '../../../components/Note'
+import { div, e, h } from '../../../util'
 import { Rollable } from '../RollForm/DicePool'
-import { DiceSelection } from '../../../components/DiceSelection'
+import { NewRoll } from '../RollForm/FormCommon'
 
 const styles = stylesheet({
   AssistForm: {
