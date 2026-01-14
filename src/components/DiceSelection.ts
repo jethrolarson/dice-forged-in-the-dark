@@ -1,8 +1,7 @@
-import useFunState from '@fun-land/use-fun-state'
+import { Component, enhance, funState, h, onTo } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { DieColor, DieColorType } from '../Models/Die'
-import { button, div, e } from '../util'
 import { Die, nextColor } from '../Views/Game/Die'
 
 const styles = stylesheet({
@@ -27,35 +26,26 @@ const styles = stylesheet({
   },
 })
 
-export const DiceSelection = ({
-  addDie,
-  add0Dice,
-  reset,
-}: {
+export const DiceSelection: Component<{
   addDie: (color: DieColorType) => unknown
   add0Dice: () => unknown
   reset: () => unknown
-}) => {
-  const s = useFunState<{ dieColor: keyof typeof DieColor }>({
+}> = (signal, { addDie, add0Dice, reset }) => {
+  const s = funState<{ dieColor: keyof typeof DieColor }>({
     dieColor: 'white',
   })
   const { dieColor } = s.get()
-  return div(
-    { className: styles.diceButtons },
-    button(
+
+  const addDieButton = enhance(
+    h(
+      'button',
       {
         key: 'd6',
         className: styles.dieButton,
         type: 'button',
         title: 'Add Die. Right-click to change color',
-        onContextMenu: (e): void => {
-          s.prop('dieColor').mod(nextColor)
-          e.preventDefault()
-        },
-        onClick: () => addDie(s.prop('dieColor').get()),
       },
-      e(Die, {
-        key: 'd6_die',
+      Die(signal, {
         value: 6,
         dieColor: DieColor[dieColor],
         glow: false,
@@ -64,16 +54,27 @@ export const DiceSelection = ({
         size: 28,
       }),
     ),
-    button(
+    onTo(
+      'contextmenu',
+      (e): void => {
+        s.prop('dieColor').mod(nextColor)
+        e.preventDefault()
+      },
+      signal,
+    ),
+    onTo('click', () => addDie(s.prop('dieColor').get()), signal),
+  )
+
+  const roll0Button = enhance(
+    h(
+      'button',
       {
         key: '0d6',
         className: styles.dieButton,
         type: 'button',
         title: '0d (roll 2 take lowest)',
-        onClick: add0Dice,
       },
-      e(Die, {
-        key: '0d6_die',
+      Die(signal, {
         value: 6,
         dieColor: DieColor['black'],
         glow: false,
@@ -82,7 +83,14 @@ export const DiceSelection = ({
         size: 28,
       }),
     ),
-    button(
+    onTo('click', add0Dice, signal),
+  )
+
+  return h('div', { className: styles.diceButtons }, [
+    addDieButton,
+    roll0Button,
+    h(
+      'button',
       {
         key: 'reset',
         className: styles.dieButton,
@@ -91,5 +99,5 @@ export const DiceSelection = ({
       },
       'reset',
     ),
-  )
+  ])
 }

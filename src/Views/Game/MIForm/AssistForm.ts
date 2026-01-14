@@ -1,16 +1,12 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
-
-import { useCallback, useEffect, useRef } from 'react'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, h } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Character } from '../../../components/Character'
 import { ComboBox } from '../../../components/ComboBox'
-import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
-import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
+import { DicePool } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Note } from '../../../components/Note'
-import { div, e, h } from '../../../util'
 import { NewRoll } from '../RollForm/FormCommon'
 import { approaches } from './ApproachSelect'
 import { powers } from './PowerSelect'
@@ -35,12 +31,14 @@ const styles = stylesheet({
     flexDirection: 'column',
     gap: 10,
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
 interface AssistForm$ {
   pool: string
   tier: Tier
-  dicePool: DicePool$
   note: string
   username: string
 }
@@ -66,85 +64,66 @@ const rollIt =
   }
 
 const init_AssistForm$ = (): AssistForm$ => ({
-  dicePool: init_DicePool$(),
   note: '',
   pool: '',
   tier: Tier.T0,
   username: '',
 })
 
-export const AssistForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const AssistForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active: boolean
-}) => {
-  const $ = useFunState<AssistForm$>(init_AssistForm$())
-  const { tier, pool, username, note } = $.get()
-  const disabled = !username || !note || !pool
-  const dicePool$ = $.prop('dicePool')
-  const diceSceneRef = useRef<DiceSceneRef | null>(null)
-  const addDie = (color: number, id?: string) => {
-    diceSceneRef.current?.addDie(color, id)
-  }
-  const removeDie = useCallback((id: string) => {
-    diceSceneRef.current?.removeDie(id)
-  }, [])
-  const enable = useCallback(() => {
-    diceSceneRef.current?.enable()
-  }, [])
-  const disable = useCallback(() => {
-    diceSceneRef.current?.disable()
-  }, [])
-  useEffect(() => {
-    username && note && pool ? enable() : disable()
-  }, [username, note, pool])
-  useEffect(() => {
-    if (tier === Tier.T0) {
-      addDie(dieColors.black, 'zero')
-      addDie(dieColors.black, 'zero2')
-      removeDie('assist')
-    } else {
-      addDie(tierColor(tier), 'assist')
-      removeDie('zero')
-      removeDie('zero2')
+}> = (signal, { uid, roll, active }) => {
+  const $ = funState<AssistForm$>(init_AssistForm$())
+
+  const dicePool = DicePool(signal, {
+    sendRoll: rollIt(roll, uid, $),
+    disableAdd: false,
+  })
+
+  const diceApi = dicePool.$api
+
+  // Watch state to manage dice and enable/disable
+  $.watch(signal, ({ username, note, pool, tier }) => {
+    const shouldEnable = username && note && pool
+    shouldEnable ? diceApi.enable() : diceApi.disable()
+
+    // Manage dice based on tier
+    if (active) {
+      if (tier === Tier.T0) {
+        diceApi.addDie(dieColors.black, 'zero')
+        diceApi.addDie(dieColors.black, 'zero2')
+        diceApi.removeDie('assist')
+      } else {
+        diceApi.addDie(tierColor(tier), 'assist')
+        diceApi.removeDie('zero')
+        diceApi.removeDie('zero2')
+      }
     }
-  }, [tier, active])
-  return active
-    ? div({ className: styles.AssistForm, key: 'assistForm' }, [
-        e(DicePool, {
-          key: 'dicepool',
-          state: dicePool$,
-          ref: diceSceneRef,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disabled,
+  })
+
+  // Create all components once
+  const container = h('div', { className: active ? styles.AssistForm : styles.hidden }, [
+    dicePool,
+    h('div', { className: styles.form }, [
+      FormHeading(signal, { title: 'Assist Roll' }),
+      h('p', {}, ["Dive in to assist another player's action at the last second"]),
+      h('p', {}, ['Spend and roll one die of your choice']),
+      h('div', {}, [
+        h('div', {}, [TierSelect(signal, { $: $.prop('tier') }), h('label', {}, ['Tier'])]),
+        ComboBox(signal, {
+          $: $.prop('pool'),
+          name: 'pool',
+          data: [...approaches, ...powers],
+          placeholder: 'Approach or Power',
+          required: true,
         }),
-        div({ key: 'form', className: styles.form }, [
-          e(FormHeading, { key: 'head', title: 'Assist Roll' }),
-          h('p', { key: 'subhead' }, ["Dive in to assist another player's action at the last second"]),
-          h('p', { key: 'subhead2' }, ['Spend and roll one die of your choice']),
-          div({ key: 'pool' }, [
-            div(
-              { key: 'tierWrap' },
-              e(TierSelect, { key: 'tier', $: $.prop('tier') }),
-              h('label', { key: 'tierLabel' }, 'Tier'),
-            ),
-            e(ComboBox, {
-              key: 'pool',
-              $: $.prop('pool'),
-              name: 'pool',
-              data: [...approaches, ...powers],
-              placeholder: 'Approach or Power',
-              required: true,
-            }),
-          ]),
-          e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
-          e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
-        ]),
-      ])
-    : null
+      ]),
+      Character(signal, { $: $.prop('username'), passThroughProps: { required: true } }),
+      Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
+    ]),
+  ])
+
+  return container
 }

@@ -1,5 +1,4 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
@@ -7,8 +6,8 @@ import { NewRoll } from '../RollForm/FormCommon'
 import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { FormHeading } from '../../../components/FormHeading'
-import { e, h, div } from '../../../util'
 import { Rollable } from '../RollForm/DicePool'
+import { Component, h } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   AssistForm: {
@@ -72,25 +71,22 @@ const init_ActionForm$ = (): AssistForm$ => ({
   username: '',
 })
 
-export const AssistForm = ({ uid, roll }: { uid: string; roll: (rollResult: NewRoll) => unknown }) => {
-  const $ = useFunState<AssistForm$>(init_ActionForm$())
-  const { username, note } = $.get()
-  const disabled = !username || !note
-  const dicePool$ = $.prop('dicePool')
-  return div({ className: styles.AssistForm }, [
-    e(DicePool, {
-      key: 'dicepool',
-      state: dicePool$,
+export const AssistForm: Component<{ uid: string; roll: (rollResult: NewRoll) => unknown }> = (
+  signal,
+  { uid, roll },
+) => {
+  const $ = funState<AssistForm$>(init_ActionForm$())
+  return h('div', { className: styles.AssistForm }, [
+    DicePool(signal, {
       sendRoll: rollIt(roll, uid, $),
-      disableRemove: false,
+
       disableAdd: true,
-      disabled,
     }),
-    div({ key: 'form', className: styles.form }, [
-      e(FormHeading, { key: 'head', title: 'Assist' }),
-      h('p', { key: 'subhead' }, ['Roll your amp die to save another action']),
-      e(Character, { key: 'character', $: $.prop('username') }),
-      e(Note, { key: 'note', $: $.prop('note') }),
+    h('div', { className: styles.form }, [
+      FormHeading(signal, { title: 'Assist' }),
+      h('p', {}, ['Roll your amp die to save another action']),
+      Character(signal, { $: $.prop('username') }),
+      Note(signal, { $: $.prop('note') }),
     ]),
   ])
 }

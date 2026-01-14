@@ -1,7 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
+import { Component, enhance, h, onTo } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 import { RollOption } from '../Models/RollConfig'
-import { h, div, label } from '../util'
 
 const styles = stylesheet({
   buttons: {
@@ -26,15 +26,7 @@ const styles = stylesheet({
   },
 })
 
-export const ButtonSelect = ({
-  selected,
-  options,
-  className,
-  columns = 2,
-  label: title,
-  tooltip,
-  onSelect,
-}: {
+export const ButtonSelect: Component<{
   selected: string
   options: RollOption[]
   className?: string
@@ -42,47 +34,58 @@ export const ButtonSelect = ({
   label: string
   tooltip?: string
   onSelect: (name: string) => unknown
-}) =>
-  div({ className }, [
-    title && label({ className: styles.label, title: tooltip }, [title]),
-    h(
-      'div',
-      { className: classes(styles.buttons, style({ columnCount: columns })) },
-      options.map((opt) => {
-        const optName = typeof opt === 'string' ? opt : opt.name
-        return h(
-          'button',
-          {
-            key: optName,
-            onClick: onSelect.bind(null, optName),
-            type: 'button',
-            className: classes(styles.option, selected === optName && styles.selected),
-          },
-          [optName],
-        )
-      }),
-    ),
-  ])
+}> = (signal, { selected, options, className, columns = 2, label: title, tooltip, onSelect }) => {
+  const buttonElements = options.map((opt) => {
+    const optName = typeof opt === 'string' ? opt : opt.name
+    return enhance(
+      h(
+        'button',
+        {
+          type: 'button',
+          className: classes(styles.option, selected === optName && styles.selected),
+        },
+        [optName],
+      ),
+      onTo('click', () => onSelect(optName), signal),
+    )
+  })
 
-export const FunButtonSelect = ({
-  $,
-  options,
-  columns,
-  label,
-  tooltip,
-}: {
+  return h('div', { className }, [
+    title && h('label', { className: styles.label, title: tooltip }, [title]),
+    h('div', { className: classes(styles.buttons, style({ columnCount: columns })) }, buttonElements),
+  ])
+}
+
+export const FunButtonSelect: Component<{
   $: FunState<string>
   options: RollOption[]
   className?: string
   columns?: number
   label: string
   tooltip?: string
-}) =>
-  ButtonSelect({
-    columns,
-    label,
-    tooltip,
-    onSelect: $.set,
-    options,
-    selected: $.get(),
+}> = (signal, { $, options, className, columns = 2, label: title, tooltip }) => {
+  const buttonElements = options.map((opt) => {
+    const optName = typeof opt === 'string' ? opt : opt.name
+    const button = enhance(
+      h('button', { type: 'button', className: styles.option }, [optName]),
+      onTo('click', () => $.set(optName), signal),
+    )
+    return { button, optName }
   })
+
+  // Watch state and update button styling
+  $.watch(signal, (selected) => {
+    buttonElements.forEach(({ button, optName }) => {
+      button.className = classes(styles.option, selected === optName && styles.selected)
+    })
+  })
+
+  return h('div', { className }, [
+    title && h('label', { className: styles.label, title: tooltip }, [title]),
+    h(
+      'div',
+      { className: classes(styles.buttons, style({ columnCount: columns })) },
+      buttonElements.map((el) => el.button),
+    ),
+  ])
+}

@@ -1,10 +1,8 @@
 import { DocumentReference, addDoc, collection } from '@firebase/firestore'
-import useFunState from '@fun-land/use-fun-state'
-import React, { FC } from 'react'
 import { style, stylesheet } from 'typestyle'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
-import { button, e, h, label } from '../../util'
+import { Component, funState, h } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   MessageForm: {
@@ -19,6 +17,9 @@ const styles = stylesheet({
       },
     },
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
 interface MessageFormState {
@@ -26,8 +27,8 @@ interface MessageFormState {
   username: string
 }
 
-export const MessageForm: FC<{ gdoc: DocumentReference; active: boolean }> = ({ gdoc, active }) => {
-  const state = useFunState<MessageFormState>({ note: '', username: '' })
+export const MessageForm: Component<{ gdoc: DocumentReference; active: boolean }> = (signal, { gdoc, active }) => {
+  const state = funState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
   const postMessage: React.FormEventHandler<HTMLFormElement> = (e): void => {
     e.preventDefault()
@@ -42,32 +43,28 @@ export const MessageForm: FC<{ gdoc: DocumentReference; active: boolean }> = ({ 
     })
     state.prop('username').set('')
   }
-  return active
-    ? h('form', { onSubmit: postMessage, className: styles.MessageForm }, [
-        label({ key: 'note' }, [
-          e(Textarea, {
-            key: 'note',
-            passThroughProps: {
-              required: true,
-              placeholder: 'Note',
-              className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
-            },
-            state: state.prop('note'),
-          }),
-        ]),
-        label({ key: 'character' }, [
-          e(TextInput, {
-            key: 'character',
-            passThroughProps: {
-              required: true,
-              placeholder: 'Character',
-              type: 'text',
-              name: 'username',
-            },
-            state: state.prop('username'),
-          }),
-        ]),
-        button({ key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
-      ])
-    : null
+  return h('form', { onSubmit: postMessage, className: active ? styles.MessageForm : styles.hidden }, [
+    h('label', {}, [
+      Textarea(signal, {
+        passThroughProps: {
+          required: true,
+          placeholder: 'Note',
+          className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
+        },
+        state: state.prop('note'),
+      }),
+    ]),
+    h('label', { key: 'character' }, [
+      TextInput(signal, {
+        passThroughProps: {
+          required: true,
+          placeholder: 'Character',
+          type: 'text',
+          name: 'username',
+        },
+        state: state.prop('username'),
+      }),
+    ]),
+    h('button', { key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
+  ])
 }

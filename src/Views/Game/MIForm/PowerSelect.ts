@@ -1,8 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
-import { useEffect } from 'react'
-import { classes, keyframes, style, stylesheet } from 'typestyle'
+import { Component, h } from '@fun-land/fun-web'
+import { keyframes, style, stylesheet } from 'typestyle'
 import { ComboBox } from '../../../components/ComboBox'
-import { e, div, label } from '../../../util'
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
 
 export interface Power$ {
@@ -61,43 +60,41 @@ export const powers = [
   'Swagger',
 ] as const
 
-export const PowerSelect = ({
-  $,
-  addDie,
-  removeDie,
-}: {
+export const PowerSelect: Component<{
   $: FunState<Power$>
   removeDie: (id: string) => unknown
   addDie: (color: number, id: string) => unknown
-}) => {
-  const { power, tier } = $.get()
-  const isActive = !!power && tier !== Tier.T0
-  useEffect(() => {
+}> = (signal, { $, addDie, removeDie }) => {
+  const powerLabel = h('label', {}, ['Power'])
+
+  // Watch state and update label styling and dice
+  $.watch(signal, ({ power, tier }) => {
+    const isActive = !!power && tier !== Tier.T0
+
+    // Manage dice in pool
     isActive ? addDie(tierColor(tier), 'power') : removeDie('power')
-  }, [isActive, tier])
-  return div({ className: styles.Power }, [
-    label(
-      {
-        key: 'label',
-        className: isActive
-          ? classes(
-              styles.active,
-              style({
-                color: `var(--bg-die-${tierColorMap[tier]})`,
-              }),
-            )
-          : '',
-      },
-      ['Power'],
-    ),
-    e(TierSelect, { key: 'tier', $: $.prop('tier') }),
-    e(ComboBox, {
-      key: 'power',
+
+    // Update label styling
+    powerLabel.className = ''
+    if (isActive) {
+      powerLabel.classList.add(
+        styles.active,
+        style({
+          color: `var(--bg-die-${tierColorMap[tier]})`,
+        }),
+      )
+    }
+  })
+
+  return h('div', { className: styles.Power }, [
+    powerLabel,
+    TierSelect(signal, { $: $.prop('tier') }),
+    ComboBox(signal, {
       $: $.prop('power'),
       name: 'power',
       data: powers,
       placeholder: 'Power',
-      required: tier !== Tier.T0,
+      required: $.get().tier !== Tier.T0,
       className: styles.input,
     }),
   ])

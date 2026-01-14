@@ -1,9 +1,7 @@
-import { FC } from 'react'
-
+import { Component, h } from '@fun-land/fun-web'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'
 import { DieColorType } from '../../Models/Die'
-import { div, h } from '../../util'
 
 const styles = stylesheet({
   Die: {
@@ -94,8 +92,12 @@ export interface DieProps {
   glow?: boolean
   pulse?: boolean
 }
-export const Die: FC<DieProps> = ({ value, dotColor, dieColor, border, size = 60, glow = false, pulse = false }) =>
-  div(
+export const Die: Component<DieProps> = (
+  signal,
+  { value, dotColor, dieColor, border, size = 60, glow = false, pulse = false },
+) =>
+  h(
+    'div',
     {
       className: classes(
         styles.Die,

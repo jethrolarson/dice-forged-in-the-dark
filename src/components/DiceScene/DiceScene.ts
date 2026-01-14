@@ -1,14 +1,12 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-
-import { div } from '../../util'
-import Dice, { DiceParams } from './Dice'
+import { h, on } from '@fun-land/fun-web'
+import { DiceParams } from './Dice'
 import { DiceRenderer } from './DiceRenderer'
 
 interface DiceSceneProps {
   onDiceRollComplete: DiceParams['onRoll']
 }
 
-export interface DiceSceneRef {
+export interface DiceSceneApi {
   addDie: (color: number, id?: string) => void
   removeDie: (id: string) => void
   enable: () => void
@@ -17,52 +15,40 @@ export interface DiceSceneRef {
   enabled: boolean
 }
 
-const DiceScene = forwardRef<DiceSceneRef, DiceSceneProps>(({ onDiceRollComplete }, ref) => {
-  const mountRef = useRef<HTMLDivElement>(null)
-  const diceRef = useRef<Dice | null>(null)
-  useEffect(() => {
-    if (!mountRef.current) return
-    const { onPointerDown, onPointerMove, onResize, onPointerUp, dice } = new DiceRenderer(
-      mountRef.current,
-      onDiceRollComplete,
-      false,
-    )
-    diceRef.current = dice
-    const onContextMenu = (e: MouseEvent) => e.preventDefault()
-    mountRef.current.addEventListener('pointerdown', onPointerDown)
-    window.addEventListener('pointerup', onPointerUp)
-    mountRef.current.addEventListener('contextmenu', onContextMenu)
-    window.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('resize', onResize)
-    return () => {
-      window.removeEventListener('resize', onResize)
-      window.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('pointerup', onPointerUp)
-      mountRef.current?.removeEventListener('pointerdown', onPointerDown)
-      mountRef.current?.removeEventListener('contextmenu', onContextMenu)
-    }
-  }, [])
+export const DiceScene = (
+  signal: AbortSignal,
+  { onDiceRollComplete }: DiceSceneProps,
+): HTMLDivElement & { $api: DiceSceneApi } => {
+  const el: HTMLDivElement & { $api?: DiceSceneApi } = h('div', {
+    style: { width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' },
+  })
+  const { onPointerDown, onPointerMove, onResize, onPointerUp, dice } = new DiceRenderer(el, onDiceRollComplete, false)
 
-  useImperativeHandle(ref, () => ({
+  const onContextMenu = (e: MouseEvent) => e.preventDefault()
+  on(el, 'pointerdown', onPointerDown, signal)
+  window.addEventListener('pointerup', onPointerUp, { signal })
+  on(el, 'contextmenu', onContextMenu, signal)
+  window.addEventListener('pointermove', onPointerMove, { signal })
+  window.addEventListener('resize', onResize, { signal })
+
+  el.$api = {
     addDie(color: number, id?: string) {
-      diceRef.current?.addDie(color, id)
+      dice.addDie(color, id)
     },
     removeDie(id) {
-      diceRef.current?.removeDie(id)
+      dice.removeDie(id)
     },
     disable() {
-      diceRef.current?.disable()
+      dice.disable()
     },
     enable() {
-      diceRef.current?.enable()
+      dice.enable()
     },
     reset() {
-      diceRef.current?.reset()
+      dice.reset()
     },
     enabled: false,
-  }))
+  }
 
-  return div({ ref: mountRef, style: { width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' } }, null)
-})
-
-export default DiceScene
+  return el as HTMLDivElement & { $api: DiceSceneApi }
+}

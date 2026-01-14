@@ -1,9 +1,11 @@
 import { FunState } from '@fun-land/fun-state'
-import React, { FC, createElement as h } from 'react'
-import { pipeVal } from '../common'
+import { Component, enhance, onTo, h } from '@fun-land/fun-web'
 
-export const TextInput: FC<{
+export const TextInput: Component<{
   state: FunState<string>
-  passThroughProps?: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
-}> = ({ state, passThroughProps }) =>
-  h('input', { ...passThroughProps, onChange: pipeVal(state.set), value: state.get() })
+  passThroughProps?: any //TODO what type should be used?
+}> = (signal, { state, passThroughProps }) =>
+  enhance(
+    h('input', { ...passThroughProps, value: state.get() }),
+    onTo('change', ({ currentTarget: { value } }) => state.set(value), signal),
+  )

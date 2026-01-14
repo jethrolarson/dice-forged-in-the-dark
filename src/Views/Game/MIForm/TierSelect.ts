@@ -1,9 +1,7 @@
-import { FunState } from '@fun-land/fun-state'
-import { ReactElement, useCallback, useRef, useState } from 'react'
+import { funState, FunState } from '@fun-land/fun-state'
 import { classes, style, stylesheet } from 'typestyle'
-import { useClickOutside } from '../../../hooks/useClickOutside'
-import { h, div, e, button } from '../../../util'
 import { dieColors, DieColorType } from '../../../Models/Die'
+import { Component, enhance, h, onTo, renderWhen } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   TierSelect: {
@@ -70,42 +68,56 @@ export const tierColorMap = {
 
 export const tierColor = (tier: Tier): number => dieColors[tierColorMap[tier]]
 
-export const TierLabel = ({ tier }: { tier: Tier }): ReactElement =>
+export const TierLabel: Component<{ tier: Tier }> = (signal, { tier }) =>
   h('span', { className: style({ color: `var(--bg-die-${tierColorMap[tier]})` }) }, [tier])
 
 const tierOpts = [Tier.T0, Tier.T1, Tier.T2, Tier.T3, Tier.T4, Tier.T5] as const
 
-export const TierSelect = ({ $ }: { $: FunState<Tier> }) => {
-  const tier = $.get()
-  const [open, setOpen] = useState(false)
+export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
+  const openState = funState(false)
 
-  const hide = useCallback(() => setOpen(false), [])
-  const popoverRef = useRef<HTMLDivElement>(null)
-  useClickOutside(popoverRef, hide)
+  const tierButton = enhance(
+    h('button', { className: styles.tierButton }, []),
+    onTo('click', () => openState.set(true), signal),
+  )
 
-  const onSelect = (value: Tier) => {
-    setOpen(false)
-    $.set(value)
-  }
-  return div({ className: styles.TierSelect }, [
-    button({ key: 'tierButton', className: styles.tierButton, onClick: setOpen.bind(null, true) }, [
-      tier ? e(TierLabel, { key: 'tierLabel', tier }) : 'Tier',
-    ]),
-    open &&
-      div(
-        { key: 'popover', className: styles.popover, ref: popoverRef },
-        tierOpts.map((value) =>
-          button(
-            {
-              key: value,
-              onClick: onSelect.bind(null, value),
-              value,
-              type: 'button',
-              className: classes(styles.option, tier === value && styles.selected),
-            },
-            [e(TierLabel, { key: 'tierLabel' + value, tier: value })],
-          ),
-        ),
-      ),
+  // Watch tier state and update button content
+  $.watch(signal, (tier) => {
+    tierButton.replaceChildren(TierLabel(signal, { tier }))
+  })
+
+  // TODO use popover api
+  // useClickOutside(popoverRef, hide)
+  return h('div', { className: styles.TierSelect }, [
+    tierButton,
+    renderWhen({ component: TierPopover, signal, props: { $, state: openState }, state: openState }),
   ])
+}
+
+const TierPopover: Component<{ $: FunState<Tier>; state: FunState<boolean> }> = (signal, { $, state }) => {
+  // Create option buttons once with stable handlers
+  const optionButtons = tierOpts.map((value) => {
+    const button = enhance(
+      h('button', { value, type: 'button', className: styles.option }, []),
+      onTo(
+        'click',
+        () => {
+          $.set(value)
+          state.set(false)
+        },
+        signal,
+      ),
+    )
+    button.replaceChildren(TierLabel(signal, { tier: value }))
+    return { button, value }
+  })
+
+  // Watch tier state and update selected styling
+  $.watch(signal, (tier) => {
+    optionButtons.forEach(({ button, value }) => {
+      button.className = classes(styles.option, tier === value && styles.selected)
+    })
+  })
+
+  return h('div', { className: styles.popover }, optionButtons.map((el) => el.button))
 }

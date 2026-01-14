@@ -1,6 +1,6 @@
 import { style } from 'typestyle'
 import { Message } from '../../Models/GameModel'
-import { div, e } from '../../util'
+import { Component, h } from '@fun-land/fun-web'
 import { Note } from './Note'
 
 const messageStyle = style({
@@ -10,10 +10,6 @@ const messageStyle = style({
   borderRadius: '8px',
   padding: '6px 12px',
 })
-export const RollMessage = ({ result: { username, note } }: { result: Message }) =>
-  div(
-    {
-      className: messageStyle,
-    },
-    [username, ':', e(Note, { key: 'note', text: note })],
-  )
+
+export const RollMessage: Component<{ result: Message }> = (signal, { result: { username, note } }) =>
+  h('div', { className: messageStyle }, [username, ':', Note(signal, { text: note })])

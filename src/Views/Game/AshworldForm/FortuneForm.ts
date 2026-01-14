@@ -1,14 +1,13 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Character } from '../../../components/Character'
 import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Note } from '../../../components/Note'
-import { div, e, h } from '../../../util'
 import { Rollable } from '../RollForm/DicePool'
 import { NewRoll } from '../RollForm/FormCommon'
+import { Component, h } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   AssistForm: {
@@ -73,35 +72,21 @@ const init_ActionForm$ = (): AssistForm$ => ({
   username: '',
 })
 
-export const FortuneForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const FortuneForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}) => {
-  const $ = useFunState<AssistForm$>(init_ActionForm$())
-  const { note } = $.get()
-  const disabled = !note
-  const dicePool$ = $.prop('dicePool')
-  return active
-    ? div({ className: styles.AssistForm }, [
-        e(DicePool, {
-          key: 'dicepool',
-          state: dicePool$,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disableAdd: false,
-          disabled,
-        }),
-        div({ key: 'form', className: styles.form }, [
-          e(FormHeading, { key: 'head', title: 'Fortune' }),
-          h('p', { key: 'subhead' }, ['See what the universe does']),
-          e(Character, { key: 'character', $: $.prop('username') }),
-          e(Note, { key: 'note', $: $.prop('note') }),
-        ]),
-      ])
-    : null
+}> = (signal, { uid, roll }) => {
+  const $ = funState<AssistForm$>(init_ActionForm$())
+  return h('div', { className: styles.AssistForm }, [
+    DicePool(signal, {
+      sendRoll: rollIt(roll, uid, $),
+      disableAdd: false,
+    }),
+    h('div', { key: 'form', className: styles.form }, [
+      FormHeading(signal, { title: 'Fortune' }),
+      h('p', { key: 'subhead' }, ['See what the universe does']),
+      Character(signal, { $: $.prop('username') }),
+      Note(signal, { $: $.prop('note') }),
+    ]),
+  ])
 }

@@ -1,9 +1,8 @@
 import { map } from 'ramda'
-import { FC } from 'react'
+import { Component, h } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 import { DieColor, DieColorType, DieResult } from '../../Models/Die'
 import { RollResult } from '../../Models/GameModel'
-import { div, e, h } from '../../util'
 import { Die } from './Die'
 import { Note } from './Note'
 import { RollValuation, valuationMap } from './RollValuation'
@@ -115,7 +114,7 @@ const rollResultStyle = (result: RollValuation): string => {
   }
 }
 
-const RollMessage = ({ result, label }: { result: RollValuation; label: string }) =>
+const RollMessage: Component<{ result: RollValuation; label: string }> = (signal, { result, label }) =>
   h('h1', { className: classes(styles.resultLabel, rollResultStyle(result)) }, [label])
 
 const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
@@ -137,15 +136,15 @@ const dieStyles = (
   return { dieColor: 'transparent', dotColor: _color, border: true }
 }
 
-const ResultDie: FC<{
+const ResultDie: Component<{
   value: number
   size: number
   highest: boolean
   excluded: boolean
   isLast: boolean
   dieColor: string
-}> = ({ value, size, highest, excluded, isLast, dieColor }) =>
-  e(Die, { value, size, ...dieStyles(value, excluded, highest, isLast, dieColor) })
+}> = (signal, { value, size, highest, excluded, isLast, dieColor }) =>
+  Die(signal, { value, size, ...dieStyles(value, excluded, highest, isLast, dieColor) })
 
 const getResults = map((d: DieResult) => d.value)
 
@@ -162,7 +161,7 @@ const highestIndexes = (diceRolled: RollResult['diceRolled']): [number, number] 
   )
 }
 
-export const RollLogItem = ({ result, isLast }: { result: RollResult; isLast: boolean }) => {
+export const RollLogItem: Component<{ result: RollResult; isLast: boolean }> = (signal, { result, isLast }) => {
   const { isZero, note, diceRolled, date, username, rollType, lines, user } = result
   const valuationMapItem = valuationMap[result.valuationType ?? 'Action']
   const valuation = valuationMapItem.valuation(result)
@@ -173,13 +172,13 @@ export const RollLogItem = ({ result, isLast }: { result: RollResult; isLast: bo
   const title = lines?.[0] || rollType
   const moreLines = lines.slice(1)
   const len = diceRolled.length
-  return div({ className: styles.RollLog }, [
-    div({ key: 'result', className: styles.result }, [
-      div(
-        { key: 'dice', className: styles.dice },
+  return h('div', { className: styles.RollLog }, [
+    h('div', { className: styles.result }, [
+      h(
+        'div',
+        { className: styles.dice },
         diceRolled.map(({ dieColor, value: d }, i) =>
-          e(ResultDie, {
-            key: `result_${i}`,
+          ResultDie(signal, {
             size: len > 4 ? 36 : len === 1 ? 50 : 36,
             value: d,
             highest: (isZero ? secondHighest : highest) === i,
@@ -189,16 +188,16 @@ export const RollLogItem = ({ result, isLast }: { result: RollResult; isLast: bo
           }),
         ),
       ),
-      e(RollMessage, { key: 'rollMessage', result: valuation, label: valuationLabel }),
+      RollMessage(signal, { result: valuation, label: valuationLabel }),
     ]),
-    div({ key: 'metaWrap', className: styles.metaWrap }, [
-      div({ key: 'meta', className: styles.meta }, [
-        username && h('span', { key: 'name', className: styles.name }, [username, ':']),
-        div({ key: 'rollType', className: title.length > 12 ? styles.smallRollType : styles.rollType }, [title]),
-        moreLines.map((line, i) => div({ className: styles.line, key: `line${i}` }, [line])),
-        note && e(Note, { key: 'note', text: note }),
+    h('div', { className: styles.metaWrap }, [
+      h('div', { className: styles.meta }, [
+        username && h('span', { className: styles.name }, [username, ':']),
+        h('div', { className: title.length > 12 ? styles.smallRollType : styles.rollType }, [title]),
+        ...moreLines.map((line, i) => h('div', { className: styles.line }, [line])),
+        note && Note(signal, { text: note }),
       ]),
-      h('em', { key: 'time', className: styles.time }, [
+      h('em', { className: styles.time }, [
         user,
         !isToday(date) && new Date(date).toLocaleDateString(),
         ' ',

@@ -1,19 +1,16 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, h } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
+import { DicePool } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
-import { h, div, e } from '../../../util'
-import { useRef, useEffect } from 'react'
-import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
 
 const styles = stylesheet({
-  AssistForm: {
+  QualityForm: {
     minHeight: 200,
     display: 'grid',
     gap: 12,
@@ -31,11 +28,13 @@ const styles = stylesheet({
     flexDirection: 'column',
     gap: 12,
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
 interface QualityForm$ {
   pool: string
-  dicePool: DicePool$
   note: string
   username: string
 }
@@ -63,52 +62,47 @@ const rollIt =
   }
 
 const init_QualityForm$ = (): QualityForm$ => ({
-  dicePool: init_DicePool$(),
   note: '',
   pool: '',
   username: '',
 })
 
-export const QualityForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const QualityForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active: boolean
-}) => {
-  const $ = useFunState<QualityForm$>(init_QualityForm$())
-  const { note } = $.get()
-  const dicePool$ = $.prop('dicePool')
-  const diceSceneRef = useRef<DiceSceneRef | null>(null)
-  useEffect(() => {
-    note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
-  }, [note])
-  return active
-    ? div({ className: styles.AssistForm }, [
-        e(DicePool, {
-          key: 'dicepool',
-          state: dicePool$,
-          ref: diceSceneRef,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disabled: !note,
+}> = (signal, { uid, roll, active }) => {
+  const $ = funState<QualityForm$>(init_QualityForm$())
+
+  const dicePool = DicePool(signal, {
+    sendRoll: rollIt(roll, uid, $),
+    disableAdd: false,
+  })
+
+  const diceApi = dicePool.$api
+
+  // Watch state to manage dice scene enabled/disabled
+  $.watch(signal, ({ note }) => {
+    note ? diceApi.enable() : diceApi.disable()
+  })
+
+  // Create all components once
+  const container = h('div', { className: active ? styles.QualityForm : styles.hidden }, [
+    dicePool,
+    h('div', { className: styles.form }, [
+      FormHeading(signal, { title: 'Quality Roll' }),
+      h('p', {}, ['You succeed but how well?']),
+      h('p', {}, ['Roll T dice where T is highest Tier of your remaining dice']),
+      h('div', {}, [
+        TextInput(signal, {
+          state: $.prop('pool'),
+          passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
         }),
-        div({ key: 'form', className: styles.form }, [
-          e(FormHeading, { key: 'head', title: 'Quality Roll' }),
-          h('p', { key: 'subhead' }, ['You succeed but how well?']),
-          h('p', { key: 'subhead2' }, ['Roll T dice where T is highest Tier of your remaining dice']),
-          div({ key: 'poolSelect' }, [
-            e(TextInput, {
-              key: 'pool',
-              state: $.prop('pool'),
-              passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
-            }),
-          ]),
-          e(Character, { key: 'character', $: $.prop('username') }),
-          e(Note, { key: 'note', $: $.prop('note') }),
-        ]),
-      ])
-    : null
+      ]),
+      Character(signal, { $: $.prop('username') }),
+      Note(signal, { $: $.prop('note') }),
+    ]),
+  ])
+
+  return container
 }

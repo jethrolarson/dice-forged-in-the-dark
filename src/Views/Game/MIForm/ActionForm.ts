@@ -1,18 +1,15 @@
-import { useEffect, useRef } from 'react'
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, h } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
-import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
+import { DicePool } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Character } from '../../../components/Character'
 import { Factor, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
-import { e, h, div } from '../../../util'
-import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
 import { Tier } from './TierSelect'
 
 const styles = stylesheet({
@@ -34,16 +31,17 @@ const styles = stylesheet({
     flexDirection: 'column',
     gap: 10,
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
 interface ActionForm$ {
   approach$: Approach$
   power$: Power$
   factor$: Factor
-  dicePool: DicePool$
   note: string
   username: string
-  diceResults: number[]
 }
 
 const rollIt =
@@ -72,87 +70,77 @@ const rollIt =
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({
-  dicePool: init_DicePool$(),
   approach$: init_Approach$,
   note: '',
   power$: init_Power$,
   factor$: Factor.Even,
   username: '',
-  diceResults: [],
 })
 
-export const ActionForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const ActionForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active: boolean
-}) => {
-  const $ = useFunState<ActionForm$>(init_ActionForm$())
-  const { username, note } = $.get()
-  const approchTier = $.prop('approach$').prop('tier').get()
-  const powerTier = $.prop('power$').prop('tier').get()
-  const factor = $.prop('factor$').get()
-  const dicePool$ = $.prop('dicePool')
-  const diceSceneRef = useRef<DiceSceneRef | null>(null)
+}> = (signal, { uid, roll, active }) => {
+  const $ = funState<ActionForm$>(init_ActionForm$())
+
+  const dicePool = DicePool(signal, {
+    sendRoll: rollIt(roll, uid, $),
+    disableAdd: false,
+  })
+
+  const diceApi = dicePool.$api
+
   const addDie = (color: number, id?: string) => {
-    if (diceSceneRef.current) diceSceneRef.current.addDie(color, id)
+    diceApi.addDie(color, id)
   }
   const removeDie = (id: string) => {
-    if (diceSceneRef.current) diceSceneRef.current.removeDie(id)
+    diceApi.removeDie(id)
   }
-  useEffect(() => {
-    username && note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
-  }, [username, note])
-  useEffect(() => {
-    if (!active) return
-    if (approchTier === Tier.T0 && powerTier === Tier.T0 && factor === Factor.Disadvantaged) {
-      addDie(dieColors.black, 'zero')
-      addDie(dieColors.black, 'zero2')
-    } else {
-      removeDie('zero')
-      removeDie('zero2')
+
+  // Watch state to manage dice scene enabled/disabled and zero dice
+  $.watch(signal, ({ username, note, approach$, power$, factor$ }) => {
+    const shouldEnable = username && note
+    shouldEnable ? diceApi.enable() : diceApi.disable()
+
+    // Manage zero dice
+    if (active) {
+      if (approach$.tier === Tier.T0 && power$.tier === Tier.T0 && factor$ === Factor.Disadvantaged) {
+        addDie(dieColors.black, 'zero')
+        addDie(dieColors.black, 'zero2')
+      } else {
+        removeDie('zero')
+        removeDie('zero2')
+      }
     }
-  }, [approchTier, powerTier, factor, active])
-  return active
-    ? div(
-        { className: styles.ActionForm },
-        e(DicePool, {
-          key: 'dicepool',
-          ref: diceSceneRef,
-          state: dicePool$,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disabled: !username || !note,
-        }),
-        div(
-          { key: 'form', className: styles.form },
-          e(FormHeading, { key: 'head', title: 'Action Roll' }),
-          h('p', { key: 'subhead' }, 'Do something risky or stressful'),
-          e(ApproachSelect, {
-            key: 'approach',
-            $: $.prop('approach$'),
-            addDie,
-            removeDie,
-          }),
-          e(PowerSelect, {
-            key: 'power',
-            $: $.prop('power$'),
-            addDie,
-            removeDie,
-          }),
-          e(FactorSelect, {
-            key: 'factor',
-            $: $.prop('factor$'),
-            addDie,
-            removeDie,
-            active,
-          }),
-          e(Character, { key: 'character', $: $.prop('username'), passThroughProps: { required: true } }),
-          e(Note, { key: 'note', $: $.prop('note'), passThroughProps: { required: true } }),
-        ),
-      )
-    : null
+  })
+
+  // Create all components once
+  const container = h('div', { className: active ? styles.ActionForm : styles.hidden }, [
+    dicePool,
+    h('div', { className: styles.form }, [
+      FormHeading(signal, { title: 'Action Roll' }),
+      h('p', {}, ['Do something risky or stressful']),
+      ApproachSelect(signal, {
+        $: $.prop('approach$'),
+        addDie,
+        removeDie,
+      }),
+      PowerSelect(signal, {
+        $: $.prop('power$'),
+        addDie,
+        removeDie,
+      }),
+      FactorSelect(signal, {
+        $: $.prop('factor$'),
+        addDie,
+        removeDie,
+        active,
+      }),
+      Character(signal, { $: $.prop('username'), passThroughProps: { required: true } }),
+      Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
+    ]),
+  ])
+
+  return container
 }

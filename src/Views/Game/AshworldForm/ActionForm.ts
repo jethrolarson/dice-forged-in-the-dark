@@ -1,5 +1,5 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { Component, h } from '@fun-land/fun-web'
+import { FunState, funState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Character } from '../../../components/Character'
@@ -7,7 +7,6 @@ import { CheckDie, CheckDieState } from '../../../components/CheckDie'
 import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Note } from '../../../components/Note'
-import { div, e, h } from '../../../util'
 import { NewRoll } from '../RollForm/FormCommon'
 
 const styles = stylesheet({
@@ -78,76 +77,59 @@ const init_ActionForm$ = (): ActionForm$ => ({
   username: '',
 })
 
-export const ActionForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const ActionForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}) => {
-  const $ = useFunState<ActionForm$>(init_ActionForm$())
-  const { username, note } = $.get()
+}> = (signal, { uid, roll }) => {
+  const $ = funState<ActionForm$>(init_ActionForm$())
   const dicePool$ = $.prop('dicePool')
-  return active
-    ? div({ className: styles.ActionForm }, [
-        e(DicePool, {
-          key: 'dicepool',
-          state: dicePool$,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disableAdd: true,
-          disabled: !username || !note,
-        }),
-        div({ key: 'form', className: styles.form }, [
-          e(FormHeading, { key: 'head', title: 'Action' }),
-          h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
+  return h('div', { className: styles.ActionForm }, [
+    DicePool(signal, {
+      sendRoll: rollIt(roll, uid, $),
+      disableAdd: true,
+    }),
+    h('div', { className: styles.form }, [
+      FormHeading(signal, { title: 'Action' }),
+      h('p', { key: 'subhead' }, ['Try something risky or uncertain']),
 
-          e(CheckDie, {
-            key: 'knack',
-            id: 'knack',
-            $: $.prop('knack'),
-            dicePool$,
-            color: 'white',
-            label: e('span', null, ['We got a ', e('b', null, 'knack'), ' for this']),
-          }),
-          e(CheckDie, {
-            key: 'shit',
-            id: 'shit',
-            $: $.prop('shit'),
-            dicePool$,
-            color: 'white',
-            label: 'We got the right shit',
-          }),
-          e(CheckDie, {
-            key: 'amped',
-            id: 'amped',
-            $: $.prop('amped'),
-            dicePool$,
-            color: 'red',
-            label: e('span', null, [`We're `, e('b', null, ['juiced']), ' or in ', e('b', null, 'sync')]),
-          }),
-          e(CheckDie, {
-            key: 'upperHand',
-            id: 'upperHand',
-            $: $.prop('upperHand'),
-            dicePool$,
-            color: 'white',
-            label: "We fuckin' got this (Emcee)",
-          }),
-          e(CheckDie, {
-            key: 'gripes',
-            id: 'gripes',
-            $: $.prop('gripes'),
-            dicePool$,
-            color: 'yellow',
-            label: e('span', null, [`We're taking a `, e('b', null, ["Devil's Bargain"])]),
-          }),
-          e('p', {}, ['Emcee tells you ', e('b', null, 'good'), ' and ', e('b', null, 'bad'), ' stuff']),
-          e(Character, { key: 'character', $: $.prop('username') }),
-          e(Note, { key: 'note', $: $.prop('note') }),
-        ]),
-      ])
-    : null
+      CheckDie(signal, {
+        id: 'knack',
+        $: $.prop('knack'),
+        dicePool$,
+        color: 'white',
+        label: h('span', null, ['We got a ', h('b', null, 'knack'), ' for this']),
+      }),
+      CheckDie(signal, {
+        id: 'shit',
+        $: $.prop('shit'),
+        dicePool$,
+        color: 'white',
+        label: 'We got the right shit',
+      }),
+      CheckDie(signal, {
+        id: 'amped',
+        $: $.prop('amped'),
+        dicePool$,
+        color: 'red',
+        label: h('span', null, [`We're `, h('b', null, ['juiced']), ' or in ', h('b', null, 'sync')]),
+      }),
+      CheckDie(signal, {
+        id: 'upperHand',
+        $: $.prop('upperHand'),
+        dicePool$,
+        color: 'white',
+        label: "We fuckin' got this (Emcee)",
+      }),
+      CheckDie(signal, {
+        id: 'gripes',
+        $: $.prop('gripes'),
+        dicePool$,
+        color: 'yellow',
+        label: h('span', null, [`We're taking a `, h('b', null, ["Devil's Bargain"])]),
+      }),
+      h('p', {}, ['Emcee tells you ', h('b', null, 'good'), ' and ', h('b', null, 'bad'), ' stuff']),
+      Character(signal, { $: $.prop('username') }),
+      Note(signal, { $: $.prop('note') }),
+    ]),
+  ])
 }

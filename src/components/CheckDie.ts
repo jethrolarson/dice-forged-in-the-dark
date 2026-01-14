@@ -1,10 +1,9 @@
 import { flow } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
-import { ReactElement } from 'react'
 import { stylesheet } from 'typestyle'
 import { DieColorType } from '../Models/Die'
-import { e } from '../util'
 import { addDice, DicePool$, removeDiceById } from './DicePool'
+import { Component, enhance, h, onTo } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   CheckDie: {
@@ -32,31 +31,31 @@ const styles = stylesheet({
 })
 
 export type CheckDieState = boolean
-export const CheckDie = ({
-  color,
-  $,
-  dicePool$,
-  label,
-  id,
-}: {
+export const CheckDie: Component<{
   id: string
-  label: ReactElement | string
+  label: Element | string
   color: DieColorType
   $: FunState<CheckDieState>
   dicePool$: FunState<DicePool$>
-}) => {
+}> = (signal, { color, $, dicePool$, label, id }) => {
   const _addDice = flow(addDice, dicePool$.mod)
   const _removeDice = flow(removeDiceById, dicePool$.prop('pool').mod)
-  return e('label', { className: styles.CheckDie }, [
-    e('input', {
-      className: styles.checkbox,
-      checked: $.get(),
-      type: 'checkbox',
-      onChange: ({ currentTarget: { checked } }) => {
-        checked ? _addDice([{ color, type: 'd6', id }]) : _removeDice(id)
-        $.set(checked)
-      },
-    }),
+  return h('label', { className: styles.CheckDie }, [
+    enhance(
+      h('input', {
+        className: styles.checkbox,
+        checked: $.get(),
+        type: 'checkbox',
+      }),
+      onTo(
+        'change',
+        ({ currentTarget: { checked } }) => {
+          checked ? _addDice([{ color, type: 'd6', id }]) : _removeDice(id)
+          $.set(checked)
+        },
+        signal,
+      ),
+    ),
     label,
   ])
 }

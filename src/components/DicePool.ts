@@ -1,14 +1,13 @@
 import { Acc, append, index } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
+import { h } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { reject } from 'ramda'
-import { forwardRef, MutableRefObject } from 'react'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { colorNameFromHex, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
-import { div, e } from '../util'
 import { nextColor } from '../Views/Game/Die'
-import DiceScene, { DiceSceneRef } from './DiceScene/DiceScene'
+import { DiceScene, DiceSceneApi } from './DiceScene/DiceScene'
 import { DiceSelection } from './DiceSelection'
 
 const spin = keyframes({
@@ -110,46 +109,51 @@ export const addDice =
 
 export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('color').mod(nextColor)
 
-export const DicePool = forwardRef<
-  DiceSceneRef,
+type DicePoolElement = HTMLDivElement & { $api: DiceSceneApi }
+
+export const DicePool = (
+  signal: AbortSignal,
   {
-    state: FunState<DicePool$>
+    sendRoll,
+    disableAdd = false,
+  }: {
     sendRoll: (results: DieResult[]) => unknown
-    disabled: boolean
-    disableRemove?: boolean
     disableAdd?: boolean
-  }
->(({ sendRoll, disableAdd = false }, diceSceneRef) => {
+  },
+): DicePoolElement => {
+  const diceScene = DiceScene(signal, {
+    onDiceRollComplete: (results) => {
+      sendRoll(
+        results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),
+      )
+    },
+  })
+  const diceApi = diceScene.$api
   const addDie = (color: DieColorType) => {
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors[color])
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.removeDie('zero')
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.removeDie('zero2')
+    diceApi.addDie(dieColors[color])
+    diceApi.removeDie('zero')
+    diceApi.removeDie('zero2')
   }
   const add0Dice = () => {
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.reset()
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors.black, 'zero')
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.addDie(dieColors.black, 'zero2')
+    diceApi.reset()
+    diceApi.addDie(dieColors.black, 'zero')
+    diceApi.addDie(dieColors.black, 'zero2')
   }
   const reset = () => {
-    ;(diceSceneRef as MutableRefObject<DiceSceneRef>)?.current.reset()
+    diceApi.reset()
   }
-  return div({ className: styles.DicePool }, [
-    !disableAdd &&
-      div(
-        { key: 'diceSelection', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
-        e(DiceSelection, { key: 'dice', addDie, add0Dice, reset }),
-      ),
-    div(
-      { key: 'diceBox', className: classes(styles.diceBox, disableAdd && styles.roundTop) },
-      e(DiceScene, {
-        key: 'diceScene',
-        ref: diceSceneRef,
-        onDiceRollComplete: (results) => {
-          sendRoll(
-            results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),
-          )
-        },
-      }),
+
+  const container = h('div', { className: styles.DicePool }, [
+    h(
+      'div',
+      { key: 'diceSelection', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
+      DiceSelection(signal, { addDie, add0Dice, reset }),
     ),
-  ])
-})
+    h('div', { className: classes(styles.diceBox, disableAdd && styles.roundTop) }, [diceScene]),
+  ]) as DicePoolElement
+
+  // Forward the $api property
+  container.$api = diceApi
+
+  return container
+}

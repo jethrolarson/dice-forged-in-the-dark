@@ -1,6 +1,6 @@
 import { stylesheet } from 'typestyle'
 import Markdown from '../../markdown'
-import { e } from '../../util'
+import { Component, h } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   Note: {
@@ -16,5 +16,8 @@ const styles = stylesheet({
   },
 })
 
-export const Note = ({ text }: { text: string }) =>
-  e('div', { className: styles.Note, dangerouslySetInnerHTML: { __html: Markdown.render(text) } })
+export const Note: Component<{ text: string }> = (signal, { text }) => {
+  const div = h('div', { className: styles.Note })
+  div.innerHTML = Markdown.render(text)
+  return div
+}

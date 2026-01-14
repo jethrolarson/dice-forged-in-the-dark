@@ -1,6 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 import { style } from 'typestyle'
 import { Textarea } from './Textarea'
+import { Component } from '@fun-land/fun-web'
 
 const className = style({
   width: '100%',
@@ -10,14 +11,11 @@ const className = style({
   resize: 'none',
 })
 
-export const Note = ({
-  $,
-  passThroughProps,
-}: {
+export const Note: Component<{
   $: FunState<string>
   passThroughProps?: React.DetailedHTMLProps<React.TextareaHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>
-}) =>
-  Textarea({
+}> = (signal, { $, passThroughProps }) =>
+  Textarea(signal, {
     passThroughProps: {
       placeholder: 'Description',
       className,

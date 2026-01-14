@@ -1,9 +1,7 @@
-import { FunState } from '@fun-land/fun-state'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, enhance, h, onTo } from '@fun-land/fun-web'
 import { classes, keyframes, stylesheet } from 'typestyle'
-import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
-import { button, div, label } from '../../../util'
 
 const textPulse = keyframes({
   from: {
@@ -49,6 +47,9 @@ const styles = stylesheet({
     animation: '0.8s infinite alternate',
     animationName: textPulse,
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
 export enum Factor {
@@ -59,24 +60,56 @@ export enum Factor {
 
 export const factorDie = { color: 'white', type: 'd6', id: 'factor' } as const
 
-export const FactorSelect = ({
-  $,
-  addDie,
-  removeDie,
-  active,
-}: {
+export const FactorSelect: Component<{
   $: FunState<Factor>
   removeDie: (id: string) => unknown
   addDie: (color: number, id: string) => unknown
   active: boolean
-}) => {
-  const factor = $.get()
-  const [open, setOpen] = useState(false)
-  const hide = useCallback(() => setOpen(false), [])
-  const popoverRef = useRef<HTMLDivElement>(null)
-  useClickOutside(popoverRef, hide)
+}> = (signal, { $, addDie, removeDie, active }) => {
+  const openState = funState(false)
 
-  useEffect(() => {
+  const factorLabel = h('label', { className: styles.label }, ['Factor'])
+  const factorButton = enhance(
+    h('button', { className: styles.button }, []),
+    onTo('click', () => openState.set(true), signal),
+  )
+
+  const onSelect = (val: Factor) => {
+    openState.set(false)
+    $.set(val)
+  }
+
+  // Create option buttons once with stable handlers
+  const optionButtons = [Factor.Disadvantaged, Factor.Even, Factor.Dominant].map((value) => {
+    const button = enhance(
+      h('button', { value, type: 'button', className: styles.option }, [value]),
+      onTo('click', () => onSelect(value), signal),
+    )
+    return { button, value }
+  })
+
+  const popover = h(
+    'div',
+    { className: classes(styles.popover, styles.hidden) },
+    optionButtons.map((el) => el.button),
+  )
+
+  // Watch factor state to update label, button, dice, and option styling
+  $.watch(signal, (factor) => {
+    const isActive = factor !== Factor.Disadvantaged
+
+    // Update label styling
+    factorLabel.className = classes(styles.label, isActive ? styles.active : '')
+
+    // Update button text
+    factorButton.textContent = factor
+
+    // Update option button styling
+    optionButtons.forEach(({ button, value }) => {
+      button.className = classes(styles.option, factor === value && styles.selected)
+    })
+
+    // Update dice based on factor and active state
     if (active) {
       switch (factor) {
         case Factor.Even:
@@ -92,40 +125,14 @@ export const FactorSelect = ({
           removeDie('factor2')
       }
     }
-  }, [factor, active])
+  })
 
-  const isActive = factor !== Factor.Disadvantaged
-  const onSelect = (val: string) => {
-    hide()
-    $.set(val as Factor)
-  }
-  return div(null, [
-    div({ key: 'factorSelect', className: styles.FactorSelect }, [
-      label({ key: 'title', className: classes(styles.label, isActive ? styles.active : '') }, ['Factor']),
-      button(
-        {
-          key: 'factor',
-          className: styles.button,
-          onClick: setOpen.bind(null, true),
-        },
-        [factor],
-      ),
-      open &&
-        div(
-          { key: 'popover', className: styles.popover, ref: popoverRef },
-          [Factor.Disadvantaged, Factor.Even, Factor.Dominant].map((value) =>
-            button(
-              {
-                key: value,
-                onClick: onSelect.bind(null, value),
-                value,
-                type: 'button',
-                className: classes(styles.option, factor === value && styles.selected),
-              },
-              [value],
-            ),
-          ),
-        ),
-    ]),
+  // Watch open state to toggle popover visibility
+  openState.watch(signal, (isOpen) => {
+    popover.classList.toggle(styles.hidden, !isOpen)
+  })
+
+  return h('div', {}, [
+    h('div', { className: styles.FactorSelect }, [factorLabel, factorButton, popover]),
   ])
 }
