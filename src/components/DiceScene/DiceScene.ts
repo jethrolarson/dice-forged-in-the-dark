@@ -1,4 +1,4 @@
-import { h, on, enhance } from '@fun-land/fun-web'
+import { Component, h, on, enhance } from '@fun-land/fun-web'
 import { DiceParams } from './Dice'
 import { DiceRenderer } from './DiceRenderer'
 
@@ -15,11 +15,10 @@ export interface DiceSceneApi {
   enabled: boolean
 }
 
-export const DiceScene = (
-  signal: AbortSignal,
-  { onDiceRollComplete }: DiceSceneProps,
-): HTMLDivElement & { $api: DiceSceneApi } => {
-  const el: HTMLDivElement & { $api?: DiceSceneApi } = h('div', {
+type DiceSceneElement = HTMLDivElement & { $api: DiceSceneApi }
+
+export const DiceScene: Component<DiceSceneProps, DiceSceneElement> = (signal, { onDiceRollComplete }) => {
+  const el = h('div', {
     style: { width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' },
   })
   const { onPointerDown, onPointerMove, onResize, onPointerUp, dice } = new DiceRenderer(el, onDiceRollComplete, false)
@@ -30,7 +29,9 @@ export const DiceScene = (
   window.addEventListener('pointermove', onPointerMove, { signal })
   window.addEventListener('resize', onResize, { signal })
 
-  el.$api = {
+  // Cast to augmented element type and add the API
+  const element = el as DiceSceneElement
+  element.$api = {
     addDie(color: number, id?: string) {
       dice.addDie(color, id)
     },
@@ -49,5 +50,5 @@ export const DiceScene = (
     enabled: false,
   }
 
-  return el as HTMLDivElement & { $api: DiceSceneApi }
+  return element
 }

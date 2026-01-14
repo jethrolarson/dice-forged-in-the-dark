@@ -38,7 +38,7 @@ export const OptGroup: Component<{
       })
     }
   }
-  const dl = og.rollOptions && DataList(signal, { id: `list${og.name}`, values: og.rollOptions.join(',') })
+  const dl = og.rollOptions ? DataList(signal, { id: `list${og.name}`, values: og.rollOptions.join(',') }) : undefined
   return og.fixedOptions && og.rollOptions
     ? ButtonSelect(signal, {
         selected: state.get(),

@@ -1,6 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
 import { decrement, increment } from 'fp-ts/lib/function'
-import { Component, enhance, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 
 const styles = stylesheet({

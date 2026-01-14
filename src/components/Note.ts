@@ -23,8 +23,7 @@ export const Note: Component<TextareaProps> = (signal, { $, passThroughProps }) 
     on(
       'input',
       ({ currentTarget }): void => {
-        const target = currentTarget
-        target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
+        currentTarget.style.height = `${currentTarget.scrollHeight + 2}px` // 2px is combined border width
       },
       signal,
     ),

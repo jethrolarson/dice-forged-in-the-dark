@@ -1,6 +1,6 @@
 import { Acc, append, index } from '@fun-land/accessor'
 import { FunState } from '@fun-land/fun-state'
-import { h } from '@fun-land/fun-web'
+import { Component, h } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { reject } from 'ramda'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
@@ -111,16 +111,12 @@ export const changeColor = (idx: number) => Acc(index<Rollable>(idx)).prop('colo
 
 type DicePoolElement = HTMLDivElement & { $api: DiceSceneApi }
 
-export const DicePool = (
-  signal: AbortSignal,
-  {
-    sendRoll,
-    disableAdd = false,
-  }: {
-    sendRoll: (results: DieResult[]) => unknown
-    disableAdd?: boolean
-  },
-): DicePoolElement => {
+interface DicePoolProps {
+  sendRoll: (results: DieResult[]) => unknown
+  disableAdd?: boolean
+}
+
+export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { sendRoll, disableAdd = false }) => {
   const diceScene = DiceScene(signal, {
     onDiceRollComplete: (results) => {
       sendRoll(
@@ -150,10 +146,11 @@ export const DicePool = (
       DiceSelection(signal, { addDie, add0Dice, reset }),
     ),
     h('div', { className: classes(styles.diceBox, disableAdd && styles.roundTop) }, [diceScene]),
-  ]) as DicePoolElement
+  ])
 
-  // Forward the $api property
-  container.$api = diceApi
+  // Cast to augmented element type and add the API
+  const element = container as DicePoolElement
+  element.$api = diceApi
 
-  return container
+  return element
 }

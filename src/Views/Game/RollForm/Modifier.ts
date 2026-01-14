@@ -32,7 +32,7 @@ export const Modifier: Component<{
   updateDice(s.get())
 
   return h('div', {}, [
-    section.showLabel && h('label', { className: styles.label, title: section.tooltip }, [section.name]),
+    ...(section.showLabel ? [h('label', { className: styles.label, title: section.tooltip }, [section.name])] : []),
     NumberSpinner(signal, { min: section.min, max: section.max, state: s }),
   ])
 }

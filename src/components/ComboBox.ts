@@ -71,10 +71,9 @@ export const ComboBox: Component<{
     ),
       on(
         'input',
-        (e) => {
-          const target = e.target as HTMLInputElement
-          filterState.set(target.value)
-          $.set(target.value)
+        ({ currentTarget }) => {
+          filterState.set(currentTarget.value)
+          $.set(currentTarget.value)
         },
         signal,
       ),
