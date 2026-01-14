@@ -1,4 +1,4 @@
-import { Component, enhance, funState, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, funState, h, on } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { DieColor, DieColorType } from '../Models/Die'
@@ -54,7 +54,7 @@ export const DiceSelection: Component<{
         size: 28,
       }),
     ),
-    onTo(
+    on(
       'contextmenu',
       (e): void => {
         s.prop('dieColor').mod(nextColor)
@@ -62,7 +62,7 @@ export const DiceSelection: Component<{
       },
       signal,
     ),
-    onTo('click', () => addDie(s.prop('dieColor').get()), signal),
+    on('click', () => addDie(s.prop('dieColor').get()), signal),
   )
 
   const roll0Button = enhance(
@@ -83,7 +83,7 @@ export const DiceSelection: Component<{
         size: 28,
       }),
     ),
-    onTo('click', add0Dice, signal),
+    on('click', add0Dice, signal),
   )
 
   return h('div', { className: styles.diceButtons }, [

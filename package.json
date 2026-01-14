@@ -9,7 +9,7 @@
   "dependencies": {
     "@fun-land/accessor": "^4.0.2",
     "@fun-land/fun-state": "^9.0.1",
-    "@fun-land/fun-web": "^0.4.0",
+    "@fun-land/fun-web": "^0.5.0-alpha.0",
     "cannon-es": "^0.20.0",
     "csx": "^10.0.2",
     "firebase": "^10.0.0",

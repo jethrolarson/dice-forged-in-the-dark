@@ -1,5 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { classes, stylesheet } from 'typestyle'
 
 const styles = stylesheet({
@@ -60,16 +60,24 @@ export const ComboBox: Component<{
       placeholder,
       className: classes(styles.input, className),
     }),
-    onTo('focus', () => openState.set(true), signal),
-    onTo('blur', () => {
-      // Delay to allow click on option
-      setTimeout(() => openState.set(false), 200)
-    }, signal),
-    onTo('input', (e) => {
-      const target = e.target as HTMLInputElement
-      filterState.set(target.value)
-      $.set(target.value)
-    }, signal),
+    on('focus', () => openState.set(true), signal),
+    on(
+      'blur',
+      () => {
+        // Delay to allow click on option
+        setTimeout(() => openState.set(false), 200)
+      },
+      signal,
+    ),
+      on(
+        'input',
+        (e) => {
+          const target = e.target as HTMLInputElement
+          filterState.set(target.value)
+          $.set(target.value)
+        },
+        signal,
+      ),
   )
 
   // Create option elements once with stable handlers
@@ -77,7 +85,7 @@ export const ComboBox: Component<{
     const option = h('div', { className: styles.option }, [item])
     enhance(
       option,
-      onTo(
+      on(
         'mousedown',
         (e) => {
           e.preventDefault() // Prevent blur
@@ -100,11 +108,7 @@ export const ComboBox: Component<{
   $.watch(signal, (value) => {
     input.value = value
     // Update required styling
-    input.className = classes(
-      styles.input,
-      className,
-      required && value === '' && styles.required,
-    )
+    input.className = classes(styles.input, className, required && value === '' && styles.required)
   })
 
   // Watch all states to update dropdown visibility and option styling

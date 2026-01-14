@@ -1,7 +1,7 @@
 import { hsla } from 'csx'
 import { stylesheet } from 'typestyle'
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   Builder: {
@@ -43,7 +43,7 @@ export const SubForm: Component<{
 
   const expanderButton = enhance(
     h('button', { className: styles.expander }, [title]),
-    onTo('click', () => openState.set(true), signal),
+    on('click', () => openState.set(true), signal),
   )
 
   const openForm = OpenForm(signal, { onDone, onCancel, title, disabled, children, openState })
@@ -68,7 +68,7 @@ const OpenForm: Component<{
 }> = (signal, { onDone, onCancel, title, disabled, children, openState }) => {
   const doneButton = enhance(
     h('button', { disabled }, ['Done']),
-    onTo(
+    on(
       'click',
       () => {
         onDone()
@@ -80,7 +80,7 @@ const OpenForm: Component<{
 
   const clearButton = enhance(
     h('button', {}, ['Clear']),
-    onTo(
+    on(
       'click',
       () => {
         onCancel()

@@ -940,10 +940,10 @@
   resolved "https://registry.yarnpkg.com/@fun-land/fun-state/-/fun-state-9.0.1.tgz#93fb160fa01f7c0480d5050336b127d998fd7863"
   integrity sha512-V+ibtki2EeVyAnVTOkxuTZL4lTQfEmIlIkh6m3wXqfhnDOQPv1rNBhRASxDkukLNx+P++/hkfOVWnorDrN169Q==
 
-"@fun-land/fun-web@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@fun-land/fun-web/-/fun-web-0.4.0.tgz#d32b77fd8581857389a2404a82239b5eea6b4d0a"
-  integrity sha512-MVMiAHg3XjhzM/LLJQqegrCel9rC8C3L9EO8Sbbksb7+jL3Elw42ONIUX2KZxWZbGixu2zP7+p6wpACiDrHOIA==
+"@fun-land/fun-web@^0.5.0-alpha.0":
+  version "0.5.0-alpha.0"
+  resolved "https://registry.yarnpkg.com/@fun-land/fun-web/-/fun-web-0.5.0-alpha.0.tgz#f5c4a57b45346b261b4714c893b77490e5836eff"
+  integrity sha512-/qzimKQMUHtFthZwN1wFQhRkxdk6IturShnyYkQcTVVU8JdYY0ujD1zUj6oeGtEwr8DGdOuG1E6X0H6tsPqQmg==
 
 "@grpc/grpc-js@~1.9.0":
   version "1.9.15"

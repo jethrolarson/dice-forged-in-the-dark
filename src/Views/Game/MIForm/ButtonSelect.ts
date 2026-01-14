@@ -48,7 +48,7 @@ export const ButtonSelect: Component<{
         },
         [content],
       ),
-      onTo('click', () => onSelect(value), signal),
+      on('click', () => onSelect(value), signal),
     )
   })
 
@@ -71,7 +71,7 @@ export const FunButtonSelect: Component<{
     const content = typeof opt === 'string' ? opt : opt.content
     const button = enhance(
       h('button', { value, type: 'button', className: styles.option }, [content]),
-      onTo('click', () => $.mod((oldValue) => (oldValue === value ? '' : value)), signal),
+      on('click', () => $.mod((oldValue) => (oldValue === value ? '' : value)), signal),
     )
     return { button, value }
   })

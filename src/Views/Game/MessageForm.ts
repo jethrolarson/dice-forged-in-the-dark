@@ -27,10 +27,13 @@ interface MessageFormState {
   username: string
 }
 
-export const MessageForm: Component<{ gdoc: DocumentReference; active: boolean }> = (signal, { gdoc, active }) => {
+export const MessageForm: Component<{ gdoc: DocumentReference; active?: boolean }> = (
+  signal,
+  { gdoc, active = true },
+) => {
   const state = funState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
-  const postMessage: React.FormEventHandler<HTMLFormElement> = (e): void => {
+  const postMessage = (e: Event): void => {
     e.preventDefault()
     addDoc(collection(gdoc, 'rolls'), {
       note,
@@ -51,7 +54,7 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active: boolean }
           placeholder: 'Note',
           className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
         },
-        state: state.prop('note'),
+        $: state.prop('note'),
       }),
     ]),
     h('label', { key: 'character' }, [
@@ -62,7 +65,7 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active: boolean }
           type: 'text',
           name: 'username',
         },
-        state: state.prop('username'),
+        $: state.prop('username'),
       }),
     ]),
     h('button', { key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),

@@ -37,7 +37,7 @@ export const RollTypes: Component<{ $: FunState<RollType> }> = (signal, { $ }) =
   const buttons = actionMap.map(([type, label]) => {
     const button = enhance(
       h('button', {}, [label]),
-      onTo('click', () => $.mod((t) => (t === type ? RollType.none : type)), signal),
+      on('click', () => $.mod((t) => (t === type ? RollType.none : type)), signal),
     )
     return { button, type }
   })

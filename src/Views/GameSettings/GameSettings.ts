@@ -18,10 +18,9 @@ import { pipe } from 'fp-ts/lib/function'
 import { PathReporter } from 'io-ts/PathReporter'
 import { presets } from '../../Models/rollConfigPresets'
 import { TextInput } from '../../components/TextInput'
-import useFunState from '@fun-land/use-fun-state'
 import { validateTitle } from './validate'
-import { merge } from '@fun-land/fun-state'
-import { div, label, e, h, button } from '../../util'
+import { funState, merge } from '@fun-land/fun-state'
+import { bindProperty, Component, enhance, h, on, renderWhen } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   GameSettings: {
@@ -85,15 +84,15 @@ export const gameSettingsPath = (path: string): O.Option<GameSettingsView> => {
 
 type GameSettingsState = PersistedState & { rollConfigText: string; rollConfigError: string }
 
-export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettingsState; gdoc: DocumentReference }> = ({
-  gameId,
-  initialState,
-  gdoc,
-}) => {
-  const state = useFunState<GameSettingsState>(initialState)
-  const { rollConfigText, rollConfigError, title, miroId, theme, system } = state.get()
+export const LoadedGameSettings: Component<{
+  gameId: string
+  initialState: GameSettingsState
+  gdoc: DocumentReference
+}> = (signal, { gameId, initialState, gdoc }) => {
+  const state = funState<GameSettingsState>(initialState)
 
-  const saveSettings = (): void =>
+  const saveSettings = (): void => {
+    const { rollConfigText, title, miroId, theme, system } = state.get()
     pipe(
       parseRollConfig(rollConfigText),
       validateTitle(title),
@@ -111,37 +110,47 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
       }),
       (result) => state.prop('rollConfigError').set(PathReporter.report(result).join('')),
     )
-
-  return div({ className: classes(styles.GameSettings, theme) }, [
-    h('header', { key: 'heading', className: styles.heading }, [h('h1', { key: 'title' }, ['Game Settings'])]),
-    label({ key: 'nameLabel' }, [
-      'Game Name',
-      e(TextInput, {
-        key: 'nameinput',
-        passThroughProps: { 'aria-label': 'Game Name', required: true },
-        state: state.prop('title'),
-      }),
-    ]),
-    label({ key: 'miroLabel' }, [
-      'Miro Id (optional)',
-      e(TextInput, { key: 'miroinput', passThroughProps: { 'aria-label': 'Miro Id' }, state: state.prop('miroId') }),
-    ]),
-    label({ key: 'themelabel' }, [
-      'Theme: ',
+  }
+  const themeField = h('label', { key: 'themelabel' }, [
+    'Theme: ',
+    enhance(
       h(
         'select',
         {
           key: 'themeselect',
           className: styles.loadPreset,
-          onChange: ({ target: { value } }) => {
-            state.prop('theme').set(value)
-          },
-          value: state.prop('theme').get(),
         },
-        ...Object.values(Theme).map((theme) => h('option', { key: theme }, [theme])),
+        Object.values(Theme).map((theme) => h('option', { key: theme }, [theme])),
       ),
+      bindProperty('value', state.prop('theme'), signal),
+      on('change', ({ currentTarget: { value } }) => state.prop('theme').set(value), signal),
+    ),
+  ])
+  const saveButton = h(
+    'button',
+    {
+      key: 'save',
+      onClick: gdoc ? saveSettings : noop,
+      className: 'primary',
+    },
+    ['Save Settings'],
+  )
+  state.watch(signal, ({ title, rollConfigText }) => (saveButton.disabled = !title || !rollConfigText))
+  const rootEl = h('div', {}, [
+    h('header', { key: 'heading', className: styles.heading }, [h('h1', { key: 'title' }, ['Game Settings'])]),
+    h('label', { key: 'nameLabel' }, [
+      'Game Name',
+      TextInput(signal, {
+        passThroughProps: { 'aria-label': 'Game Name', required: true },
+        $: state.prop('title'),
+      }),
     ]),
-    label({ key: 'presetLabel' }, [
+    h('label', {}, [
+      'Miro Id (optional)',
+      TextInput(signal, { passThroughProps: { 'aria-label': 'Miro Id' }, $: state.prop('miroId') }),
+    ]),
+    themeField,
+    h('label', { key: 'presetLabel' }, [
       'Game system: ',
       h(
         'select',
@@ -163,24 +172,30 @@ export const LoadedGameSettings: FC<{ gameId: string; initialState: GameSettings
         presets.map((preset) => h('option', { key: preset.system, value: preset.system }, [preset.system ?? 'Other'])),
       ),
     ]),
-    rollConfigError && div({ key: 'error', className: styles.error }, [rollConfigError]),
+    renderWhen({
+      component: (signal) =>
+        enhance(
+          h('div', { key: 'error', className: styles.error }, []),
+          bindProperty('textContent', state.prop('rollConfigError'), signal),
+        ),
+      signal,
+      state,
+      predicate: (gs) => !!gs.rollConfigText,
+      props: {},
+    }),
 
     h('footer', { className: styles.footer }, [
-      div({ key: 'left', className: styles.leftButtons }, [
-        button(
-          {
-            key: 'save',
-            onClick: gdoc ? saveSettings : noop,
-            disabled: !title || !rollConfigText,
-            className: 'primary',
-          },
-          ['Save Settings'],
-        ),
-        button({ onClick: () => location.assign(`#/game/${gameId}`) }, ['Cancel']),
+      h('div', { key: 'left', className: styles.leftButtons }, [
+        saveButton,
+        h('button', { onClick: () => location.assign(`#/game/${gameId}`) }, ['Cancel']),
       ]),
-      button({ key: 'delete', className: 'dangerous', onClick: gdoc ? deleteGame(gdoc) : noop }, ['Delete Game']),
+      h('button', { key: 'delete', className: 'dangerous', onClick: gdoc ? deleteGame(gdoc) : noop }, ['Delete Game']),
     ]),
   ])
+  state.watch(signal, ({ theme }) => {
+    rootEl.className = classes(styles.GameSettings, theme)
+  })
+  return rootEl
 }
 
 const setRollConfig = (gs: LoadedGameState): GameSettingsState => {
@@ -188,7 +203,7 @@ const setRollConfig = (gs: LoadedGameState): GameSettingsState => {
   return { ...gs, rollConfigText, rollConfigError: '' }
 }
 
-export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
+export const GameSettings: Component<{ gameId: string }> = (signal, { gameId }) => {
   const [gameState, setGameState] = useState<GameState>(initialGameState)
   const gdoc = useDoc(`games/${gameId}`)
   useEffect(() => {
@@ -210,11 +225,11 @@ export const GameSettings: FC<{ gameId: string }> = ({ gameId }) => {
 
   switch (gameState.kind) {
     case 'LoadedGameState':
-      return e(LoadedGameSettings, { initialState: setRollConfig(gameState), gameId, gdoc })
+      return LoadedGameSettings(signal, { initialState: setRollConfig(gameState), gameId, gdoc })
     case 'MissingGameState':
       return h('h1', null, ['Game not found. Check the url'])
     case 'LoadingGameState':
-      return div(null, ['Game Loading'])
+      return h('div', null, ['Game Loading'])
     case 'ErrorGameState':
       return h('h1', null, ['Error loading game. Try refreshing the page.'])
   }

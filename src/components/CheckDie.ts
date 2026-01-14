@@ -3,7 +3,7 @@ import { FunState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { DieColorType } from '../Models/Die'
 import { addDice, DicePool$, removeDiceById } from './DicePool'
-import { Component, enhance, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   CheckDie: {
@@ -47,7 +47,7 @@ export const CheckDie: Component<{
         checked: $.get(),
         type: 'checkbox',
       }),
-      onTo(
+      on(
         'change',
         ({ currentTarget: { checked } }) => {
           checked ? _addDice([{ color, type: 'd6', id }]) : _removeDice(id)

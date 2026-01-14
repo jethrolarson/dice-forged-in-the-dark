@@ -95,7 +95,7 @@ export const QualityForm: Component<{
       h('p', {}, ['Roll T dice where T is highest Tier of your remaining dice']),
       h('div', {}, [
         TextInput(signal, {
-          state: $.prop('pool'),
+          $: $.prop('pool'),
           passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
         }),
       ]),

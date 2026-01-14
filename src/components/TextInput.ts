@@ -1,11 +1,14 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, onTo, h } from '@fun-land/fun-web'
+import { Component, enhance, on, bindProperty, h } from '@fun-land/fun-web'
 
-export const TextInput: Component<{
-  state: FunState<string>
-  passThroughProps?: any //TODO what type should be used?
-}> = (signal, { state, passThroughProps }) =>
+export interface TextInputProps {
+  $: FunState<string>
+  passThroughProps?: Partial<HTMLInputElement> & Record<string, unknown>
+}
+
+export const TextInput: Component<TextInputProps> = (signal, { $, passThroughProps }) =>
   enhance(
-    h('input', { ...passThroughProps, value: state.get() }),
-    onTo('change', ({ currentTarget: { value } }) => state.set(value), signal),
+    h('input', { ...passThroughProps, value: $.get() }),
+    bindProperty('value', $, signal),
+    on('change', ({ currentTarget: { value } }) => $.set(value), signal),
   )

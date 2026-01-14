@@ -1,5 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, onTo, renderWhen } from '@fun-land/fun-web'
+import { Component, enhance, h, on, renderWhen } from '@fun-land/fun-web'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
@@ -79,7 +79,7 @@ export const ApproachSelect: Component<{
     h('button', {
       className: styles.approachButton,
     }),
-    onTo('click', () => openState.set(true), signal),
+    on('click', () => openState.set(true), signal),
   )
 
   const approachLabel = h('label', {}, ['Approach'])
@@ -139,7 +139,7 @@ const ApproachPopover: Component<{
   const optionButtons = approaches.map((value) => {
     const button = enhance(
       h('button', { value, type: 'button', className: styles.option }, []),
-      onTo('click', () => onSelect(value), signal),
+      on('click', () => onSelect(value), signal),
     )
     return { button, value }
   })

@@ -1,9 +1,14 @@
 import { FunState } from '@fun-land/fun-state'
-import { pipeVal } from '../common'
-import { Component, on, h } from '@fun-land/fun-web'
+import { Component, on, h, enhance, bindProperty } from '@fun-land/fun-web'
 
-export const Textarea: Component<{
-  state: FunState<string>
-  passThroughProps: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>
-}> = (signal, { state, passThroughProps }) =>
-  on(h('textarea', { ...passThroughProps, value: state.get() }), 'change', pipeVal(state.set), signal)
+export interface TextareaProps {
+  $: FunState<string>
+  passThroughProps?: Partial<HTMLTextAreaElement> & Record<string, unknown>
+}
+
+export const Textarea: Component<TextareaProps, HTMLTextAreaElement> = (signal, { $, passThroughProps }) =>
+  enhance(
+    h('textarea', { ...passThroughProps }),
+    bindProperty('value', $, signal),
+    on('input', ({ currentTarget: { value } }) => $.set(value), signal),
+  )

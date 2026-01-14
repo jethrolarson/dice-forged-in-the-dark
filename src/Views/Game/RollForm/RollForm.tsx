@@ -1,18 +1,16 @@
 import { DocumentReference } from '@firebase/firestore'
 import { removeAt } from '@fun-land/accessor'
-import { FunState, merge } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState, merge } from '@fun-land/fun-state'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { important } from 'csx'
-import { FC } from 'react'
-import Icon from 'react-icons-kit'
-import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { stylesheet } from 'typestyle'
-import { pipeVal } from '../../../common'
+import { Icon } from '../../../components/Icon'
+import icons from 'react-icons-kit/fa/chevronLeft'
 import { Textarea } from '../../../components/Textarea'
 import { TextInput } from '../../../components/TextInput'
 import { DieColor, DieResult, DieType } from '../../../Models/Die'
 import { RollResult } from '../../../Models/GameModel'
-import { RollConfig, RollType, ValuationType } from '../../../Models/RollConfig'
+import { RollConfig, ValuationType } from '../../../Models/RollConfig'
 import { nextColor } from '../Die'
 import { DicePool, Rollable } from './DicePool'
 import { sendRoll } from './FormCommon'
@@ -76,8 +74,8 @@ const styles = stylesheet({
 const rollDie = (): number => Math.floor(Math.random() * 6) + 1
 
 const zeroDicePool: Rollable[] = [
-  { type: 'd6', color: 'red' },
-  { type: 'd6', color: 'red' },
+  { type: 'd6', color: 'red', id: 'zero_0' },
+  { type: 'd6', color: 'red', id: 'zero_1' },
 ]
 
 const reset = (state: FunState<RollFormState>): void =>
@@ -112,13 +110,13 @@ export const roll =
     reset(state)
   }
 
-export const RollForm: FC<{
+export const RollForm: Component<{
   rollConfig: RollConfig
   gdoc: DocumentReference
   uid: string
   userDisplayName: string
-}> = ({ rollConfig, gdoc, uid, userDisplayName }) => {
-  const s = useFunState<RollFormState>({
+}> = (signal, { rollConfig, gdoc, uid, userDisplayName }) => {
+  const s = funState<RollFormState>({
     note: '',
     rollState: ['', '', '', '', '', '', '', '', '', ''], // TODO don't flatten this. Use a transform of rollConfig instead
     rollType: '',
@@ -126,9 +124,8 @@ export const RollForm: FC<{
     valuationType: 'Action',
     dicePool: [],
   })
-  const { rollType, username, valuationType, dicePool } = s.get()
+
   const rollTypes = rollConfig.rollTypes ?? []
-  const currentConfig = rollTypes.find((rt) => rt.name === rollType)
   const removeDie = (idx: number): void => s.prop('dicePool').mod(removeAt(idx))
   const setDice = (id: string, dice: DieType[], color: keyof typeof DieColor): void => {
     s.prop('dicePool').mod((ds) => {
@@ -139,95 +136,150 @@ export const RollForm: FC<{
   }
   const changeColor = (idx: number): void => s.focus(accessDieColor(idx)).mod(nextColor)
 
-  return (
-    <form className={styles.form} onSubmit={(e): void => e.preventDefault()}>
-      {currentConfig ? (
-        <div className={styles.formWrap}>
-          <DicePool
-            dicePool={dicePool}
-            roll={roll(gdoc, uid, s, userDisplayName)}
-            disabled={!currentConfig.excludeCharacter && !username.length}
-            removeDie={removeDie}
-            changeColor={changeColor}
-          />
-          <div className={styles.formGrid}>
-            <h3 className={styles.heading}>
-              <button
-                className={styles.backButton}
-                onClick={(e): void => {
-                  e.preventDefault()
-                  reset(s)
-                }}>
-                {}
-                <Icon icon={chevronLeft} size={18} className={styles.backButtonIcon} />
-              </button>
-              {currentConfig.name}
-            </h3>
-            <Sections state={s.prop('rollState')} sections={currentConfig.sections} setDice={setDice} />
-            {!currentConfig.excludeCharacter && (
-              <label className={styles.character}>
-                <TextInput
-                  passThroughProps={{
-                    placeholder: 'Character',
-                    type: 'text',
-                    name: 'username',
-                    required: true,
-                  }}
-                  state={s.prop('username')}
-                />
-              </label>
-            )}
-            {currentConfig?.valuationType === 'Ask' && (
-              <label>
-                Rules:{' '}
-                <select
-                  onChange={pipeVal((val) => s.prop('valuationType').set(val as ValuationType))}
-                  value={valuationType}>
-                  <option key="Action">Action</option>
-                  <option key="Resist">Resist</option>
-                  <option key="Sum">Sum</option>
-                  <option key="Highest">Highest</option>
-                  <option key="Lowest">Lowest</option>
-                </select>
-              </label>
-            )}
-            <label className={styles.note}>
-              <Textarea
-                passThroughProps={{
-                  placeholder: 'Description',
-                  className: styles.noteInput,
-                  onInput: (e): void => {
-                    const target = e.target as HTMLTextAreaElement
-                    target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
-                  },
-                }}
-                state={s.prop('note')}
-              />
-            </label>
-            {/* {!currentConfig.hideDice && <DiceSelection $={s.prop('dicePool')} />} */}
-          </div>
-        </div>
-      ) : (
-        <RollTypes s={s} rollTypes={rollTypes} />
-      )}
-    </form>
-  )
-}
-
-const RollTypes: FC<{ rollTypes: RollType[]; s: FunState<RollFormState> }> = ({ rollTypes, s }) => (
-  <div className={styles.rollTypes}>
-    {rollTypes.map((rt) => (
-      <button
-        key={rt.name}
-        onClick={(): void => {
+  // Create roll type selector
+  const rollTypesContainer = h('div', { className: styles.rollTypes }, [])
+  const rollTypeButtons = rollTypes.map((rt) => {
+    const btn = h('button', {}, [rt.name, ' '])
+    enhance(
+      btn,
+      on(
+        'click',
+        () => {
           s.prop('rollType').set(rt.name)
           const vt = rollTypes.find(({ name }) => name === rt.name)?.valuationType
           if (vt) {
             s.prop('valuationType').set(vt === 'Ask' ? 'Action' : vt)
           }
-        }}>
-        {rt.name}{' '}
-      </button>
-    ))}
-  </div>
-)
+        },
+        signal,
+      ),
+    )
+    return btn
+  })
+  rollTypesContainer.append(...rollTypeButtons)
+
+  // Create form content container
+  const formContent = h('div', {}, [])
+  formContent.style.display = 'none'
+
+  // Compute disabled state
+  const disabled$ = funState(true)
+  s.watch(signal, ({ rollType, username }) => {
+    const currentConfig = rollTypes.find((rt) => rt.name === rollType)
+    disabled$.set(!currentConfig?.excludeCharacter && !username.length)
+  })
+
+  // Watch state and rebuild form when roll type changes
+  s.prop('rollType').watch(signal, (rollType) => {
+    const currentConfig = rollTypes.find((rt) => rt.name === rollType)
+
+    if (currentConfig) {
+      const backButton = h('button', { className: styles.backButton }, [
+        Icon(signal, { icon: icons.chevronLeft, size: 18 }),
+      ])
+      enhance(
+        backButton,
+        on(
+          'click',
+          (e: Event) => {
+            e.preventDefault()
+            reset(s)
+          },
+          signal,
+        ),
+      )
+
+      const characterLabel = !currentConfig.excludeCharacter
+        ? h('label', { className: styles.character }, [
+            TextInput(signal, {
+              passThroughProps: {
+                placeholder: 'Character',
+                type: 'text',
+                name: 'username',
+                required: true,
+              },
+              $: s.prop('username'),
+            }),
+          ])
+        : null
+
+      const valuationLabel = h('label', {}, ['Rules: '])
+      const valuationSelect =
+        currentConfig?.valuationType === 'Ask'
+          ? (() => {
+              const select = h('select', {}, [
+                h('option', { value: 'Action' }, ['Action']),
+                h('option', { value: 'Resist' }, ['Resist']),
+                h('option', { value: 'Sum' }, ['Sum']),
+                h('option', { value: 'Highest' }, ['Highest']),
+                h('option', { value: 'Lowest' }, ['Lowest']),
+              ])
+              enhance(
+                select,
+                on(
+                  'change',
+                  (e) => s.prop('valuationType').set((e.target as HTMLSelectElement).value as ValuationType),
+                  signal,
+                ),
+              )
+              s.prop('valuationType').watch(signal, (value) => {
+                ;(select as HTMLSelectElement).value = value
+              })
+              valuationLabel.appendChild(select)
+              return valuationLabel
+            })()
+          : null
+
+      const textareaEl = Textarea(signal, {
+        passThroughProps: {
+          placeholder: 'Description',
+          className: styles.noteInput,
+        },
+        $: s.prop('note'),
+      })
+      enhance(
+        textareaEl,
+        on(
+          'input',
+          (e: Event) => {
+            const target = e.target as HTMLTextAreaElement
+            target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
+          },
+          signal,
+        ),
+      )
+
+      formContent.replaceChildren(
+        h('div', { className: styles.formWrap }, [
+          DicePool(signal, {
+            dicePool$: s.prop('dicePool'),
+            roll: roll(gdoc, uid, s, userDisplayName),
+            disabled$,
+            removeDie,
+            changeColor,
+          }),
+          h('div', { className: styles.formGrid }, [
+            h('h3', { className: styles.heading }, [backButton, currentConfig.name]),
+            Sections(signal, { state: s.prop('rollState'), sections: currentConfig.sections, setDice }),
+            characterLabel,
+            valuationSelect,
+            h('label', { className: styles.note }, [textareaEl]),
+          ]),
+        ]),
+      )
+      rollTypesContainer.style.display = 'none'
+      formContent.style.display = ''
+    } else {
+      formContent.style.display = 'none'
+      rollTypesContainer.style.display = ''
+    }
+  })
+
+  const form = h('form', { className: styles.form }, [formContent, rollTypesContainer])
+  enhance(
+    form,
+    on('submit', (e: Event) => e.preventDefault(), signal),
+  )
+
+  return form
+}

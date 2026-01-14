@@ -1,12 +1,10 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, h } from '@fun-land/fun-web'
 import { repeat } from 'ramda'
-import { useEffect } from 'react'
 import { stylesheet } from 'typestyle'
 import { NumberSpinner } from '../../../components/NumberSpinner'
 import { DieColor, DieType } from '../../../Models/Die'
 import { ModifierT } from '../../../Models/RollConfig'
-import { div, e, label } from '../../../util'
 
 const styles = stylesheet({
   label: {
@@ -14,23 +12,27 @@ const styles = stylesheet({
     fontSize: '1.17rem',
   },
 })
-export const Modifier = ({
-  setDice,
-  section,
-  state,
-}: {
+
+export const Modifier: Component<{
   section: ModifierT
   setDice: (id: string, type: DieType[], color: keyof typeof DieColor) => void
   state?: FunState<string>
-}) => {
+}> = (signal, { setDice, section, state }) => {
+  const s = funState(section.baseModifier)
+
   const updateDice = (v: number) => {
     setDice(section.name, repeat(section.dieType, v), section.dieColor)
     v !== 0 && state?.set(`${section.name}: ${v}`)
   }
-  const s = useFunState(section.baseModifier)
-  useEffect(() => updateDice(s.get()), [section])
-  return div(null, [
-    section.showLabel && label({ className: styles.label, title: section.tooltip }, [section.name]),
-    e(NumberSpinner, { min: section.min, max: section.max, state: s }),
+
+  // Watch spinner state and update dice
+  s.watch(signal, updateDice)
+
+  // Initial dice setup
+  updateDice(s.get())
+
+  return h('div', {}, [
+    section.showLabel && h('label', { className: styles.label, title: section.tooltip }, [section.name]),
+    NumberSpinner(signal, { min: section.min, max: section.max, state: s }),
   ])
 }

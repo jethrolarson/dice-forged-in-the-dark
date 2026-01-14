@@ -1,4 +1,4 @@
-import { h, on } from '@fun-land/fun-web'
+import { h, on, enhance } from '@fun-land/fun-web'
 import { DiceParams } from './Dice'
 import { DiceRenderer } from './DiceRenderer'
 
@@ -23,11 +23,10 @@ export const DiceScene = (
     style: { width: '100%', height: '100%', overflow: 'hidden', touchAction: 'none' },
   })
   const { onPointerDown, onPointerMove, onResize, onPointerUp, dice } = new DiceRenderer(el, onDiceRollComplete, false)
-
   const onContextMenu = (e: MouseEvent) => e.preventDefault()
-  on(el, 'pointerdown', onPointerDown, signal)
+  enhance(el, on('pointerdown', onPointerDown, signal), on('contextmenu', onContextMenu, signal))
+
   window.addEventListener('pointerup', onPointerUp, { signal })
-  on(el, 'contextmenu', onContextMenu, signal)
   window.addEventListener('pointermove', onPointerMove, { signal })
   window.addEventListener('resize', onResize, { signal })
 

@@ -94,7 +94,7 @@ export const FortuneForm: Component<{
       h('p', {}, ['OP rolls 0-3 dice based on standing of entity']),
       h('div', {}, [
         TextInput(signal, {
-          state: $.prop('pool'),
+          $: $.prop('pool'),
           passThroughProps: { name: 'pool', placeholder: 'Context' },
         }),
       ]),
@@ -104,7 +104,7 @@ export const FortuneForm: Component<{
           type: 'text',
           name: 'username',
         },
-        state: $.prop('username'),
+        $: $.prop('username'),
       }),
       Note(signal, { $: $.prop('note') }),
     ]),

@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 import { RollOption } from '../Models/RollConfig'
 
@@ -46,7 +46,7 @@ export const ButtonSelect: Component<{
         },
         [optName],
       ),
-      onTo('click', () => onSelect(optName), signal),
+      on('click', () => onSelect(optName), signal),
     )
   })
 
@@ -68,7 +68,7 @@ export const FunButtonSelect: Component<{
     const optName = typeof opt === 'string' ? opt : opt.name
     const button = enhance(
       h('button', { type: 'button', className: styles.option }, [optName]),
-      onTo('click', () => $.set(optName), signal),
+      on('click', () => $.set(optName), signal),
     )
     return { button, optName }
   })

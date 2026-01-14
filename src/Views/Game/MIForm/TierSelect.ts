@@ -1,7 +1,7 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { classes, style, stylesheet } from 'typestyle'
 import { dieColors, DieColorType } from '../../../Models/Die'
-import { Component, enhance, h, onTo, renderWhen } from '@fun-land/fun-web'
+import { Component, enhance, h, on, renderWhen } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   TierSelect: {
@@ -78,7 +78,7 @@ export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
 
   const tierButton = enhance(
     h('button', { className: styles.tierButton }, []),
-    onTo('click', () => openState.set(true), signal),
+    on('click', () => openState.set(true), signal),
   )
 
   // Watch tier state and update button content
@@ -99,7 +99,7 @@ const TierPopover: Component<{ $: FunState<Tier>; state: FunState<boolean> }> = 
   const optionButtons = tierOpts.map((value) => {
     const button = enhance(
       h('button', { value, type: 'button', className: styles.option }, []),
-      onTo(
+      on(
         'click',
         () => {
           $.set(value)
@@ -119,5 +119,9 @@ const TierPopover: Component<{ $: FunState<Tier>; state: FunState<boolean> }> = 
     })
   })
 
-  return h('div', { className: styles.popover }, optionButtons.map((el) => el.button))
+  return h(
+    'div',
+    { className: styles.popover },
+    optionButtons.map((el) => el.button),
+  )
 }

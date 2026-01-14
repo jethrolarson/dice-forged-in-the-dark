@@ -25,5 +25,5 @@
     "allowJs": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["src"]
+  "include": ["src", "types"]
 }

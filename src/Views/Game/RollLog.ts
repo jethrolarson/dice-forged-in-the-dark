@@ -199,7 +199,7 @@ export const RollLogItem: Component<{ result: RollResult; isLast: boolean }> = (
       ]),
       h('em', { className: styles.time }, [
         user,
-        !isToday(date) && new Date(date).toLocaleDateString(),
+        !isToday(date) ? new Date(date).toLocaleDateString() : '',
         ' ',
         new Date(date).toLocaleTimeString(),
       ]),

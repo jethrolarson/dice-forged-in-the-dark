@@ -1,9 +1,12 @@
 import { FunState } from '@fun-land/fun-state'
-import { h } from '../util'
+import { enhance, Component, h, on, bindProperty } from '@fun-land/fun-web'
 
-export const Select = ({ $, options }: { options: readonly string[]; $: FunState<string> }) => {
-  const v = $.get()
-  return h('select', { onChange: ({ currentTarget: { value } }) => $.set(value) }, [
-    options.map((op) => h('option', { selected: op === v, key: op }, [op])),
-  ])
+export const Select: Component<{ options: readonly string[]; $: FunState<string> }> = (signal, { $, options }) => {
+  const optionEls = options.map((op) => h('option', { value: op }, [op]))
+
+  return enhance(
+    h('select', {}, optionEls),
+    bindProperty('value', $, signal),
+    on('change', ({ currentTarget: { value } }) => $.set(value), signal),
+  )
 }

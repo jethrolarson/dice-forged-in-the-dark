@@ -1,5 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, onTo } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { classes, keyframes, stylesheet } from 'typestyle'
 import { DieColor } from '../../../Models/Die'
 
@@ -71,7 +71,7 @@ export const FactorSelect: Component<{
   const factorLabel = h('label', { className: styles.label }, ['Factor'])
   const factorButton = enhance(
     h('button', { className: styles.button }, []),
-    onTo('click', () => openState.set(true), signal),
+    on('click', () => openState.set(true), signal),
   )
 
   const onSelect = (val: Factor) => {
@@ -83,7 +83,7 @@ export const FactorSelect: Component<{
   const optionButtons = [Factor.Disadvantaged, Factor.Even, Factor.Dominant].map((value) => {
     const button = enhance(
       h('button', { value, type: 'button', className: styles.option }, [value]),
-      onTo('click', () => onSelect(value), signal),
+      on('click', () => onSelect(value), signal),
     )
     return { button, value }
   })
@@ -132,7 +132,5 @@ export const FactorSelect: Component<{
     popover.classList.toggle(styles.hidden, !isOpen)
   })
 
-  return h('div', {}, [
-    h('div', { className: styles.FactorSelect }, [factorLabel, factorButton, popover]),
-  ])
+  return h('div', {}, [h('div', { className: styles.FactorSelect }, [factorLabel, factorButton, popover])])
 }

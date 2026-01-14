@@ -1,9 +1,8 @@
 import { index } from '@fun-land/accessor'
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, enhance, h, onTo } from '@fun-land/fun-web'
 import { hsla } from 'csx'
 import { always, not } from 'ramda'
-import React, { FC, useEffect } from 'react'
 import { stylesheet } from 'typestyle'
 import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderSection, RollOptionSection, SectionT } from '../../../Models/RollConfig'
@@ -55,29 +54,50 @@ const styles = stylesheet({
       },
     },
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
-const Section: FC<{
+const Section: Component<{
   state: FunState<string[]>
   section: SectionT
   setDice: (id: string, type: DieType[], color: keyof typeof DieColor) => void
-}> = ({ section, state, setDice }) => (
-  <div key={section.name} className={styles.Section}>
-    {section.optionGroups.map((og) => (
-      <OptGroup key={og.name} optionGroup={og} state={state.focus(index(og.line))} setDice={setDice} />
-    ))}
-  </div>
-)
+}> = (signal, { section, state, setDice }) =>
+  h(
+    'div',
+    { className: styles.Section },
+    section.optionGroups.map((og) =>
+      OptGroup(signal, { optionGroup: og, state: state.focus(index(og.line)), setDice }),
+    ),
+  )
 
-const Builder: FC<{
+const Builder: Component<{
   state: FunState<string>
   section: BuilderSection
   setDice: (id: string, type: DieType[], color: keyof typeof DieColor) => void
-}> = ({ section, state, setDice }) => {
-  const builderState = useFunState({ values: section.optionGroups.map(always('')), isOpen: false })
-  const { values, isOpen } = builderState.get()
-  const setOpen = builderState.prop('isOpen').set
-  useEffect(() => {
+}> = (signal, { section, state, setDice }) => {
+  const builderState = funState({ values: section.optionGroups.map(always('')), isOpen: false })
+
+  const builderDiv = h('div', { className: styles.Builder }, [
+    ...section.optionGroups.map((og, i) =>
+      OptGroup(signal, { optionGroup: og, state: builderState.prop('values').focus(index(i)), setDice }),
+    ),
+    enhance(
+      h('button', {}, ['Done']),
+      on('click', () => builderState.prop('isOpen').set(false), signal),
+    ),
+  ])
+
+  const expanderButton = enhance(
+    h('button', { className: styles.expander }, []),
+    on('click', () => builderState.prop('isOpen').set(true), signal),
+  )
+
+  builderDiv.classList.add(styles.hidden)
+
+  // Watch builder state
+  builderState.watch(signal, ({ values, isOpen }) => {
     const dieColor = section.dieColor ?? 'white'
     if (values.every(Boolean)) {
       state.set(values.join(section.separator ?? ' '))
@@ -85,51 +105,51 @@ const Builder: FC<{
     } else {
       section.addDieWhenSelected && setDice(section.name, [], dieColor)
     }
-  }, values)
-  return isOpen ? (
-    <div key={section.name} className={styles.Builder}>
-      {section.optionGroups.map((og, i) => (
-        <OptGroup
-          key={og.name}
-          optionGroup={og}
-          state={builderState.prop('values').focus(index(i))}
-          setDice={setDice}
-        />
-      ))}
-      <button onClick={(): void => setOpen(false)} disabled={values.some(Boolean) && values.some(not)}>
-        Done
-      </button>
-    </div>
-  ) : (
-    <button className={styles.expander} onClick={() => setOpen(true)}>
-      {state.get() || section.name}
-    </button>
-  )
+
+    // Update UI based on open state
+    if (isOpen) {
+      builderDiv.classList.remove(styles.hidden)
+      expanderButton.classList.add(styles.hidden)
+      // Update done button disabled state
+      const doneButton = builderDiv.querySelector('button:last-child') as HTMLButtonElement
+      if (doneButton) {
+        doneButton.disabled = values.some(Boolean) && values.some(not)
+      }
+    } else {
+      builderDiv.classList.add(styles.hidden)
+      expanderButton.classList.remove(styles.hidden)
+    }
+  })
+
+  // Watch state for expander button text
+  state.watch(signal, (value) => {
+    expanderButton.textContent = value || section.name
+  })
+
+  return h('div', {}, [builderDiv, expanderButton])
 }
 
-export const Sections: FC<{
+export const Sections: Component<{
   state: FunState<string[]>
   sections: RollOptionSection[]
   setDice: (id: string, dice: DieType[], color: keyof typeof DieColor) => void
-}> = ({ sections, state, setDice }) => (
-  <>
-    {sections.map((section, i) =>
-      section.sectionType === 'builder' ? (
-        <Builder key={section.name} state={state.focus(index(section.line))} section={section} setDice={setDice} />
-      ) : section.sectionType === 'modifier' ? (
-        <Modifier
-          key={section.name}
-          section={section}
-          setDice={setDice}
-          state={typeof section.line === 'undefined' ? undefined : state.focus(index(section.line))}
-        />
-      ) : section.sectionType === 'row' ? (
-        <div className={styles.sectionRow} key={`row${i}`}>
-          <Sections state={state} sections={section.sections} setDice={setDice} />
-        </div>
-      ) : (
-        <Section key={section.name} state={state} section={section} setDice={setDice} />
-      ),
-    )}
-  </>
-)
+}> = (signal, { sections, state, setDice }) =>
+  h(
+    'div',
+    { style: { display: 'contents' } },
+    sections.map((section, i) =>
+      section.sectionType === 'builder'
+        ? Builder(signal, { state: state.focus(index(section.line)), section, setDice })
+        : section.sectionType === 'modifier'
+          ? Modifier(signal, {
+              section,
+              setDice,
+              state: typeof section.line === 'undefined' ? undefined : state.focus(index(section.line)),
+            })
+          : section.sectionType === 'row'
+            ? h('div', { className: styles.sectionRow }, [
+                Sections(signal, { state, sections: section.sections, setDice }),
+              ])
+            : Section(signal, { state, section, setDice }),
+    ),
+  )

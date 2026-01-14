@@ -7,14 +7,13 @@ import {
   query,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import { funState } from '@fun-land/fun-state'
-import { Component, enhance, h, onTo, renderWhen } from '@fun-land/fun-web'
+import { funState, merge } from '@fun-land/fun-state'
+import { Component, enhance, h, bindListChildren, on } from '@fun-land/fun-web'
 import { important } from 'csx'
-import { mergeRight } from 'ramda'
-import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 import { classes, stylesheet } from 'typestyle'
+import { Icon } from '../../components/Icon'
 import { LoadedGameState, LogItem } from '../../Models/GameModel'
 import { playCritSound, playMessageSound, playRollSound, playWarnSound, playWinSound } from '../../sounds'
 import { AshworldForm } from './AshworldForm/AshworldForm'
@@ -23,6 +22,7 @@ import { RollForm } from './RollForm/RollForm'
 import { RollLogItem } from './RollLog'
 import { RollMessage } from './RollMessage'
 import { valuateActionRoll } from './RollValuation'
+import { prop } from '@fun-land/accessor'
 
 const styles = stylesheet({
   Game: {},
@@ -207,7 +207,7 @@ export const LoadedGame: Component<{
   onSnapshot(gdoc, (ss) => {
     const data = ss.data()
     setPageTitle((data?.title as string) ?? '')
-    data && mergeRight(state)(data)
+    data && merge(state)(data)
   })
 
   // Subscribe to rolls collection
@@ -232,12 +232,12 @@ export const LoadedGame: Component<{
   // Create static elements
   const showDiceButton = enhance(
     h('button', {}, [h('span', { className: styles.showDiceApp }, ['Show Dice App'])]),
-    onTo('click', () => hidden.set(false), signal),
+    on('click', () => hidden.set(false), signal),
   )
 
   const minimizeButton = enhance(
     h('button', { className: styles.minimize, title: 'Click to Minimize' }, ['_']),
-    onTo('click', () => hidden.set(true), signal),
+    on('click', () => hidden.set(true), signal),
   )
 
   const iframe = h('iframe', {
@@ -256,7 +256,7 @@ export const LoadedGame: Component<{
 
   const diceColSection = h('section', { className: styles.right }, [
     h('div', { className: styles.heading }, [
-      h('a', { href: '#/' }, [h(Icon, { icon: chevronLeft, size: 28 })]),
+      h('a', { href: '#/' }, [Icon(signal, { icon: chevronLeft, size: 28 })]),
       titleH1,
       h(
         'a',
@@ -265,7 +265,7 @@ export const LoadedGame: Component<{
           className: styles.settingsButton,
           title: 'Game Settings',
         },
-        [h(Icon, { icon: gears, size: 28 })],
+        [Icon(signal, { icon: gears, size: 28 })],
       ),
       minimizeButton,
     ]),
@@ -275,13 +275,27 @@ export const LoadedGame: Component<{
 
   scrollRef.className = styles.log
 
-  // Watch state and update DOM
-  state.watch(signal, ({ rolls, title, rollsLoaded, miroId, rollConfig }) => {
-    // Update title
+  // Create form container elements
+  const miFormContainer = h('div', {}, [MIForm(signal, { gdoc, uid, scrollToBottom, userDisplayName })])
+  const ashworldFormContainer = h('div', {}, [AshworldForm(signal, { uid, gdoc, scrollToBottom, userDisplayName })])
+  const oldRollFormContainer = h('div', {}, [])
+
+  miFormContainer.style.display = 'none'
+  ashworldFormContainer.style.display = 'none'
+  oldRollFormContainer.style.display = 'none'
+
+  rollFormContainer.appendChild(miFormContainer)
+  rollFormContainer.appendChild(ashworldFormContainer)
+  rollFormContainer.appendChild(oldRollFormContainer)
+
+  // Watch title
+  state.prop('title').watch(signal, (title) => {
     titleH1.textContent = title
     titleH1.className = classes(styles.title, title.length > 14 && styles.title_small)
+  })
 
-    // Update miro iframe
+  // Watch miroId
+  state.prop('miroId').watch(signal, (miroId) => {
     if (miroId) {
       iframe.setAttribute('src', `https://miro.com/app/live-embed/${miroId}/`)
       leftSection.replaceChildren(iframe)
@@ -290,34 +304,53 @@ export const LoadedGame: Component<{
       leftSection.replaceChildren()
       minimizeButton.style.display = 'none'
     }
+  })
 
-    // Update rolls log
-    if (!rollsLoaded) {
+  // Watch rolls with keyedChildren
+  state.prop('rollsLoaded').watch(signal, (loaded) => {
+    if (!loaded) {
       scrollRef.replaceChildren(loadingP)
-    } else if (rolls.length) {
-      rollsContainer.replaceChildren(
-        ...rolls.map((r, i) =>
-          h('article', {}, [
-            r.kind === 'Message'
-              ? h(RollMessage, { result: r })
-              : r.kind === 'Roll'
-                ? h(RollLogItem, { result: r, isLast: i === rolls.length - 1 })
-                : null,
-          ]),
-        ),
-      )
+    } else {
       scrollRef.replaceChildren(rollsContainer)
-    } else {
-      scrollRef.replaceChildren()
     }
+  })
 
-    // Update roll form
+  bindListChildren({
+    signal,
+    key: prop<LogItem>()('id'),
+    state: state.prop('rolls'),
+    row: ({ state: rollState, signal: childSignal }) => {
+      const roll = rollState.get()
+      const rolls = state.prop('rolls').get()
+      const index = rolls.findIndex((r) => r.id === roll.id)
+      const isLast = index === rolls.length - 1
+
+      return h('article', {}, [
+        roll.kind === 'Message'
+          ? RollMessage(childSignal, { result: roll })
+          : roll.kind === 'Roll'
+            ? RollLogItem(childSignal, { result: roll, isLast })
+            : null,
+      ])
+    },
+  })(rollsContainer)
+
+  // Watch rollConfig and update form
+  state.prop('rollConfig').watch(signal, (rollConfig) => {
     if (rollConfig.system === 'mala-incognita') {
-      rollFormContainer.replaceChildren(h(MIForm, { gdoc, uid, scrollToBottom, userDisplayName }))
+      miFormContainer.style.display = ''
+      ashworldFormContainer.style.display = 'none'
+      oldRollFormContainer.style.display = 'none'
     } else if (rollConfig.system === 'Ash World 0.1') {
-      rollFormContainer.replaceChildren(h(AshworldForm, { uid, gdoc, scrollToBottom, userDisplayName }))
+      miFormContainer.style.display = 'none'
+      ashworldFormContainer.style.display = ''
+      oldRollFormContainer.style.display = 'none'
     } else {
-      rollFormContainer.replaceChildren(h(RollForm, { rollConfig, gdoc, uid, userDisplayName }))
+      miFormContainer.style.display = 'none'
+      ashworldFormContainer.style.display = 'none'
+      oldRollFormContainer.style.display = ''
+      // Replace old roll form since it changes completely based on config
+      oldRollFormContainer.replaceChildren(RollForm(signal, { rollConfig, gdoc, uid, userDisplayName }))
     }
   })
 
