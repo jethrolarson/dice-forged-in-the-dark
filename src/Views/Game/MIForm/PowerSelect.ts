@@ -41,7 +41,11 @@ const styles = stylesheet({
     animationName: textPulse,
   },
   input: {
-    textAlign: 'center',
+    $nest: {
+      "&&": {
+        textAlign: 'center',
+      },
+    },
     width: 135,
   },
 })

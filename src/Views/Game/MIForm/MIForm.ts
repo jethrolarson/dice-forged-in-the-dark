@@ -28,15 +28,28 @@ export const Form: Component<{
     scrollToBottom()
   })
 
-  // Get current roll type for active state
-  const rollType = $.get()
+  // Create derived active states for each form
+  const actionActive$ = funState(false)
+  const assistActive$ = funState(false)
+  const qualityActive$ = funState(false)
+  const fortuneActive$ = funState(false)
+  const messageActive$ = funState(false)
+
+  // Update active states when roll type changes
+  $.watch(signal, (rollType) => {
+    actionActive$.set(rollType === RollType.action)
+    assistActive$.set(rollType === RollType.assist)
+    qualityActive$.set(rollType === RollType.quality)
+    fortuneActive$.set(rollType === RollType.fortune)
+    messageActive$.set(rollType === RollType.message)
+  })
 
   return h('div', {}, [
-    ActionForm(signal, { roll, uid, active: rollType == RollType.action }),
-    AssistForm(signal, { roll, uid, active: rollType == RollType.assist }),
-    QualityForm(signal, { roll, uid, active: rollType == RollType.quality }),
-    FortuneForm(signal, { roll, uid, active: rollType == RollType.fortune }),
-    MessageForm(signal, { gdoc, active: rollType == RollType.message }),
+    ActionForm(signal, { roll, uid, active$: actionActive$ }),
+    AssistForm(signal, { roll, uid, active$: assistActive$ }),
+    QualityForm(signal, { roll, uid, active$: qualityActive$ }),
+    FortuneForm(signal, { roll, uid, active$: fortuneActive$ }),
+    MessageForm(signal, { gdoc, active$: messageActive$ }),
   ])
 }
 

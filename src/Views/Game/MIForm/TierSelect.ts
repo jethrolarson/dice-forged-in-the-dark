@@ -1,7 +1,7 @@
-import { funState, FunState } from '@fun-land/fun-state'
+import { FunState } from '@fun-land/fun-state'
 import { classes, style, stylesheet } from 'typestyle'
 import { dieColors, DieColorType } from '../../../Models/Die'
-import { Component, enhance, h, on, renderWhen } from '@fun-land/fun-web'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   TierSelect: {
@@ -23,19 +23,29 @@ const styles = stylesheet({
   },
   tierButton: {
     margin: '0 4px',
-  },
+    lineHeight: '2rem',
+    anchorName: '--tier-anchor',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   popover: {
-    zIndex: 1,
-    display: 'grid',
-    gap: 5,
     position: 'absolute',
+    gap: 5,
+    zIndex: 1,
     width: '46px',
     backgroundColor: '#061318',
     padding: 5,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-  },
+    outline: `1px solid var(--bc-focus)`,
+    // (typestyle doesn't know these props, but it will still emit them)
+    positionAnchor: '--tier-anchor',
+    positionArea: 'center center',
+    display: 'none',
+    $nest: {
+      '&:popover-open': {
+        display: 'grid',
+      },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   option: {
     display: 'block',
     width: '100%',
@@ -74,54 +84,78 @@ export const TierLabel: Component<{ tier: Tier }> = (signal, { tier }) =>
 const tierOpts = [Tier.T0, Tier.T1, Tier.T2, Tier.T3, Tier.T4, Tier.T5] as const
 
 export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
-  const openState = funState(false)
-
-  const tierButton = enhance(
-    h('button', { className: styles.tierButton }, []),
-    on('click', () => openState.set(true), signal),
+  const popover = h(
+    'div',
+    {
+      className: styles.popover,
+      popover: 'auto',
+    },
+    [],
   )
 
-  // Watch tier state and update button content
-  $.watch(signal, (tier) => {
-    tierButton.replaceChildren(TierLabel(signal, { tier }))
-  })
+  const tierButton = h(
+    'button',
+    {
+      className: styles.tierButton,
+      type: 'button',
+      'aria-haspopup': 'menu',
+      'aria-expanded': 'false',
+    },
+    [],
+  )
 
-  // TODO use popover api
-  // useClickOutside(popoverRef, hide)
-  return h('div', { className: styles.TierSelect }, [
+  // Keep aria-expanded in sync even when UA closes (click-outside / Esc)
+  const syncExpanded = () => {
+    tierButton.setAttribute('aria-expanded', popover.matches(':popover-open') ? 'true' : 'false')
+  }
+
+  popover.addEventListener('toggle', syncExpanded, { signal })
+
+  enhance(
     tierButton,
-    renderWhen({ component: TierPopover, signal, props: { $, state: openState }, state: openState }),
-  ])
-}
+    on(
+      'click',
+      () => {
+        if (popover.matches(':popover-open')) popover.hidePopover()
+        else popover.showPopover()
+        // (toggle event will also fire; this is fine either way)
+        syncExpanded()
+      },
+      signal,
+    ),
+  )
 
-const TierPopover: Component<{ $: FunState<Tier>; state: FunState<boolean> }> = (signal, { $, state }) => {
-  // Create option buttons once with stable handlers
+  const onSelect = (val: Tier) => {
+    popover.hidePopover()
+    $.set(val)
+  }
+
+  const tierButtonLabel = h('span', {}, [])
+
   const optionButtons = tierOpts.map((value) => {
     const button = enhance(
       h('button', { value, type: 'button', className: styles.option }, []),
-      on(
-        'click',
-        () => {
-          $.set(value)
-          state.set(false)
-        },
-        signal,
-      ),
+      on('click', () => onSelect(value), signal),
     )
-    button.replaceChildren(TierLabel(signal, { tier: value }))
-    return { button, value }
+    const label = h('span', {}, [])
+    button.appendChild(label)
+    return { button, value, label }
   })
 
-  // Watch tier state and update selected styling
+  optionButtons.forEach(({ button }) => popover.appendChild(button))
+  tierButton.appendChild(tierButtonLabel)
+
+  // Watch tier state and update button content and selected styling
   $.watch(signal, (tier) => {
-    optionButtons.forEach(({ button, value }) => {
+    tierButtonLabel.textContent = tier
+    tierButtonLabel.className = style({ color: `var(--bg-die-${tierColorMap[tier]})` })
+
+    optionButtons.forEach(({ button, value, label }) => {
       button.className = classes(styles.option, tier === value && styles.selected)
+      label.textContent = value
+      label.className = style({ color: `var(--bg-die-${tierColorMap[value]})` })
     })
   })
 
-  return h(
-    'div',
-    { className: styles.popover },
-    optionButtons.map((el) => el.button),
-  )
+  return h('div', { className: styles.TierSelect }, [tierButton, popover])
 }

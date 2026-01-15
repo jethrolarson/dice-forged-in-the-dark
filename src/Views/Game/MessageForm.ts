@@ -2,7 +2,8 @@ import { DocumentReference, addDoc, collection } from '@firebase/firestore'
 import { style, stylesheet } from 'typestyle'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
-import { Component, funState, h } from '@fun-land/fun-web'
+import { Component, FunState, funState, h } from '@fun-land/fun-web'
+import { hideUnless } from '../../util'
 
 const styles = stylesheet({
   MessageForm: {
@@ -17,9 +18,6 @@ const styles = stylesheet({
       },
     },
   },
-  hidden: {
-    display: 'none',
-  },
 })
 
 interface MessageFormState {
@@ -27,9 +25,9 @@ interface MessageFormState {
   username: string
 }
 
-export const MessageForm: Component<{ gdoc: DocumentReference; active?: boolean }> = (
+export const MessageForm: Component<{ gdoc: DocumentReference; active$: FunState<boolean> }> = (
   signal,
-  { gdoc, active = true },
+  { gdoc, active$ },
 ) => {
   const state = funState<MessageFormState>({ note: '', username: '' })
   const { username, note } = state.get()
@@ -46,28 +44,33 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active?: boolean 
     })
     state.prop('username').set('')
   }
-  return h('form', { onSubmit: postMessage, className: active ? styles.MessageForm : styles.hidden }, [
-    h('label', {}, [
-      Textarea(signal, {
-        passThroughProps: {
-          required: true,
-          placeholder: 'Note',
-          className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
-        },
-        $: state.prop('note'),
-      }),
+  return hideUnless(
+    active$,
+    signal,
+  )(
+    h('form', { onSubmit: postMessage, className: styles.MessageForm }, [
+      h('label', {}, [
+        Textarea(signal, {
+          passThroughProps: {
+            required: true,
+            placeholder: 'Note',
+            className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
+          },
+          $: state.prop('note'),
+        }),
+      ]),
+      h('label', { key: 'character' }, [
+        TextInput(signal, {
+          passThroughProps: {
+            required: true,
+            placeholder: 'Character',
+            type: 'text',
+            name: 'username',
+          },
+          $: state.prop('username'),
+        }),
+      ]),
+      h('button', { key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
     ]),
-    h('label', { key: 'character' }, [
-      TextInput(signal, {
-        passThroughProps: {
-          required: true,
-          placeholder: 'Character',
-          type: 'text',
-          name: 'username',
-        },
-        $: state.prop('username'),
-      }),
-    ]),
-    h('button', { key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
-  ])
+  )
 }

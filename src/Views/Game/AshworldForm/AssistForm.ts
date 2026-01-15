@@ -80,7 +80,7 @@ export const AssistForm: Component<{ uid: string; roll: (rollResult: NewRoll) =>
     DicePool(signal, {
       sendRoll: rollIt(roll, uid, $),
 
-      disableAdd: true,
+      disableAdd$: funState(true),
     }),
     h('div', { className: styles.form }, [
       FormHeading(signal, { title: 'Assist' }),

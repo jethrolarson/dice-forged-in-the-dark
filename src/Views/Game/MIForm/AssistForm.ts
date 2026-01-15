@@ -73,13 +73,13 @@ const init_AssistForm$ = (): AssistForm$ => ({
 export const AssistForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}> = (signal, { uid, roll, active }) => {
+  active$: FunState<boolean>
+}> = (signal, { uid, roll, active$ }) => {
   const $ = funState<AssistForm$>(init_AssistForm$())
 
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
-    disableAdd: false,
+    disableAdd$: funState(false),
   })
 
   const diceApi = dicePool.$api
@@ -89,8 +89,8 @@ export const AssistForm: Component<{
     const shouldEnable = username && note && pool
     shouldEnable ? diceApi.enable() : diceApi.disable()
 
-    // Manage dice based on tier
-    if (active) {
+    // Manage dice based on tier (only when active)
+    if (active$.get()) {
       if (tier === Tier.T0) {
         diceApi.addDie(dieColors.black, 'zero')
         diceApi.addDie(dieColors.black, 'zero2')
@@ -104,7 +104,7 @@ export const AssistForm: Component<{
   })
 
   // Create all components once
-  const container = h('div', { className: active ? styles.AssistForm : styles.hidden }, [
+  const container = h('div', {}, [
     dicePool,
     h('div', { className: styles.form }, [
       FormHeading(signal, { title: 'Assist Roll' }),
@@ -124,6 +124,11 @@ export const AssistForm: Component<{
       Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
     ]),
   ])
+
+  // Watch active state to toggle visibility
+  active$.watch(signal, (active) => {
+    container.className = active ? styles.AssistForm : styles.hidden
+  })
 
   return container
 }

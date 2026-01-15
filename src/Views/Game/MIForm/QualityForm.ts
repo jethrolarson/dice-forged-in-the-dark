@@ -1,5 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, h } from '@fun-land/fun-web'
+import { Component, enhance, h } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
@@ -8,6 +8,7 @@ import { DicePool } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
+import { bindClass, hideUnless, notAcc } from '../../../util'
 
 const styles = stylesheet({
   QualityForm: {
@@ -70,13 +71,13 @@ const init_QualityForm$ = (): QualityForm$ => ({
 export const QualityForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}> = (signal, { uid, roll, active }) => {
+  active$: FunState<boolean>
+}> = (signal, { uid, roll, active$ }) => {
   const $ = funState<QualityForm$>(init_QualityForm$())
 
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
-    disableAdd: false,
+    disableAdd$: funState(false),
   })
 
   const diceApi = dicePool.$api
@@ -87,22 +88,25 @@ export const QualityForm: Component<{
   })
 
   // Create all components once
-  const container = h('div', { className: active ? styles.QualityForm : styles.hidden }, [
-    dicePool,
-    h('div', { className: styles.form }, [
-      FormHeading(signal, { title: 'Quality Roll' }),
-      h('p', {}, ['You succeed but how well?']),
-      h('p', {}, ['Roll T dice where T is highest Tier of your remaining dice']),
-      h('div', {}, [
-        TextInput(signal, {
-          $: $.prop('pool'),
-          passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
-        }),
+  const container = enhance(
+    h('div', { className: styles.QualityForm }, [
+      dicePool,
+      h('div', { className: styles.form }, [
+        FormHeading(signal, { title: 'Quality Roll' }),
+        h('p', {}, ['You succeed but how well?']),
+        h('p', {}, ['Roll T dice where T is highest Tier of your remaining dice']),
+        h('div', {}, [
+          TextInput(signal, {
+            $: $.prop('pool'),
+            passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
+          }),
+        ]),
+        Character(signal, { $: $.prop('username') }),
+        Note(signal, { $: $.prop('note') }),
       ]),
-      Character(signal, { $: $.prop('username') }),
-      Note(signal, { $: $.prop('note') }),
     ]),
-  ])
+    hideUnless(active$, signal),
+  )
 
   return container
 }

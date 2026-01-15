@@ -1,5 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, h } from '@fun-land/fun-web'
+import { Component, enhance, h } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { DicePool } from '../../../components/DicePool'
@@ -7,6 +7,7 @@ import { FormHeading } from '../../../components/FormHeading'
 import { Note } from '../../../components/Note'
 import { TextInput } from '../../../components/TextInput'
 import { NewRoll } from '../RollForm/FormCommon'
+import { hideUnless } from '../../../util'
 
 const styles = stylesheet({
   FortuneForm: {
@@ -69,13 +70,13 @@ const init_FortuneForm$ = (): FortuneForm$ => ({
 export const FortuneForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}> = (signal, { uid, roll, active }) => {
+  active$: FunState<boolean>
+}> = (signal, { uid, roll, active$ }) => {
   const $ = funState<FortuneForm$>(init_FortuneForm$())
 
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
-    disableAdd: false,
+    disableAdd$: funState(false),
   })
 
   const diceApi = dicePool.$api
@@ -86,29 +87,32 @@ export const FortuneForm: Component<{
   })
 
   // Create all components once
-  const container = h('div', { className: active ? styles.FortuneForm : styles.hidden }, [
-    dicePool,
-    h('div', { className: styles.form }, [
-      FormHeading(signal, { title: 'Fortune Roll' }),
-      h('p', {}, ['Did a non-player entity succeed in their plans?']),
-      h('p', {}, ['OP rolls 0-3 dice based on standing of entity']),
-      h('div', {}, [
+  const container = enhance(
+    h('div', { className: styles.FortuneForm }, [
+      dicePool,
+      h('div', { className: styles.form }, [
+        FormHeading(signal, { title: 'Fortune Roll' }),
+        h('p', {}, ['Did a non-player entity succeed in their plans?']),
+        h('p', {}, ['OP rolls 0-3 dice based on standing of entity']),
+        h('div', {}, [
+          TextInput(signal, {
+            $: $.prop('pool'),
+            passThroughProps: { name: 'pool', placeholder: 'Context' },
+          }),
+        ]),
         TextInput(signal, {
-          $: $.prop('pool'),
-          passThroughProps: { name: 'pool', placeholder: 'Context' },
+          passThroughProps: {
+            placeholder: 'Entity',
+            type: 'text',
+            name: 'username',
+          },
+          $: $.prop('username'),
         }),
+        Note(signal, { $: $.prop('note') }),
       ]),
-      TextInput(signal, {
-        passThroughProps: {
-          placeholder: 'Entity',
-          type: 'text',
-          name: 'username',
-        },
-        $: $.prop('username'),
-      }),
-      Note(signal, { $: $.prop('note') }),
     ]),
-  ])
+    hideUnless(active$, signal),
+  )
 
   return container
 }

@@ -1,5 +1,5 @@
-import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on, renderWhen } from '@fun-land/fun-web'
+import { FunState } from '@fun-land/fun-state'
+import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
@@ -24,14 +24,22 @@ const styles = stylesheet({
   popover: {
     position: 'absolute',
     width: 135,
-    display: 'grid',
+    gap: 5,
     zIndex: 2,
     backgroundColor: '#061318',
-    top: '50%',
-    right: 0,
-    transform: 'translate(0%, -50%)',
+    padding: 7,
     outline: `1px solid var(--bc-focus)`,
-  },
+    // (typestyle doesn't know these props, but it will still emit them)
+    positionAnchor: '--approach-anchor',
+    positionArea: 'top center',
+    display: 'none',
+    $nest: {
+      '&:popover-open': {
+        display: 'grid',
+      },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   active: {
     fontWeight: 'bold',
     animation: '0.8s infinite alternate',
@@ -59,8 +67,9 @@ const styles = stylesheet({
   },
   approachButton: {
     width: 135,
-    textAlign: 'left',
-  },
+    anchorName: '--approach-anchor',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   required: {
     borderColor: 'red !important',
   },
@@ -73,16 +82,64 @@ export const ApproachSelect: Component<{
   removeDie: (id: string) => unknown
   addDie: (color: number, id: string) => unknown
 }> = (signal, { $, addDie, removeDie }) => {
-  const openState = funState(false)
+  const approachLabel = h('label', {}, ['Approach'])
 
-  const approachButton = enhance(
-    h('button', {
-      className: styles.approachButton,
-    }),
-    on('click', () => openState.set(true), signal),
+  const popover = h(
+    'div',
+    {
+      className: styles.popover,
+      popover: 'auto',
+    },
+    [],
   )
 
-  const approachLabel = h('label', {}, ['Approach'])
+  const approachButton = h(
+    'button',
+    {
+      className: styles.approachButton,
+      type: 'button',
+      anchorName: '--approach-anchor',
+      'aria-haspopup': 'menu',
+      'aria-expanded': 'false',
+    },
+    [],
+  )
+
+  // Keep aria-expanded in sync even when UA closes (click-outside / Esc)
+  const syncExpanded = () => {
+    approachButton.setAttribute('aria-expanded', popover.matches(':popover-open') ? 'true' : 'false')
+  }
+
+  popover.addEventListener('toggle', syncExpanded, { signal })
+
+  enhance(
+    approachButton,
+    on(
+      'click',
+      () => {
+        if (popover.matches(':popover-open')) popover.hidePopover()
+        else popover.showPopover()
+        // (toggle event will also fire; this is fine either way)
+        syncExpanded()
+      },
+      signal,
+    ),
+  )
+
+  const onSelect = (value: string) => {
+    popover.hidePopover()
+    $.prop('approach').mod((a) => (a === value ? '' : value))
+  }
+
+  const optionButtons = approaches.map((value) => {
+    const button = enhance(
+      h('button', { value, type: 'button', className: styles.option }, []),
+      on('click', () => onSelect(value), signal),
+    )
+    return { button, value }
+  })
+
+  optionButtons.forEach(({ button }) => popover.appendChild(button))
 
   // Watch state and update DOM + dice pool
   $.watch(signal, ({ approach, tier }) => {
@@ -112,44 +169,6 @@ export const ApproachSelect: Component<{
     }
   })
 
-  const onSelect = (value: string) => {
-    openState.set(false)
-    $.prop('approach').mod((a) => (a === value ? '' : value))
-  }
-
-  return h('div', { className: styles.Approach }, [
-    approachLabel,
-    TierSelect(signal, { $: $.prop('tier') }),
-    approachButton,
-    renderWhen({
-      component: ApproachPopover,
-      signal,
-      props: { $, onSelect, state: openState },
-      state: openState,
-    }),
-  ])
-}
-
-const ApproachPopover: Component<{
-  $: FunState<Approach$>
-  onSelect: (value: string) => void
-  state: FunState<boolean>
-}> = (signal, { $, onSelect }) => {
-  // Create option buttons once with stable handlers
-  const optionButtons = approaches.map((value) => {
-    const button = enhance(
-      h('button', { value, type: 'button', className: styles.option }, []),
-      on('click', () => onSelect(value), signal),
-    )
-    return { button, value }
-  })
-
-  const popover = h(
-    'div',
-    { className: styles.popover },
-    optionButtons.map((el) => el.button),
-  )
-
   // Watch approach state and update option styling and content
   $.prop('approach').watch(signal, (approach) => {
     optionButtons.forEach(({ button, value }) => {
@@ -158,5 +177,10 @@ const ApproachPopover: Component<{
     })
   })
 
-  return popover
+  return h('div', { className: styles.Approach }, [
+    approachLabel,
+    TierSelect(signal, { $: $.prop('tier') }),
+    approachButton,
+    popover,
+  ])
 }

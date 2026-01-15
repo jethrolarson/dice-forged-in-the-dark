@@ -80,7 +80,7 @@ export const FortuneForm: Component<{
   return h('div', { className: styles.AssistForm }, [
     DicePool(signal, {
       sendRoll: rollIt(roll, uid, $),
-      disableAdd: false,
+      disableAdd$: funState(false),
     }),
     h('div', { key: 'form', className: styles.form }, [
       FormHeading(signal, { title: 'Fortune' }),

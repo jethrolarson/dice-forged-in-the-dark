@@ -86,7 +86,7 @@ export const ActionForm: Component<{
   return h('div', { className: styles.ActionForm }, [
     DicePool(signal, {
       sendRoll: rollIt(roll, uid, $),
-      disableAdd: true,
+      disableAdd$: funState(true),
     }),
     h('div', { className: styles.form }, [
       FormHeading(signal, { title: 'Action' }),

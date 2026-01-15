@@ -3,12 +3,13 @@ import { FunState } from '@fun-land/fun-state'
 import { Component, h } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { reject } from 'ramda'
-import { classes, keyframes, style, stylesheet } from 'typestyle'
+import { keyframes, style, stylesheet } from 'typestyle'
 import { colorNameFromHex, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
 import { nextColor } from '../Views/Game/Die'
 import { DiceScene, DiceSceneApi } from './DiceScene/DiceScene'
 import { DiceSelection } from './DiceSelection'
+import { bindClass } from '../util'
 
 const spin = keyframes({
   from: {
@@ -113,10 +114,10 @@ type DicePoolElement = HTMLDivElement & { $api: DiceSceneApi }
 
 interface DicePoolProps {
   sendRoll: (results: DieResult[]) => unknown
-  disableAdd?: boolean
+  disableAdd$: FunState<boolean>
 }
 
-export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { sendRoll, disableAdd = false }) => {
+export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { sendRoll, disableAdd$ }) => {
   const diceScene = DiceScene(signal, {
     onDiceRollComplete: (results) => {
       sendRoll(
@@ -145,7 +146,7 @@ export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { se
       { key: 'diceSelection', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
       DiceSelection(signal, { addDie, add0Dice, reset }),
     ),
-    h('div', { className: classes(styles.diceBox, disableAdd && styles.roundTop) }, [diceScene]),
+    bindClass(styles.roundTop, disableAdd$, signal)(h('div', { className: styles.diceBox }, diceScene)),
   ])
 
   // Cast to augmented element type and add the API

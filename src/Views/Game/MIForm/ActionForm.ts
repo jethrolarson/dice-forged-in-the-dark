@@ -11,6 +11,7 @@ import { Factor, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { Tier } from './TierSelect'
+import { hideUnless } from '../../../util'
 
 const styles = stylesheet({
   ActionForm: {
@@ -80,13 +81,13 @@ const init_ActionForm$ = (): ActionForm$ => ({
 export const ActionForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}> = (signal, { uid, roll, active }) => {
+  active$: FunState<boolean>
+}> = (signal, { uid, roll, active$ }) => {
   const $ = funState<ActionForm$>(init_ActionForm$())
 
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
-    disableAdd: false,
+    disableAdd$: funState(false),
   })
 
   const diceApi = dicePool.$api
@@ -103,8 +104,8 @@ export const ActionForm: Component<{
     const shouldEnable = username && note
     shouldEnable ? diceApi.enable() : diceApi.disable()
 
-    // Manage zero dice
-    if (active) {
+    // Manage zero dice (only when active)
+    if (active$.get()) {
       if (approach$.tier === Tier.T0 && power$.tier === Tier.T0 && factor$ === Factor.Disadvantaged) {
         addDie(dieColors.black, 'zero')
         addDie(dieColors.black, 'zero2')
@@ -116,31 +117,35 @@ export const ActionForm: Component<{
   })
 
   // Create all components once
-  const container = h('div', { className: active ? styles.ActionForm : styles.hidden }, [
-    dicePool,
-    h('div', { className: styles.form }, [
-      FormHeading(signal, { title: 'Action Roll' }),
-      h('p', {}, ['Do something risky or stressful']),
-      ApproachSelect(signal, {
-        $: $.prop('approach$'),
-        addDie,
-        removeDie,
-      }),
-      PowerSelect(signal, {
-        $: $.prop('power$'),
-        addDie,
-        removeDie,
-      }),
-      FactorSelect(signal, {
-        $: $.prop('factor$'),
-        addDie,
-        removeDie,
-        active,
-      }),
-      Character(signal, { $: $.prop('username'), passThroughProps: { required: true } }),
-      Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
+  const container = hideUnless(
+    active$,
+    signal,
+  )(
+    h('div', { className: styles.ActionForm }, [
+      dicePool,
+      h('div', { className: styles.form }, [
+        FormHeading(signal, { title: 'Action Roll' }),
+        h('p', {}, ['Do something risky or stressful']),
+        ApproachSelect(signal, {
+          $: $.prop('approach$'),
+          addDie,
+          removeDie,
+        }),
+        PowerSelect(signal, {
+          $: $.prop('power$'),
+          addDie,
+          removeDie,
+        }),
+        FactorSelect(signal, {
+          $: $.prop('factor$'),
+          addDie,
+          removeDie,
+        }),
+        Character(signal, { $: $.prop('username'), passThroughProps: { required: true } }),
+        Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
+      ]),
     ]),
-  ])
+  )
 
   return container
 }
