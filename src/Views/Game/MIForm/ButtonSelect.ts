@@ -1,28 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { classes, style, stylesheet } from 'typestyle'
-
-const styles = stylesheet({
-  buttons: {
-    columnCount: 2,
-    columnGap: 5,
-  },
-  label: {
-    margin: '0 0 4px',
-    fontSize: '1.17rem',
-  },
-  option: {
-    display: 'block',
-    width: '100%',
-    marginBottom: 5,
-  },
-  selected: {
-    backgroundColor: 'var(--bg-die-green) !important',
-    borderColor: 'var(--bg-die-green) !important',
-    color: '#000',
-    cursor: 'default',
-  },
-})
+import { classes } from '../../../util'
+import { styles } from './ButtonSelect.css'
 
 export type ButtonOption = string | { value: string; content: string | Element }
 
@@ -51,7 +30,7 @@ export const ButtonSelect: Component<{
 
   return h('div', { className }, [
     title && h('label', { className: styles.label, title: tooltip }, [title]),
-    h('div', { className: classes(styles.buttons, style({ columnCount: columns })) }, buttonElements),
+    h('div', { className: styles.buttons, style: { '--column-count': columns } as Record<string, string | number> }, buttonElements),
   ])
 }
 
@@ -81,7 +60,7 @@ export const FunButtonSelect: Component<{
     label && h('label', { className: styles.label, title: tooltip }, [label]),
     h(
       'div',
-      { className: classes(styles.buttons, style({ columnCount: columns })) },
+      { className: styles.buttons, style: { '--column-count': columns } as Record<string, string | number> },
       buttonElements.map((el) => el.button),
     ),
   ])

@@ -1,5 +1,4 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
@@ -9,32 +8,7 @@ import { FormHeading } from '../../../components/FormHeading'
 import { Rollable } from '../RollForm/DicePool'
 import { Component, h, enhance } from '@fun-land/fun-web'
 import { hideUnless } from '../../../util'
-
-const styles = stylesheet({
-  AssistForm: {
-    minHeight: 200,
-    display: 'grid',
-    gap: 12,
-    padding: 12,
-    margin: 0,
-    background: 'var(--bg-game)',
-    overflowY: 'auto',
-    flex: 1,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1.17rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-  poolSelect: { display: 'flex', alignItems: 'center' },
-})
+import { styles } from './ResistForm.css'
 
 interface AssistForm$ {
   dicePool: DicePool$

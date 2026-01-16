@@ -1,72 +1,13 @@
 import { Acc, append, index } from '@fun-land/accessor'
-import { FunState } from '@fun-land/fun-state'
-import { Component, h } from '@fun-land/fun-web'
-import { important } from 'csx'
+import { FunRead } from '@fun-land/fun-state'
+import { Component, h, bindClass } from '@fun-land/fun-web'
 import { reject } from 'ramda'
-import { keyframes, style, stylesheet } from 'typestyle'
 import { colorNameFromHex, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
 import { nextColor } from '../Views/Game/Die'
 import { DiceScene, DiceSceneApi } from './DiceScene/DiceScene'
 import { DiceSelection } from './DiceSelection'
-import { bindClass } from '../util'
-
-const spin = keyframes({
-  from: {
-    transform: 'rotate(0deg)',
-  },
-  to: {
-    transform: 'rotate(360deg)',
-  },
-})
-
-const styles = stylesheet({
-  dieButton: {
-    cursor: 'grab',
-    appearance: 'none',
-    opacity: 1,
-    padding: 0,
-    background: 'transparent',
-    backgroundColor: important('transparent'),
-    border: 'none',
-    animationName: spin,
-    animationDuration: '1500ms',
-    animationIterationCount: 'infinite',
-    animationTimingFunction: 'linear',
-    $nest: {
-      '&:hover': {
-        animationDuration: '5000ms',
-      },
-    },
-  },
-  DicePool: {
-    border: '2px solid var(--border-color)',
-    borderRadius: 8,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  diceBox: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    alignContent: 'center',
-    justifyContent: 'center',
-    background: 'var(--bg-dice)',
-    flexGrow: 1,
-    gap: 20,
-    minHeight: 400,
-    userSelect: 'none',
-  },
-  rollButton: {
-    fontWeight: 'bold',
-    borderWidth: '2px 0 0',
-    borderRadius: '0 0 5px 5px',
-    background: 'var(--bg-button-selected)',
-  },
-  roundTop: {
-    borderRadius: '6px 6px 0 0',
-  },
-})
+import { styles } from './DicePool.css'
 
 export interface Rollable {
   type: DieType
@@ -114,28 +55,38 @@ type DicePoolElement = HTMLDivElement & { $api: DiceSceneApi }
 
 interface DicePoolProps {
   sendRoll: (results: DieResult[]) => unknown
-  disableAdd$: FunState<boolean>
-  active$: FunState<boolean>
+  disableAdd$: FunRead<boolean>
+  active$: FunRead<boolean>
 }
 
 export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { sendRoll, disableAdd$, active$ }) => {
   let diceScene: ReturnType<typeof DiceScene> | null = null
-  
+
   const placeholderApi: DiceSceneApi = {
-    addDie: () => { /* No-op when inactive */ },
-    removeDie: () => { /* No-op when inactive */ },
-    enable: () => { /* No-op when inactive */ },
-    disable: () => { /* No-op when inactive */ },
-    reset: () => { /* No-op when inactive */ },
+    addDie: () => {
+      /* No-op when inactive */
+    },
+    removeDie: () => {
+      /* No-op when inactive */
+    },
+    enable: () => {
+      /* No-op when inactive */
+    },
+    disable: () => {
+      /* No-op when inactive */
+    },
+    reset: () => {
+      /* No-op when inactive */
+    },
     enabled: false,
   }
 
   const diceBox = h('div', { className: styles.diceBox })
-  
+
   const container = h('div', { className: styles.DicePool }, [
     h(
       'div',
-      { key: 'diceSelection', className: style({ display: 'grid', padding: 4, borderBottom: '2px solid #554889' }) },
+      { key: 'diceSelection', className: styles.diceSelection },
       DiceSelection(signal, {
         addDie: (color: DieColorType) => {
           element.$api.addDie(dieColors[color])

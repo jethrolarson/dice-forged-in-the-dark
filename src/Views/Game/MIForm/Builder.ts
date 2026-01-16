@@ -1,36 +1,6 @@
-import { hsla } from 'csx'
-import { stylesheet } from 'typestyle'
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
-
-const styles = stylesheet({
-  Builder: {
-    display: 'grid',
-    gap: 10,
-    border: '1px solid var(--border-color)',
-    backgroundColor: hsla(0, 0, 0, 0.3).toString(),
-    padding: 5,
-  },
-  expander: {
-    borderWidth: 1,
-    textAlign: 'left',
-    $nest: {
-      '&::before': {
-        float: 'right',
-        content: '"ᐁ"',
-      },
-    },
-  },
-  footer: {
-    marginTop: 10,
-    display: 'grid',
-    gap: 5,
-    gridTemplateColumns: '1fr 1fr',
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { styles } from './Builder.css'
 
 export const SubForm: Component<{
   onDone: () => unknown

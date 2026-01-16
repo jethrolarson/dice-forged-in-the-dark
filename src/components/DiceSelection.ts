@@ -1,38 +1,15 @@
 import { Component, h, hx } from '@fun-land/fun-web'
-import { important } from 'csx'
-import { stylesheet } from 'typestyle'
 import { DieColor, DieColorType } from '../Models/Die'
-import { Die, DieProps, nextColor } from '../Views/Game/Die'
-import { funState } from '@fun-land/fun-state'
-
-const styles = stylesheet({
-  dieButton: {
-    cursor: 'pointer',
-    appearance: 'none',
-    opacity: 0.6,
-    padding: 0,
-    backgroundColor: important('transparent'),
-    border: 'none',
-    $nest: {
-      '&:hover': {
-        opacity: 1,
-      },
-    },
-  },
-  diceButtons: {
-    justifySelf: 'center',
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-})
+import { Die, DieVisualState, nextColor } from '../Views/Game/Die'
+import { funState, FunState } from '@fun-land/fun-state'
+import { styles } from './DiceSelection.css'
 
 export const DiceSelection: Component<{
   addDie: (color: DieColorType) => unknown
   add0Dice: () => unknown
   reset: () => unknown
 }> = (signal, { addDie, add0Dice, reset }) => {
-  const dieState: DieProps['$'] = funState({
+  const dieState: FunState<DieVisualState> = funState({
     dieColor: DieColor.white,
     dotColor: '#000',
   })
@@ -60,7 +37,7 @@ export const DiceSelection: Component<{
     Die(signal, { value: 6, $: dieState, size: 28 }),
   )
 
-  const roll0State: DieProps['$'] = funState({
+  const roll0State: FunState<DieVisualState> = funState({
     dieColor: DieColor.black,
     dotColor: '#000',
   })

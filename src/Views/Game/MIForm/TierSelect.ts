@@ -1,62 +1,8 @@
 import { FunState } from '@fun-land/fun-state'
-import { classes, style, stylesheet } from 'typestyle'
+import { classes } from '../../../util'
 import { dieColors, DieColorType } from '../../../Models/Die'
 import { Component, h, hx } from '@fun-land/fun-web'
-
-const styles = stylesheet({
-  TierSelect: {
-    position: 'relative',
-    $nest: {
-      button: {
-        border: 'none',
-        fontSize: '2rem',
-        padding: '1px 2px 2px',
-        fontSmooth: 'always',
-        $nest: {
-          '&:hover': {
-            background: 'transparent',
-            textShadow: '1px 1px 3px',
-          },
-        },
-      },
-    },
-  },
-  tierButton: {
-    margin: '0 4px',
-    lineHeight: '2rem',
-    anchorName: '--tier-anchor',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any,
-  popover: {
-    position: 'absolute',
-    gap: 5,
-    zIndex: 1,
-    width: '46px',
-    backgroundColor: '#061318',
-    padding: 5,
-    outline: `1px solid var(--bc-focus)`,
-    // (typestyle doesn't know these props, but it will still emit them)
-    positionAnchor: '--tier-anchor',
-    positionArea: 'center center',
-    display: 'none',
-    $nest: {
-      '&:popover-open': {
-        display: 'grid',
-      },
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any,
-  option: {
-    display: 'block',
-    width: '100%',
-  },
-  selected: {
-    backgroundColor: 'var(--bg-die-green) !important',
-    borderColor: 'var(--bg-die-green) !important',
-    color: '#000',
-    cursor: 'default',
-  },
-})
+import { styles } from './TierSelect.css'
 
 export enum Tier {
   T0 = '⨷',
@@ -79,7 +25,7 @@ export const tierColorMap = {
 export const tierColor = (tier: Tier): number => dieColors[tierColorMap[tier]]
 
 export const TierLabel: Component<{ tier: Tier }> = (signal, { tier }) =>
-  h('span', { className: style({ color: `var(--bg-die-${tierColorMap[tier]})` }) }, [tier])
+  h('span', { style: { color: `var(--bg-die-${tierColorMap[tier]})` } as Record<string, string> }, [tier])
 
 const tierOpts = [Tier.T0, Tier.T1, Tier.T2, Tier.T3, Tier.T4, Tier.T5] as const
 
@@ -142,12 +88,12 @@ export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
   // Watch tier state and update button content and selected styling
   $.watch(signal, (tier) => {
     tierButtonLabel.textContent = tier
-    tierButtonLabel.className = style({ color: `var(--bg-die-${tierColorMap[tier]})` })
+    tierButtonLabel.style.color = `var(--bg-die-${tierColorMap[tier]})`
 
     optionButtons.forEach(({ button, value, label }) => {
       button.className = classes(styles.option, tier === value && styles.selected)
       label.textContent = value
-      label.className = style({ color: `var(--bg-die-${tierColorMap[value]})` })
+      label.style.color = `var(--bg-die-${tierColorMap[value]})`
     })
   })
 

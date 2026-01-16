@@ -1,6 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, h } from '@fun-land/fun-web'
-import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
@@ -12,30 +11,7 @@ import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
 import { Tier, tierColor } from './TierSelect'
 import { hideUnless } from '../../../util'
-
-const styles = stylesheet({
-  ActionForm: {
-    minHeight: 200,
-    display: 'grid',
-    gap: 12,
-    margin: 12,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1.17rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { styles } from './ActionForm.css'
 
 interface ActionForm$ {
   approach$: Approach$

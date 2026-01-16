@@ -1,6 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, enhance, h } from '@fun-land/fun-web'
-import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { DicePool } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
@@ -8,30 +7,7 @@ import { Note } from '../../../components/Note'
 import { TextInput } from '../../../components/TextInput'
 import { NewRoll } from '../RollForm/FormCommon'
 import { hideUnless } from '../../../util'
-
-const styles = stylesheet({
-  FortuneForm: {
-    minHeight: 200,
-    display: 'grid',
-    gap: 12,
-    margin: 12,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1.17rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { styles } from './FortuneForm.css'
 
 interface FortuneForm$ {
   pool: string

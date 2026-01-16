@@ -1,10 +1,9 @@
-import { funState, FunState } from '@fun-land/fun-state'
+import { funState, FunRead, FunState, mapRead } from '@fun-land/fun-state'
 import { Component, h, hx, bindListChildren, enhance } from '@fun-land/fun-web'
-import { important } from 'csx'
-import { stylesheet } from 'typestyle'
 import { DieColor, DieType } from '../../../Models/Die'
-import { Die, DieProps } from '../Die'
+import { Die, DieVisualState } from '../Die'
 import { prop } from '@fun-land/accessor'
+import { styles } from './DicePool.css'
 
 export interface Rollable {
   type: DieType
@@ -12,45 +11,26 @@ export interface Rollable {
   id: string
 }
 
-const styles = stylesheet({
-  dieButton: {
-    cursor: 'pointer',
-    appearance: 'none',
-    opacity: 1,
-    padding: 0,
-    backgroundColor: important('transparent'),
-    border: 'none',
-  },
-  DicePool: {
-    border: '2px solid var(--border-color)',
-    borderRadius: 8,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  diceBox: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'var(--bg-dice)',
-    flexGrow: 1,
-    gap: 10,
-  },
-  rollButton: {
-    fontWeight: 'bold',
-    borderWidth: '2px 0 0',
-    borderRadius: '0 0 5px 5px',
-  },
-})
-
 export const DicePool: Component<{
   dicePool$: FunState<Rollable[]>
   roll: () => unknown
   removeDie: (index: number) => unknown
   changeColor: (index: number) => void
-  disabled$: FunState<boolean>
+  disabled$: FunRead<boolean>
 }> = (signal, { dicePool$, roll, removeDie, changeColor, disabled$ }) => {
-  const rollButton = hx('button', { signal, props: { className: styles.rollButton, type: 'button' }, on: { click: () => roll() } }, ['ROLL 0'])
+  const rollButton = hx(
+    'button',
+    {
+      signal,
+      props: { className: styles.rollButton, type: 'button' },
+      bind: {
+        textContent: mapRead(dicePool$, (dicePool) => `ROLL ${dicePool.length}`),
+        disabled: disabled$,
+      },
+      on: { click: () => roll() },
+    },
+    [],
+  )
 
   const diceBox = enhance(
     h('div', { className: styles.diceBox }, []),
@@ -68,7 +48,7 @@ export const DicePool: Component<{
         const dicePool = dicePool$.get()
         const index = dicePool.findIndex((d) => d.id === die.id)
 
-        const dieVisualState: DieProps['$'] = funState({
+        const dieVisualState: FunState<DieVisualState> = funState({
           dieColor: DieColor[c],
           dotColor: '#000',
         })
@@ -88,16 +68,6 @@ export const DicePool: Component<{
       },
     }),
   )
-
-  // Watch dice pool length for roll button
-  dicePool$.watch(signal, (dicePool) => {
-    rollButton.textContent = `ROLL ${dicePool.length}`
-  })
-
-  // Watch disabled state
-  disabled$.watch(signal, (disabled) => {
-    rollButton.disabled = disabled
-  })
 
   return h('div', { className: styles.DicePool }, [diceBox, rollButton])
 }

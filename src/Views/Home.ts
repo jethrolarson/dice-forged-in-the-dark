@@ -2,13 +2,13 @@ import type { User as FSUser } from '@firebase/auth'
 import { defaultTheme, PersistedState } from '../Models/GameModel'
 import { funState } from '@fun-land/fun-state'
 import { getDoc, getFirestore } from '@firebase/firestore'
-import { stylesheet } from 'typestyle'
 import { Login } from './Login/Login'
 import { getUser } from '../services/getUser'
 import { getDocRef } from '../services/getDoc'
 import { User } from '../Models/User'
 import { ActiveGames } from './ActiveGames'
 import { Component, h } from '@fun-land/fun-web'
+import { styles } from './Home.css'
 
 type GameState = PersistedState & { id: string }
 
@@ -55,14 +55,6 @@ export const UserHome: Component<{ user: FSUser }> = (signal, { user }) => {
 
   return container
 }
-
-const styles = stylesheet({
-  Home: {
-    margin: '30px auto',
-    padding: '0 30px',
-    maxWidth: 800,
-  },
-})
 
 export const Home: Component = (signal) => {
   const userState = getUser(signal)

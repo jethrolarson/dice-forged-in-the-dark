@@ -1,6 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, h } from '@fun-land/fun-web'
-import { stylesheet } from 'typestyle'
 import { dieColors, DieResult } from '../../../Models/Die'
 import { Character } from '../../../components/Character'
 import { ComboBox } from '../../../components/ComboBox'
@@ -11,30 +10,7 @@ import { NewRoll } from '../RollForm/FormCommon'
 import { approaches } from './ApproachSelect'
 import { powers } from './PowerSelect'
 import { Tier, tierColor, TierSelect } from './TierSelect'
-
-const styles = stylesheet({
-  AssistForm: {
-    minHeight: 200,
-    display: 'grid',
-    gap: 12,
-    margin: 12,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1.17rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { styles } from './AssistForm.css'
 
 interface AssistForm$ {
   pool: string

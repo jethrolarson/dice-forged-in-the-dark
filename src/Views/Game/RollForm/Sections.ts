@@ -1,63 +1,13 @@
 import { index } from '@fun-land/accessor'
-import { funState, FunState } from '@fun-land/fun-state'
+import { funState, FunState, mapRead } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { hsla } from 'csx'
 import { always, not } from 'ramda'
-import { stylesheet } from 'typestyle'
 import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderSection, RollOptionSection, SectionT } from '../../../Models/RollConfig'
 import { toArray } from '../../../util'
 import { Modifier } from './Modifier'
 import { OptGroup } from './OptGroup'
-
-const styles = stylesheet({
-  Section: {
-    display: 'flex',
-    gap: 10,
-  },
-  Builder: {
-    display: 'grid',
-    gap: 10,
-    border: '1px solid var(--border-color)',
-    backgroundColor: hsla(0, 0, 0, 0.3).toString(),
-    padding: 5,
-  },
-  heading: {
-    fontWeight: 'normal',
-    display: 'block',
-    border: 0,
-    textAlign: 'left',
-    $nest: {
-      '&::before': {
-        float: 'right',
-        content: '"ᐃ"',
-        marginRight: -5,
-      },
-    },
-  },
-  expander: {
-    borderWidth: 1,
-    textAlign: 'left',
-    $nest: {
-      '&::before': {
-        float: 'right',
-        content: '"ᐁ"',
-      },
-    },
-  },
-  sectionRow: {
-    display: 'flex',
-    gap: 5,
-    $nest: {
-      '&>*': {
-        flexGrow: 1,
-      },
-    },
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { styles } from './Sections.css'
 
 const Section: Component<{
   state: FunState<string[]>
@@ -90,7 +40,12 @@ const Builder: Component<{
 
   const expanderButton = hx(
     'button',
-    { signal, props: { className: styles.expander }, on: { click: () => builderState.prop('isOpen').set(true) } },
+    {
+      signal,
+      props: { className: styles.expander },
+      bind: { textContent: mapRead(state, (value) => value || section.name) },
+      on: { click: () => builderState.prop('isOpen').set(true) },
+    },
     [],
   )
 
@@ -119,11 +74,6 @@ const Builder: Component<{
       builderDiv.classList.add(styles.hidden)
       expanderButton.classList.remove(styles.hidden)
     }
-  })
-
-  // Watch state for expander button text
-  state.watch(signal, (value) => {
-    expanderButton.textContent = value || section.name
   })
 
   return h('div', {}, [builderDiv, expanderButton])

@@ -32,6 +32,7 @@ export default tseslint.config(
       '@typescript-eslint/explicit-function-return-type': 0,
       '@typescript-eslint/array-type': 0,
       '@typescript-eslint/naming-convention': 0,
+      '@typescript-eslint/consistent-indexed-object-style': 0,
       'class-methods-use-this': 1,
       '@typescript-eslint/no-unused-vars': [
         1,

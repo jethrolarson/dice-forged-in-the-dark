@@ -1,6 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, enhance, h } from '@fun-land/fun-web'
-import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
@@ -9,30 +8,7 @@ import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
 import { hideUnless } from '../../../util'
-
-const styles = stylesheet({
-  QualityForm: {
-    minHeight: 200,
-    display: 'grid',
-    gap: 12,
-    margin: 12,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { styles } from './QualityForm.css'
 
 interface QualityForm$ {
   pool: string

@@ -1,14 +1,6 @@
-import { style } from 'typestyle'
 import { Textarea, TextareaProps } from './Textarea'
 import { Component, enhance, on } from '@fun-land/fun-web'
-
-const className = style({
-  width: '100%',
-  height: 28,
-  display: 'block',
-  maxHeight: 200,
-  resize: 'none',
-})
+import { className } from './Note.css'
 
 export const Note: Component<TextareaProps> = (signal, { $, passThroughProps }) =>
   enhance(

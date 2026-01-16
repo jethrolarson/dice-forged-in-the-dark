@@ -12,7 +12,7 @@ const updateView = (): View => route(window.location.hash.slice(1))
 
 /** App components should be the only things that instantiate state */
 
-export const App: Component<{}> = (signal) => {
+export const App: Component = (signal) => {
   const state = funState<AppState>(initialState(updateView()))
 
   const onHashChange = (): void => {

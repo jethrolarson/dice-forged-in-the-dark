@@ -1,11 +1,11 @@
 import { FunState } from '@fun-land/fun-state'
 import { trim } from 'fp-ts/lib/string'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { style } from 'typestyle'
 import { ButtonSelect } from '../../../components/ButtonSelect'
 import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderOptionGroup } from '../../../Models/RollConfig'
 import { toArray } from '../../../util'
+import { flexGrow } from './OptGroup.css'
 
 const DataList: Component<{ id: string; values: string }, HTMLDataListElement> = (signal, { id, values }) =>
   h(
@@ -47,7 +47,7 @@ export const OptGroup: Component<{
         label: og.showLabel ? og.name : '',
         tooltip: og.tooltip,
         onSelect: selectOption,
-        className: style({ flexGrow: 1 }),
+        className: flexGrow,
       })
     : h('label', { title: og.tooltip }, [
         dl,

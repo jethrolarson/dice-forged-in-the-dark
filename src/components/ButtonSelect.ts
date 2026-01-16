@@ -1,30 +1,8 @@
 import { FunState } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { classes, style, stylesheet } from 'typestyle'
 import { RollOption } from '../Models/RollConfig'
-
-const styles = stylesheet({
-  buttons: {
-    columnCount: 2,
-    columnGap: 5,
-  },
-  label: {
-    margin: '0 0 4px',
-    fontSize: '1.17rem',
-  },
-  threeCol: {},
-  option: {
-    display: 'block',
-    width: '100%',
-    marginBottom: 5,
-  },
-  selected: {
-    background: 'var(--bg-button-selected) !important',
-    borderColor: 'var(--bc-button-selected) !important',
-    color: 'var(--fc-button-selected)',
-    cursor: 'default',
-  },
-})
+import { classes } from '../util'
+import { styles } from './ButtonSelect.css'
 
 export const ButtonSelect: Component<{
   selected: string
@@ -50,7 +28,7 @@ export const ButtonSelect: Component<{
 
   return h('div', { className }, [
     title && h('label', { className: styles.label, title: tooltip }, [title]),
-    h('div', { className: classes(styles.buttons, style({ columnCount: columns })) }, buttonElements),
+    h('div', { className: styles.buttons, style: { '--column-count': columns } as Record<string, string | number> }, buttonElements),
   ])
 }
 
@@ -84,7 +62,7 @@ export const FunButtonSelect: Component<{
     title && h('label', { className: styles.label, title: tooltip }, [title]),
     h(
       'div',
-      { className: classes(styles.buttons, style({ columnCount: columns })) },
+      { className: styles.buttons, style: { '--column-count': columns } as Record<string, string | number> },
       buttonElements.map((el) => el.button),
     ),
   ])

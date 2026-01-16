@@ -1,60 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 import {  Component, h, hx } from '@fun-land/fun-web'
-import { classes, keyframes, stylesheet } from 'typestyle'
-import { DieColor } from '../../../Models/Die'
-
-const textPulse = keyframes({
-  from: { textShadow: ' 0 0 6px' },
-})
-
-const styles = stylesheet({
-  popover: {
-    position: 'absolute',
-    gap: 5,
-    zIndex: 1,
-    backgroundColor: '#061318',
-    padding: 7,
-    outline: `1px solid var(--bc-focus)`,
-    // (typestyle doesn't know these props, but it will still emit them)
-    positionAnchor: '--factor-anchor',
-    positionArea: 'top center',
-    display: 'none',
-    $nest: {
-      '&:popover-open': {
-        display: 'grid',
-      },
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any,
-  FactorSelect: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
-  option: { display: 'block', width: '100%' },
-  selected: {
-    backgroundColor: 'var(--bg-die-green) !important',
-    borderColor: 'var(--bg-die-green) !important',
-    color: '#000',
-    cursor: 'default',
-  },
-  label: { flexGrow: 1 },
-  button: {
-    width: 135,
-    textAlign: 'center',
-  },
-  factorButton: {
-    anchorName: '--factor-anchor',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any,
-  active: {
-    color: DieColor.white,
-    fontWeight: 'bold',
-    animation: '0.8s infinite alternate',
-    animationName: textPulse,
-  },
-})
+import { classes } from '../../../util'
+import { styles } from './FactorSelect.css'
 
 export enum Factor {
   Disadvantaged = 'Disadvantaged',
