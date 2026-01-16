@@ -145,8 +145,9 @@ const ResultDie: Component<{
   isLast: boolean
   dieColor: string
 }> = (signal, { value, size, highest, excluded, isLast, dieColor }) => {
-  const $: DieProps['$'] = funState(dieStyles(value, excluded, highest, isLast, dieColor))
-  return Die(signal, { value, size, $ })
+  const { border, ...stateProps } = dieStyles(value, excluded, highest, isLast, dieColor)
+  const $: DieProps['$'] = funState(stateProps)
+  return Die(signal, { value, size, border, $ })
 }
 
 const getResults = map((d: DieResult) => d.value)
