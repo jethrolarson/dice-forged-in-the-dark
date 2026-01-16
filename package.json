@@ -47,6 +47,7 @@
     "start": "vite",
     "build": "tsc && vite build",
     "serve": "vite preview",
+    "analyze": "npx vite-bundle-analyzer",
     "test": "echo 'no tests'",
     "deploy": "yarn build && firebase deploy",
     "lint": "eslint ."
