@@ -7,7 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 
 export class DiceRenderer {
-  dice: Dice
+  dice!: Dice
   private camera: THREE.PerspectiveCamera
   private renderer: THREE.WebGLRenderer
   private movementPlane: THREE.Mesh
@@ -16,18 +16,20 @@ export class DiceRenderer {
   taskManager: TaskManager
   meshSyncManager: TaskManager
   previousTime: number
+  
   constructor(
     element: HTMLElement,
     onRoll: DiceParams['onRoll'],
+    width: number,
+    height: number,
     private isDebug = false,
   ) {
     this.scene = new THREE.Scene()
     const fog = new THREE.Fog(0x000000, 500, 1000)
     this.scene.fog = fog
 
-    this.renderer = this.setupRenderer(element, fog)
-
-    this.camera = this.setupCamera(element.clientWidth / element.clientHeight)
+    this.renderer = this.setupRenderer(element, fog, width, height)
+    this.camera = this.setupCamera(width / height)
     // Lights
     this.setupLights()
 
@@ -87,17 +89,6 @@ export class DiceRenderer {
 
     this.previousTime = performance.now()
   }
-  setupRenderer(element: HTMLElement, fog: THREE.Fog) {
-    const renderer = new THREE.WebGLRenderer({ antialias: true })
-    renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setSize(element.clientWidth, element.clientHeight)
-    renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    renderer.setClearColor(fog.color)
-    renderer.setAnimationLoop(this.animate)
-    element.appendChild(renderer.domElement)
-    return renderer
-  }
 
   animate = () => {
     // Calculate the time elapsed between frames (delta)
@@ -109,6 +100,18 @@ export class DiceRenderer {
     this.taskManager.update(delta)
     this.meshSyncManager.update(delta)
     this.renderer.render(this.scene, this.camera)
+  }
+
+  setupRenderer(element: HTMLElement, fog: THREE.Fog, width: number, height: number) {
+    const renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(width, height)
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.setClearColor(fog.color)
+    renderer.setAnimationLoop(this.animate)
+    element.appendChild(renderer.domElement)
+    return renderer
   }
 
   setupCamera(aspect: number) {
@@ -204,11 +207,10 @@ export class DiceRenderer {
   }
 
   // Handle window resize
-  onResize = () => {
-    const { clientHeight, clientWidth } = this.renderer.domElement
-    this.camera.aspect = clientWidth / clientHeight
+  onResize = (width: number, height: number) => {
+    this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
-    this.renderer.setSize(clientWidth, clientHeight)
+    this.renderer.setSize(width, height)
   }
 
   // Handle pointer move (for dragging the dice)

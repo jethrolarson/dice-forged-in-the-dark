@@ -5,7 +5,6 @@
     "lib": ["es6", "dom", "ES2016"],
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
-    "jsx": "preserve",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -23,7 +22,7 @@
     "noEmit": true,
     "rootDir": "src",
     "allowJs": true,
-    "noUncheckedIndexedAccess": true
+    "noUncheckedIndexedAccess": false
   },
-  "include": ["src"]
+  "include": ["src", "types"]
 }

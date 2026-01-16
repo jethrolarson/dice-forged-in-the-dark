@@ -1,54 +1,60 @@
-import { Fragment, useCallback, useEffect } from 'react'
 import { DocumentReference } from '@firebase/firestore'
-import useFunState from '@fun-land/use-fun-state'
 import { NewRoll, sendRoll } from '../RollForm/FormCommon'
 import { RollType, RollTypes } from './RollTypes'
 import { ActionForm } from './ActionForm'
 import { MessageForm } from '../MessageForm'
-import { div, e } from '../../../util'
-import { FunState } from '@fun-land/fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
 import { ResistForm } from './ResistForm'
 import { FortuneForm } from './FortuneForm'
+import { h, Component } from '@fun-land/fun-web'
 
 type FormState = RollType
 
-export const Form = ({
-  $,
-  gdoc,
-  uid,
-  scrollToBottom,
-  userDisplayName,
-}: {
+export const Form: Component<{
   $: FunState<FormState>
   gdoc: DocumentReference
   uid: string
   scrollToBottom: () => unknown
   userDisplayName: string
-}) => {
-  const rollType = $.get()
-  const roll = useCallback(
-    (newRoll: NewRoll) => {
-      sendRoll(gdoc, userDisplayName, newRoll)
-    },
-    [gdoc],
-  )
-  useEffect(() => {
+}> = (signal, { $, gdoc, uid, scrollToBottom, userDisplayName }) => {
+  const roll = (newRoll: NewRoll) => {
+    sendRoll(gdoc, userDisplayName, newRoll)
+    $.set(RollType.none)
+  }
+
+  // Watch roll type changes and scroll to bottom
+  $.watch(signal, () => {
     scrollToBottom()
-  }, [rollType])
-  return e(Fragment, null, [
-    e(ActionForm, { key: RollType.action, roll, uid, active: rollType === RollType.action }),
-    e(ResistForm, { key: RollType.resist, roll, uid, active: rollType === RollType.resist }),
-    e(FortuneForm, { key: RollType.fortune, roll, uid, active: rollType === RollType.fortune }),
-    e(MessageForm, { key: RollType.message, gdoc, active: rollType === RollType.message }),
+  })
+
+  // Create derived active states for each form
+  const actionActive$ = funState(false)
+  const resistActive$ = funState(false)
+  const fortuneActive$ = funState(false)
+  const messageActive$ = funState(false)
+
+  // Update active states when roll type changes
+  $.watch(signal, (rollType) => {
+    actionActive$.set(rollType === RollType.action)
+    resistActive$.set(rollType === RollType.resist)
+    fortuneActive$.set(rollType === RollType.fortune)
+    messageActive$.set(rollType === RollType.message)
+  })
+
+  return h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }, [
+    ActionForm(signal, { roll, uid, active$: actionActive$ }),
+    ResistForm(signal, { roll, uid, active$: resistActive$ }),
+    FortuneForm(signal, { roll, uid, active$: fortuneActive$ }),
+    MessageForm(signal, { gdoc, active$: messageActive$ }),
   ])
 }
 
-export const AshworldForm = (props: {
+export const AshworldForm: Component<{
   gdoc: DocumentReference
   uid: string
   scrollToBottom: () => unknown
   userDisplayName: string
-}) => {
-  const $ = useFunState<FormState>(RollType.none)
-  return div(null, [e(RollTypes, { key: 'types', $ }), e(Form, { key: 'form', $, ...props })])
+}> = (signal, props) => {
+  const $ = funState<FormState>(RollType.none)
+  return h('div', {}, [RollTypes(signal, { $ }), Form(signal, { $, ...props })])
 }

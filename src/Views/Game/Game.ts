@@ -1,5 +1,6 @@
-import { FC, useEffect, useState } from 'react'
 import * as O from 'fp-ts/lib/Option'
+import { Component, h } from '@fun-land/fun-web'
+import { funState } from '@fun-land/fun-state'
 import {
   GameState,
   GameView,
@@ -8,13 +9,12 @@ import {
   missingGameState,
   PersistedState,
 } from '../../Models/GameModel'
-import { useDoc } from '../../hooks/useDoc'
-import { DocumentReference, getDoc, setDoc } from '@firebase/firestore'
+import { getDocRef } from '../../services/getDoc'
+import { DocumentReference, setDoc, getDoc } from '@firebase/firestore'
 import { LoadedGame } from './LoadedGame'
-import { useUser } from '../../hooks/useAuthState'
+import { getUser } from '../../services/getUser'
 import { User } from '../../Models/User'
 import { Login } from '../Login/Login'
-import { div, e, h } from '../../util'
 
 export const gamePath = (path: string): O.Option<GameView> => {
   const m = /^\/game\/([^/?]+)/.exec(path)
@@ -39,43 +39,61 @@ const saveGameToUser = (userDoc: DocumentReference, gameId: string): void => {
     })
 }
 
-export const GameWithUID: FC<{ gameId: string; uid: string; userDisplayName: string }> = ({
-  gameId,
-  uid,
-  userDisplayName,
-}) => {
-  const gdoc = useDoc(`games/${gameId}`)
-  const userDoc = useDoc(`users/${uid}`)
-  const [gameState, setGameState] = useState<GameState>(initialGameState)
-  useEffect(() => {
-    getDoc(gdoc)
-      .then((snapshot) => {
-        if (!snapshot.exists) {
-          setGameState(missingGameState)
-        }
-        const data = snapshot.data()
-        data && setGameState(initialLoadedGameState(data as PersistedState))
+export const GameWithUID: Component<{ gameId: string; uid: string; userDisplayName: string }> = (
+  signal,
+  { gameId, uid, userDisplayName },
+) => {
+  const gdoc = getDocRef(`games/${gameId}`)
+  const userDoc = getDocRef(`users/${uid}`)
+  const gameState = funState<GameState>(initialGameState)
+
+  getDoc(gdoc)
+    .then((snapshot) => {
+      if (!snapshot.exists()) {
+        gameState.set(missingGameState)
+        return
+      }
+      const data = snapshot.data()
+      if (data) {
+        gameState.set(initialLoadedGameState(data as PersistedState))
         saveGameToUser(userDoc, snapshot.id)
-      })
-      .catch((e) => {
-        console.error(e)
-        alert('failed to load game')
-      })
-  }, [gdoc])
-  switch (gameState.kind) {
-    case 'LoadedGameState':
-      return e(LoadedGame, { initialState: gameState, gameId, gdoc, uid, userDisplayName })
-    case 'MissingGameState':
-      return h('h1', null, ['Game not found. Check the url'])
-    case 'LoadingGameState':
-      return div(null, ['Game Loading'])
-  }
-  return div(null, ['Doc Loading'])
+      }
+    })
+    .catch((e) => {
+      console.error(e)
+      alert('failed to load game')
+    })
+
+  const container = h('div', {}, [])
+
+  gameState.watch(signal, (state) => {
+    switch (state.kind) {
+      case 'LoadedGameState':
+        container.replaceChildren(LoadedGame(signal, { initialState: state, gameId, gdoc, uid, userDisplayName }))
+        break
+      case 'MissingGameState':
+        container.replaceChildren(h('h1', {}, ['Game not found. Check the url']))
+        break
+      case 'LoadingGameState':
+        container.replaceChildren(h('div', {}, ['Game Loading']))
+        break
+    }
+  })
+
+  return container
 }
 
-export const Game: FC<{ gameId: string }> = ({ gameId }) => {
-  const user = useUser()
-  return user
-    ? e(GameWithUID, { gameId, uid: user.uid, userDisplayName: user.displayName ?? '' })
-    : div(null, [e(Login, { key: 'login' })])
+export const Game: Component<{ gameId: string }> = (signal, { gameId }) => {
+  const userState = getUser(signal)
+  const container = h('div', {}, [])
+
+  userState.watch(signal, (user) => {
+    container.replaceChildren(
+      user
+        ? GameWithUID(signal, { gameId, uid: user.uid, userDisplayName: user.displayName ?? '' })
+        : Login(signal, {}),
+    )
+  })
+
+  return container
 }

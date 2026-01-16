@@ -1,9 +1,15 @@
 import { FunState } from '@fun-land/fun-state'
-import React, { FC, createElement as h } from 'react'
-import { pipeVal } from '../common'
+import { Component, hx } from '@fun-land/fun-web'
 
-export const TextInput: FC<{
-  state: FunState<string>
-  passThroughProps?: React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
-}> = ({ state, passThroughProps }) =>
-  h('input', { ...passThroughProps, onChange: pipeVal(state.set), value: state.get() })
+export interface TextInputProps {
+  $: FunState<string>
+  passThroughProps?: Partial<HTMLInputElement> & Record<string, unknown>
+}
+
+export const TextInput: Component<TextInputProps> = (signal, { $, passThroughProps }) =>
+  hx('input', {
+    signal,
+    props: passThroughProps,
+    bind: { value: $ },
+    on: { change: ({ currentTarget: { value } }) => $.set(value) },
+  })

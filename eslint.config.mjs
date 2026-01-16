@@ -30,6 +30,7 @@ export default tseslint.config(
       '@typescript-eslint/unbound-method': 1,
       '@typescript-eslint/no-non-null-assertion': 1,
       '@typescript-eslint/explicit-function-return-type': 0,
+      '@typescript-eslint/array-type': 0,
       '@typescript-eslint/naming-convention': 0,
       'class-methods-use-this': 1,
       '@typescript-eslint/no-unused-vars': [

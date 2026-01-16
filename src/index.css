@@ -385,3 +385,7 @@ input::-webkit-input-placeholder {
   border-color: transparent;
   color: var(--fc-button-selected);
 }
+
+[hidden] {
+  display: none !important;
+}

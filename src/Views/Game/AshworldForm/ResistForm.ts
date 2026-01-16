@@ -1,5 +1,4 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
 import { Note } from '../../../components/Note'
@@ -7,16 +6,20 @@ import { NewRoll } from '../RollForm/FormCommon'
 import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { FormHeading } from '../../../components/FormHeading'
-import { e, h, div } from '../../../util'
 import { Rollable } from '../RollForm/DicePool'
+import { Component, h, enhance } from '@fun-land/fun-web'
+import { hideUnless } from '../../../util'
 
 const styles = stylesheet({
   AssistForm: {
     minHeight: 200,
     display: 'grid',
-    gridTemplateColumns: '120px auto',
     gap: 12,
-    margin: 12,
+    padding: 12,
+    margin: 0,
+    background: 'var(--bg-game)',
+    overflowY: 'auto',
+    flex: 1,
     $nest: {
       p: {
         margin: 0,
@@ -42,9 +45,8 @@ interface AssistForm$ {
 const rollIt =
   (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, dicePool, username } = state.get()
-    const n = dicePool.pool.length
-    const isZero = n === 0
+    const { note, username } = state.get()
+    const isZero = diceRolled.length === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
       note,
@@ -73,35 +75,27 @@ const init_ActionForm$ = (): AssistForm$ => ({
   username: '',
 })
 
-export const ResistForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const ResistForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}) => {
-  const $ = useFunState<AssistForm$>(init_ActionForm$())
-  const { username, note } = $.get()
-  const disabled = !username || !note
-  const dicePool$ = $.prop('dicePool')
-  return active
-    ? div({ className: styles.AssistForm }, [
-        e(DicePool, {
-          key: 'dicepool',
-          state: dicePool$,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disableAdd: true,
-          disabled,
-        }),
-        div({ key: 'form', className: styles.form }, [
-          e(FormHeading, { key: 'head', title: 'Resist Roll' }),
-          h('p', { key: 'subhead' }, ['Spend die to resist bad shit']),
-          e(Character, { key: 'character', $: $.prop('username') }),
-          e(Note, { key: 'note', $: $.prop('note') }),
-        ]),
-      ])
-    : null
+  active$: FunState<boolean>
+}> = (signal, { uid, roll, active$ }) => {
+  const $ = funState<AssistForm$>(init_ActionForm$())
+  const container = enhance(
+    h('div', { className: styles.AssistForm }, [
+      DicePool(signal, {
+        sendRoll: rollIt(roll, uid, $),
+        disableAdd$: funState(true),
+        active$,
+      }),
+      h('div', { className: styles.form }, [
+        FormHeading(signal, { title: 'Resist Roll' }),
+        h('p', {}, ['Spend die to resist bad shit']),
+        Character(signal, { $: $.prop('username') }),
+        Note(signal, { $: $.prop('note') }),
+      ]),
+    ]),
+    hideUnless(active$, signal),
+  )
+  return container
 }

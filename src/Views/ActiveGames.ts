@@ -1,12 +1,11 @@
 import type { User as FSUser } from '@firebase/auth'
 import { getAuth } from '@firebase/auth'
 import { addDoc, collection, getFirestore } from '@firebase/firestore'
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { defaultTheme, PersistedState } from '../Models/GameModel'
 import { presets } from '../Models/rollConfigPresets'
-import { button, div, h } from '../util'
+import { Component, h, hx } from '@fun-land/fun-web'
 
 type GameState = PersistedState & { id: string }
 
@@ -53,27 +52,23 @@ const styles = stylesheet({
   },
 })
 
-export const ActiveGames = ({ games, user }: { games: GameState[]; user: FSUser }) => {
-  const state = useFunState(false)
-  return div(null, [
-    div({ className: styles.actions }, [
-      button(
-        {
-          className: 'primary',
-          onClick: createGame(user.uid, 'New Game', state),
-        },
-        ['New Game'],
-      ),
-
-      button({ onClick: () => void logout() }, ['Logout']),
-    ]),
-    h('h2', null, ['Active Games']),
+export const ActiveGames: Component<{ games: GameState[]; user: FSUser }> = (signal, { games, user }) => {
+  const state = funState(false)
+  const newGameButton = hx(
+    'button',
+    { signal, props: { className: 'primary' }, on: { click: () => createGame(user.uid, 'New Game', state) } },
+    ['New Game'],
+  )
+  const logoutButton = hx('button', { signal, props: { className: 'primary' }, on: { click: () => logout() } }, [
+    'Logout',
+  ])
+  return h('div', {}, [
+    h('div', { className: styles.actions }, [newGameButton, logoutButton]),
+    h('h2', {}, ['Active Games']),
     h(
       'ul',
       { className: styles.list },
-      games.map((game) =>
-        h('li', { key: game.id }, [h('a', { href: `#/game/${game.id}` }, [game.title || 'untitled'])]),
-      ),
+      games.map((game) => h('li', {}, [h('a', { href: `#/game/${game.id}` }, [game.title || 'untitled'])])),
     ),
   ])
 }

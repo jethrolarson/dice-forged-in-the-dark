@@ -1,8 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
-import { useClickOutside } from '../../../hooks/useClickOutside'
-import { label, e, div, button } from '../../../util'
+
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
 
 export interface Approach$ {
@@ -25,14 +24,22 @@ const styles = stylesheet({
   popover: {
     position: 'absolute',
     width: 135,
-    display: 'grid',
+    gap: 5,
     zIndex: 2,
     backgroundColor: '#061318',
-    top: '50%',
-    right: 0,
-    transform: 'translate(0%, -50%)',
+    padding: 7,
     outline: `1px solid var(--bc-focus)`,
-  },
+    // (typestyle doesn't know these props, but it will still emit them)
+    positionAnchor: '--approach-anchor',
+    positionArea: 'top center',
+    display: 'none',
+    $nest: {
+      '&:popover-open': {
+        display: 'grid',
+      },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   active: {
     fontWeight: 'bold',
     animation: '0.8s infinite alternate',
@@ -60,8 +67,9 @@ const styles = stylesheet({
   },
   approachButton: {
     width: 135,
-    textAlign: 'left',
-  },
+    anchorName: '--approach-anchor',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   required: {
     borderColor: 'red !important',
   },
@@ -69,68 +77,107 @@ const styles = stylesheet({
 
 export const approaches = ['Charm', 'Deceit', 'Force', 'Focus', 'Ingenuity'] as const
 
-export const ApproachSelect = ({
-  $,
-  addDie,
-  removeDie,
-}: {
+export const ApproachSelect: Component<{
   $: FunState<Approach$>
   removeDie: (id: string) => unknown
   addDie: (color: number, id: string) => unknown
-}) => {
-  const { approach, tier } = $.get()
-  const [open, setOpen] = useState(false)
-  const hide = useCallback(() => setOpen(false), [])
-  const popoverRef = useRef<HTMLDivElement>(null)
-  useClickOutside(popoverRef, hide)
-  const isActive = !!approach && tier !== Tier.T0
-  useEffect(() => {
-    isActive ? addDie(tierColor(tier), 'approach') : removeDie('approach')
-  }, [isActive, tier])
+}> = (signal, { $, addDie, removeDie }) => {
+  const approachLabel = h('label', {}, ['Approach'])
+
+  const popover = h(
+    'div',
+    {
+      className: styles.popover,
+      popover: 'auto',
+    },
+    [],
+  )
+
+  const approachButton = hx(
+    'button',
+    {
+      signal,
+      props: { className: styles.approachButton, type: 'button' },
+      attrs: {
+        anchorName: '--approach-anchor',
+        'aria-haspopup': 'menu',
+        'aria-expanded': 'false',
+      },
+      on: {
+        click: () => {
+          if (popover.matches(':popover-open')) popover.hidePopover()
+          else popover.showPopover()
+          // (toggle event will also fire; this is fine either way)
+          syncExpanded()
+        },
+      },
+    },
+    [],
+  )
+
+  // Keep aria-expanded in sync even when UA closes (click-outside / Esc)
+  const syncExpanded = () => {
+    approachButton.setAttribute('aria-expanded', popover.matches(':popover-open') ? 'true' : 'false')
+  }
+
+  popover.addEventListener('toggle', syncExpanded, { signal })
+
   const onSelect = (value: string) => {
-    hide()
+    popover.hidePopover()
     $.prop('approach').mod((a) => (a === value ? '' : value))
   }
 
-  return div({ className: styles.Approach }, [
-    label(
-      {
-        key: 'label',
-        className: isActive
-          ? classes(
-              styles.active,
-              style({
-                color: `var(--bg-die-${tierColorMap[tier]})`,
-              }),
-            )
-          : '',
-      },
-      ['Approach'],
-    ),
-    e(TierSelect, { key: 'tier', $: $.prop('tier') }),
-    button(
-      {
-        key: 'approach',
-        className: classes(styles.approachButton, tier !== Tier.T0 && !approach && styles.required),
-        onClick: setOpen.bind(null, true),
-      },
-      [approach || 'Select'],
-    ),
-    open &&
-      div(
-        { key: 'popover', className: styles.popover, ref: popoverRef },
-        approaches.map((value) =>
-          button(
-            {
-              key: value,
-              onClick: onSelect.bind(null, value),
-              value,
-              type: 'button',
-              className: classes(styles.option, value === approach && styles.selected),
-            },
-            [value, ...(value === approach ? [' ❌'] : [])],
-          ),
-        ),
-      ),
+  const optionButtons = approaches.map((value) => {
+    const button = hx(
+      'button',
+      { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => onSelect(value) } },
+      [value],
+    )
+    return { button, value }
+  })
+
+  optionButtons.forEach(({ button }) => popover.appendChild(button))
+
+  // Watch state and update DOM + dice pool
+  $.watch(signal, ({ approach, tier }) => {
+    const isActive = !!approach && tier !== Tier.T0
+
+    // Manage dice in pool
+    isActive ? addDie(tierColor(tier), 'approach') : removeDie('approach')
+
+    // Update label styling
+    approachLabel.className = ''
+    if (isActive) {
+      approachLabel.classList.add(
+        styles.active,
+        style({
+          color: `var(--bg-die-${tierColorMap[tier]})`,
+        }),
+      )
+    }
+
+    // Update button text
+    approachButton.textContent = approach || 'Select'
+
+    // Update button styling
+    approachButton.className = styles.approachButton
+    if (tier !== Tier.T0 && !approach) {
+      approachButton.classList.add(styles.required)
+    }
+  })
+
+  // Watch approach state and update option styling and content
+  $.prop('approach').watch(signal, (approach) => {
+    optionButtons.forEach(({ button, value }) => {
+      button.className = classes(styles.option, value === approach && styles.selected)
+      button.textContent = value + (value === approach ? ' ❌' : '')
+    })
+  })
+
+  return h('div', { className: styles.Approach }, [
+    approachLabel,
+    TierSelect(signal, { $: $.prop('tier') }),
+    approachButton,
+    popover,
   ])
 }

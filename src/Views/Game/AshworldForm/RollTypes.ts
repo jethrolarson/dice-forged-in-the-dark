@@ -1,6 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
-import { classes, stylesheet } from 'typestyle'
-import { button, div } from '../../../util'
+
+import { Component, h, hx } from '@fun-land/fun-web'
+import { stylesheet } from 'typestyle'
 
 const styles = stylesheet({
   rollTypes: {
@@ -39,17 +40,28 @@ const actionMap = [
   [RollType.message, 'Message'],
 ] as const
 
-export const RollTypes = ({ $ }: { $: FunState<RollType> }) =>
-  div(
-    { className: styles.rollTypes },
-    actionMap.map(([type, label]) =>
-      button(
-        {
-          key: type,
-          className: classes($.get() === type ? styles.active : '', styles.tab),
-          onClick: () => $.set(type),
-        },
-        [label],
-      ),
-    ),
+export const RollTypes: Component<{ $: FunState<RollType> }> = (signal, { $ }) => {
+  const buttons = actionMap.map(([type, label]) => ({ button: hx(
+      'button',
+      {
+        signal,
+        props: { className: styles.tab },
+        on: { click: () => $.mod((t) => (t === type ? RollType.none : type)) },
+      },
+      [label],
+    ), type }),
   )
+
+  // Watch state and update button styling
+  $.watch(signal, (selectedType) => {
+    buttons.forEach(({ button, type }) => {
+      button.className = selectedType === type ? `${styles.active} ${styles.tab}` : styles.tab
+    })
+  })
+
+  return h(
+    'div',
+    { className: styles.rollTypes },
+    buttons.map((b) => b.button),
+  )
+}

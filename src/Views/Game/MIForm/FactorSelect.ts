@@ -1,48 +1,53 @@
 import { FunState } from '@fun-land/fun-state'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {  Component, h, hx } from '@fun-land/fun-web'
 import { classes, keyframes, stylesheet } from 'typestyle'
-import { useClickOutside } from '../../../hooks/useClickOutside'
 import { DieColor } from '../../../Models/Die'
-import { button, div, label } from '../../../util'
 
 const textPulse = keyframes({
-  from: {
-    textShadow: ' 0 0 6px',
-  },
+  from: { textShadow: ' 0 0 6px' },
 })
 
 const styles = stylesheet({
   popover: {
     position: 'absolute',
-    width: 135,
-    display: 'grid',
     gap: 5,
     zIndex: 1,
     backgroundColor: '#061318',
-    padding: 10,
-    top: '50%',
-    right: 0,
-    transform: 'translate(0%, -50%)',
+    padding: 7,
     outline: `1px solid var(--bc-focus)`,
+    // (typestyle doesn't know these props, but it will still emit them)
+    positionAnchor: '--factor-anchor',
+    positionArea: 'top center',
+    display: 'none',
+    $nest: {
+      '&:popover-open': {
+        display: 'grid',
+      },
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
+  FactorSelect: {
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
   },
-  FactorSelect: { position: 'relative', display: 'flex', alignItems: 'center', gap: 10 },
-  option: {
-    display: 'block',
-    width: '100%',
-  },
+  option: { display: 'block', width: '100%' },
   selected: {
     backgroundColor: 'var(--bg-die-green) !important',
     borderColor: 'var(--bg-die-green) !important',
     color: '#000',
     cursor: 'default',
   },
-  label: {
-    flexGrow: 1,
-  },
+  label: { flexGrow: 1 },
   button: {
     width: 135,
-    textAlign: 'left',
+    textAlign: 'center',
   },
+  factorButton: {
+    anchorName: '--factor-anchor',
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any,
   active: {
     color: DieColor.white,
     fontWeight: 'bold',
@@ -59,73 +64,86 @@ export enum Factor {
 
 export const factorDie = { color: 'white', type: 'd6', id: 'factor' } as const
 
-export const FactorSelect = ({
-  $,
-  addDie,
-  removeDie,
-  active,
-}: {
+export const FactorSelect: Component<{
   $: FunState<Factor>
   removeDie: (id: string) => unknown
   addDie: (color: number, id: string) => unknown
-  active: boolean
-}) => {
-  const factor = $.get()
-  const [open, setOpen] = useState(false)
-  const hide = useCallback(() => setOpen(false), [])
-  const popoverRef = useRef<HTMLDivElement>(null)
-  useClickOutside(popoverRef, hide)
+}> = (signal, { $, addDie, removeDie }) => {
+  const factorLabel = h('label', { className: styles.label }, 'Factor')
 
-  useEffect(() => {
-    if (active) {
-      switch (factor) {
-        case Factor.Even:
-          addDie(0xffffff, 'factor1')
-          removeDie('factor2')
-          break
-        case Factor.Dominant:
-          addDie(0xffffff, 'factor1')
-          addDie(0xffffff, 'factor2')
-          break
-        case Factor.Disadvantaged:
-          removeDie('factor1')
-          removeDie('factor2')
-      }
-    }
-  }, [factor, active])
+  const popover = h(
+    'div',
+    {
+      className: styles.popover,
+      popover: 'auto',
+    },
+    [],
+  )
 
-  const isActive = factor !== Factor.Disadvantaged
-  const onSelect = (val: string) => {
-    hide()
-    $.set(val as Factor)
-  }
-  return div(null, [
-    div({ key: 'factorSelect', className: styles.FactorSelect }, [
-      label({ key: 'title', className: classes(styles.label, isActive ? styles.active : '') }, ['Factor']),
-      button(
-        {
-          key: 'factor',
-          className: styles.button,
-          onClick: setOpen.bind(null, true),
+  const factorButton = hx(
+    'button',
+    {
+      signal,
+      props: { className: classes(styles.button, styles.factorButton), type: 'button' },
+      attrs: { anchorName: '--factor-anchor', 'aria-haspopup': 'menu', 'aria-expanded': 'false' },
+      on: {
+        click: () => {
+          if (popover.matches(':popover-open')) {
+            popover.hidePopover()
+          } else popover.showPopover()
+          syncExpanded()
         },
-        [factor],
-      ),
-      open &&
-        div(
-          { key: 'popover', className: styles.popover, ref: popoverRef },
-          [Factor.Disadvantaged, Factor.Even, Factor.Dominant].map((value) =>
-            button(
-              {
-                key: value,
-                onClick: onSelect.bind(null, value),
-                value,
-                type: 'button',
-                className: classes(styles.option, factor === value && styles.selected),
-              },
-              [value],
-            ),
-          ),
-        ),
-    ]),
-  ])
+      },
+    },
+    [],
+  )
+
+  // Keep aria-expanded in sync even when UA closes (click-outside / Esc)
+  const syncExpanded = () => {
+    factorButton.setAttribute('aria-expanded', popover.matches(':popover-open') ? 'true' : 'false')
+  }
+
+  popover.addEventListener('toggle', syncExpanded, { signal })
+
+  const onSelect = (val: Factor) => {
+    popover.hidePopover()
+    $.set(val)
+  }
+
+  const optionButtons = [Factor.Disadvantaged, Factor.Even, Factor.Dominant].map((value) => {
+    const button = hx(
+      'button',
+      { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => onSelect(value) } },
+      [value],
+    )
+    return { button, value }
+  })
+
+  optionButtons.forEach(({ button }) => popover.appendChild(button))
+
+  $.watch(signal, (factor: Factor) => {
+    const isActive = factor !== Factor.Disadvantaged
+    factorLabel.className = classes(styles.label, isActive ? styles.active : '')
+    factorButton.textContent = factor
+
+    optionButtons.forEach(({ button, value }) => {
+      button.className = classes(styles.option, factor === value && styles.selected)
+    })
+
+    switch (factor) {
+      case Factor.Even:
+        addDie(0xffffff, 'factor1')
+        removeDie('factor2')
+        break
+      case Factor.Dominant:
+        addDie(0xffffff, 'factor1')
+        addDie(0xffffff, 'factor2')
+        break
+      case Factor.Disadvantaged:
+        removeDie('factor1')
+        removeDie('factor2')
+    }
+  })
+
+  return h('div', {}, [h('div', { className: styles.FactorSelect }, [factorLabel, factorButton, popover])])
 }

@@ -1,22 +1,24 @@
-import { createElement } from 'react'
+import { not, viewed } from '@fun-land/accessor'
+import { FunState } from '@fun-land/fun-state'
+
 
 export const toArray = <T>(x: T | T[]): T[] => (Array.isArray(x) ? x : [x])
 
-export const h = <N extends keyof React.ReactHTML>(
-  type: N,
-  props?: JSX.IntrinsicElements[N] | null,
-  ...children: React.ReactNode[]
-) => createElement(type, props, children)
+//TODO remove when fun-land 5.1 is published
+export const bindClass =
+  (className: string, state: FunState<boolean>, signal: AbortSignal) =>
+  <E extends Element>(el: E): E => {
+    state.watch(signal, (active) => el.classList.toggle(className, active))
+    return el
+  }
 
-const h_ =
-  <N extends keyof React.ReactHTML>(type: N) =>
-  (props?: JSX.IntrinsicElements[N] | null, ...children: React.ReactNode[]) =>
-    createElement(type, props, children)
+export const notAcc = viewed(not, not)
 
-export const e = createElement
+export const hideWhen =
+  (state: FunState<boolean>, signal: AbortSignal) =>
+  <E extends Element>(el: E): E => {
+    state.watch(signal, (hidden) => (hidden ? el.setAttribute('hidden', 'hidden') : el.removeAttribute('hidden')))
+    return el
+  }
 
-export const div = h_('div')
-export const button = h_('button')
-export const label = h_('label')
-export const h1 = h_('h1')
-export const p = h_('p')
+export const hideUnless = (state: FunState<boolean>, signal: AbortSignal) => hideWhen(state.focus(notAcc), signal)

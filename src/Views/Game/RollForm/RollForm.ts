@@ -1,0 +1,281 @@
+import { DocumentReference } from '@firebase/firestore'
+import { removeAt } from '@fun-land/accessor'
+import { funState, FunState, merge } from '@fun-land/fun-state'
+import { Component, enhance, h, hx, on } from '@fun-land/fun-web'
+import { important } from 'csx'
+import { stylesheet } from 'typestyle'
+import { Icon } from '../../../components/Icon'
+import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
+import { Textarea } from '../../../components/Textarea'
+import { TextInput } from '../../../components/TextInput'
+import { DieColor, DieResult, DieType } from '../../../Models/Die'
+import { RollResult } from '../../../Models/GameModel'
+import { RollConfig, ValuationType } from '../../../Models/RollConfig'
+import { nextColor } from '../Die'
+import { DicePool, Rollable } from './DicePool'
+import { sendRoll } from './FormCommon'
+import { accessDieColor, RollFormState } from './RollForm.state'
+import { Sections } from './Sections'
+
+const styles = stylesheet({
+  form: {
+    padding: 10,
+  },
+  formWrap: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 2fr',
+    gap: 10,
+  },
+  formGrid: {
+    display: 'grid',
+    gridGap: 10,
+    flexGrow: 2,
+  },
+  backButton: {
+    border: 0,
+    padding: '4px',
+    marginRight: 4,
+  },
+  backButtonIcon: { $nest: { svg: { margin: '-2px 2px 0 0' } } },
+  heading: {},
+  rollTypes: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr 1fr',
+    gridGap: 10,
+  },
+  note: {},
+  noteInput: {
+    width: '100%',
+    height: 28,
+    display: 'block',
+    maxHeight: 200,
+    resize: 'none',
+  },
+  dieButton: {
+    cursor: 'pointer',
+    appearance: 'none',
+    opacity: 1,
+    padding: 0,
+    backgroundColor: important('transparent'),
+    border: 'none',
+  },
+  diceButtons: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  character: {},
+  rollButton: {
+    fontWeight: 'bold',
+    borderWidth: '2px 0 0',
+    borderRadius: '0 0 5px 5px',
+  },
+})
+
+const rollDie = (): number => Math.floor(Math.random() * 6) + 1
+
+const zeroDicePool: Rollable[] = [
+  { type: 'd6', color: 'red', id: 'zero_0' },
+  { type: 'd6', color: 'red', id: 'zero_1' },
+]
+
+const reset = (state: FunState<RollFormState>): void =>
+  merge(state)({ note: '', rollType: '', rollState: ['', '', '', '', '', '', '', '', '', ''], dicePool: [] })
+
+export const roll =
+  (gdoc: DocumentReference, uid: string, state: FunState<RollFormState>, userDisplayName: string) => (): void => {
+    const { dicePool, rollState, note, rollType, username, valuationType } = state.get()
+    const n = dicePool.length
+    const isZero = n === 0
+    if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
+    const diceRolled: DieResult[] = (isZero ? zeroDicePool : dicePool).map(({ type: dieType, color: dieColor }) => ({
+      dieColor: DieColor[dieColor],
+      dieType,
+      value: rollDie(),
+    })) as DieResult[]
+    const lines = rollState
+    const roll: Omit<RollResult, 'id'> = {
+      note,
+      rollType,
+      lines,
+      username,
+      user: userDisplayName,
+      isZero,
+      diceRolled,
+      date: Date.now(),
+      kind: 'Roll',
+      valuationType,
+      uid,
+    }
+    sendRoll(gdoc, userDisplayName, roll)
+    reset(state)
+  }
+
+export const RollForm: Component<{
+  rollConfig: RollConfig
+  gdoc: DocumentReference
+  uid: string
+  userDisplayName: string
+}> = (signal, { rollConfig, gdoc, uid, userDisplayName }) => {
+  const s = funState<RollFormState>({
+    note: '',
+    rollState: ['', '', '', '', '', '', '', '', '', ''], // TODO don't flatten this. Use a transform of rollConfig instead
+    rollType: '',
+    username: '',
+    valuationType: 'Action',
+    dicePool: [],
+  })
+
+  const rollTypes = rollConfig.rollTypes ?? []
+  const removeDie = (idx: number): void => s.prop('dicePool').mod(removeAt(idx))
+  const setDice = (id: string, dice: DieType[], color: keyof typeof DieColor): void => {
+    s.prop('dicePool').mod((ds) => {
+      const newDice = dice.map((type, idx): Rollable => ({ type, color, id: `${id}_${idx}` }))
+      const xs: Rollable[] = ds.filter((d) => !d.id.startsWith(id)).concat(newDice)
+      return xs
+    })
+  }
+  const changeColor = (idx: number): void => s.focus(accessDieColor(idx)).mod(nextColor)
+
+  // Create roll type selector
+  const rollTypesContainer = h('div', { className: styles.rollTypes }, [])
+  const rollTypeButtons = rollTypes.map((rt) => {
+    const btn = hx(
+      'button',
+      {
+        signal,
+        props: { type: 'button' },
+        on: {
+          click: () => {
+            s.prop('rollType').set(rt.name)
+            const vt = rollTypes.find(({ name }) => name === rt.name)?.valuationType
+            if (vt) {
+              s.prop('valuationType').set(vt === 'Ask' ? 'Action' : vt)
+            }
+          },
+        },
+      },
+      [rt.name, ' '],
+    )
+    return btn
+  })
+  rollTypesContainer.append(...rollTypeButtons)
+
+  // Create form content container
+  const formContent = h('div', {}, [])
+  formContent.style.display = 'none'
+
+  // Compute disabled state
+  const disabled$ = funState(true)
+  s.watch(signal, ({ rollType, username }) => {
+    const currentConfig = rollTypes.find((rt) => rt.name === rollType)
+    disabled$.set(!currentConfig?.excludeCharacter && !username.length)
+  })
+
+  // Watch state and rebuild form when roll type changes
+  s.prop('rollType').watch(signal, (rollType) => {
+    const currentConfig = rollTypes.find((rt) => rt.name === rollType)
+
+    if (currentConfig) {
+      const backButton = h('button', { className: styles.backButton }, [Icon(signal, { icon: chevronLeft, size: 18 })])
+      hx(
+        'button',
+        {
+          signal,
+          props: { type: 'button' },
+          on: {
+            click: (e: Event) => {
+              e.preventDefault()
+              reset(s)
+            },
+          },
+        },
+        [backButton],
+      )
+
+      const characterLabel = !currentConfig.excludeCharacter
+        ? h('label', { className: styles.character }, [
+            TextInput(signal, {
+              passThroughProps: {
+                placeholder: 'Character',
+                type: 'text',
+                name: 'username',
+                required: true,
+              },
+              $: s.prop('username'),
+            }),
+          ])
+        : null
+
+      const valuationLabel = h('label', {}, ['Rules: '])
+      const valuationSelect =
+        currentConfig?.valuationType === 'Ask'
+          ? (() => {
+              const select = hx(
+                'select',
+                {
+                  signal,
+                  on: {
+                    change: (e) => s.prop('valuationType').set((e.target as HTMLSelectElement).value as ValuationType),
+                  },
+                  // TODO fix this type once FunRead is published
+                  bind: { value: s.prop('valuationType') as FunState<string> },
+                },
+                [
+                  h('option', { value: 'Action' }, ['Action']),
+                  h('option', { value: 'Resist' }, ['Resist']),
+                  h('option', { value: 'Sum' }, ['Sum']),
+                  h('option', { value: 'Highest' }, ['Highest']),
+                  h('option', { value: 'Lowest' }, ['Lowest']),
+                ],
+              )
+              valuationLabel.appendChild(select)
+              return valuationLabel
+            })()
+          : null
+      const textareaEl = enhance(
+        Textarea(signal, {
+          passThroughProps: {
+            placeholder: 'Description',
+            className: styles.noteInput,
+          },
+          $: s.prop('note'),
+        }),
+        on(
+          'input',
+          (e: Event) => {
+            const target = e.target as HTMLTextAreaElement
+            target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
+          },
+          signal,
+        ),
+      )
+      
+      // TODO replaceChildren causes memory leaks
+      formContent.replaceChildren(
+        h('div', { className: styles.formWrap }, [
+          DicePool(signal, {
+            dicePool$: s.prop('dicePool'),
+            roll: roll(gdoc, uid, s, userDisplayName),
+            disabled$,
+            removeDie,
+            changeColor,
+          }),
+          h('div', { className: styles.formGrid }, [
+            h('h3', { className: styles.heading }, [backButton, currentConfig.name]),
+            Sections(signal, { state: s.prop('rollState'), sections: currentConfig.sections, setDice }),
+            characterLabel,
+            valuationSelect,
+            h('label', { className: styles.note }, [textareaEl]),
+          ]),
+        ]),
+      )
+      rollTypesContainer.style.display = 'none'
+      formContent.style.display = ''
+    } else {
+      formContent.style.display = 'none'
+      rollTypesContainer.style.display = ''
+    }
+  })
+
+  return hx('form', { signal, on: { submit: (e: Event) => e.preventDefault() } }, [formContent, rollTypesContainer])
+}

@@ -1,18 +1,16 @@
-import { FunState } from '@fun-land/fun-state'
-import useFunState from '@fun-land/use-fun-state'
-import { useEffect, useRef } from 'react'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, enhance, h } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 import { DieResult } from '../../../Models/Die'
-import { DicePool, DicePool$, init_DicePool$ } from '../../../components/DicePool'
-import { DiceSceneRef } from '../../../components/DiceScene/DiceScene'
+import { DicePool } from '../../../components/DicePool'
 import { FormHeading } from '../../../components/FormHeading'
 import { Note } from '../../../components/Note'
 import { TextInput } from '../../../components/TextInput'
-import { div, e, h } from '../../../util'
 import { NewRoll } from '../RollForm/FormCommon'
+import { hideUnless } from '../../../util'
 
 const styles = stylesheet({
-  AssistForm: {
+  FortuneForm: {
     minHeight: 200,
     display: 'grid',
     gap: 12,
@@ -30,17 +28,19 @@ const styles = stylesheet({
     flexDirection: 'column',
     gap: 12,
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
-interface AssistForm$ {
+interface FortuneForm$ {
   pool: string
-  dicePool: DicePool$
   note: string
   username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<FortuneForm$>) =>
   (diceRolled: DieResult[]): void => {
     const { note, pool, username } = state.get()
     const n = diceRolled.length
@@ -58,64 +58,60 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set(init_ActionForm$())
+    state.set(init_FortuneForm$())
   }
 
-const init_ActionForm$ = (): AssistForm$ => ({
-  dicePool: init_DicePool$(),
+const init_FortuneForm$ = (): FortuneForm$ => ({
   note: '',
   pool: '',
   username: '',
 })
 
-export const FortuneForm = ({
-  uid,
-  roll,
-  active,
-}: {
+export const FortuneForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
-  active: boolean
-}) => {
-  const $ = useFunState<AssistForm$>(init_ActionForm$())
-  const { note } = $.get()
-  const dicePool$ = $.prop('dicePool')
-  const diceSceneRef = useRef<DiceSceneRef | null>(null)
-  useEffect(() => {
-    note ? diceSceneRef.current?.enable() : diceSceneRef.current?.disable()
-  }, [note])
-  return active
-    ? div({ className: styles.AssistForm }, [
-        e(DicePool, {
-          key: 'dicepool',
-          ref: diceSceneRef,
-          state: dicePool$,
-          sendRoll: rollIt(roll, uid, $),
-          disableRemove: false,
-          disabled: !note,
-        }),
-        div({ key: 'form', className: styles.form }, [
-          e(FormHeading, { key: 'title', title: 'Fortune Roll' }),
-          h('p', { key: 'subhead' }, ['Did a non-player entity succeed in their plans?']),
-          h('p', { key: 'subhead2' }, ['OP rolls 0-3 dice based on standing of entity']),
-          div({ key: 'poolSelect' }, [
-            e(TextInput, {
-              key: 'pool',
-              state: $.prop('pool'),
-              passThroughProps: { name: 'pool', placeholder: 'Context' },
-            }),
-          ]),
-          e(TextInput, {
-            key: 'username',
-            passThroughProps: {
-              placeholder: 'Entity',
-              type: 'text',
-              name: 'username',
-            },
-            state: $.prop('username'),
+  active$: FunState<boolean>
+}> = (signal, { uid, roll, active$ }) => {
+  const $ = funState<FortuneForm$>(init_FortuneForm$())
+
+  const dicePool = DicePool(signal, {
+    sendRoll: rollIt(roll, uid, $),
+    disableAdd$: funState(false),
+    active$,
+  })
+
+  // Watch state to manage dice scene enabled/disabled
+  $.watch(signal, ({ note }) => {
+    note ? dicePool.$api.enable() : dicePool.$api.disable()
+  })
+
+  // Create all components once
+  const container = enhance(
+    h('div', { className: styles.FortuneForm }, [
+      dicePool,
+      h('div', { className: styles.form }, [
+        FormHeading(signal, { title: 'Fortune Roll' }),
+        h('p', {}, ['Did a non-player entity succeed in their plans?']),
+        h('p', {}, ['OP rolls 0-3 dice based on standing of entity']),
+        h('div', {}, [
+          TextInput(signal, {
+            $: $.prop('pool'),
+            passThroughProps: { name: 'pool', placeholder: 'Context' },
           }),
-          e(Note, { key: 'note', $: $.prop('note') }),
         ]),
-      ])
-    : null
+        TextInput(signal, {
+          passThroughProps: {
+            placeholder: 'Entity',
+            type: 'text',
+            name: 'username',
+          },
+          $: $.prop('username'),
+        }),
+        Note(signal, { $: $.prop('note') }),
+      ]),
+    ]),
+    hideUnless(active$, signal),
+  )
+
+  return container
 }

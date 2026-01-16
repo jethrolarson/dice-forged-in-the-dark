@@ -1,8 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 import { decrement, increment } from 'fp-ts/lib/function'
-import { FC } from 'react'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
-import { label, div, button } from '../util'
 
 const styles = stylesheet({
   NumberSpinner: {
@@ -21,11 +20,25 @@ const styles = stylesheet({
   },
 })
 
-export const NumberSpinner: FC<{ state: FunState<number>; min: number; max: number }> = ({ state, min, max }) => {
-  const v = state.get()
-  return div({ className: styles.NumberSpinner }, [
-    button({ key: 'dec', onClick: () => v > min && state.mod(decrement) }, ['-']),
-    label({ key: 'label' }, [v]),
-    button({ key: 'inc', onClick: () => v < max && state.mod(increment) }, ['+']),
-  ])
+export const NumberSpinner: Component<{ state: FunState<number>; min: number; max: number }> = (
+  signal,
+  { state, min, max },
+) => {
+  const label = hx('label', { signal, props: { }, bind: { textContent: state as unknown as FunState<string> } }, [])
+  const decButton = hx(
+      'button', { signal, on: { click: () => state.get() > min && state.mod(decrement) } }, ['-'],
+    )
+  
+  const incButton = hx(
+    'button', { signal, on: { click: () => state.get() < max && state.mod(increment) } }, ['+'],
+  )
+
+  // Watch state and update label
+  state.watch(signal, (v) => {
+    label.textContent = String(v)
+    decButton.disabled = v <= min
+    incButton.disabled = v >= max
+  })
+
+  return h('div', { className: styles.NumberSpinner }, [decButton, label, incButton])
 }

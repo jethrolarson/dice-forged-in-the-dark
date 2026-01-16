@@ -1,7 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
-import { FC, ReactNode } from 'react'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
-import { button, div, label } from '../../../util'
 
 const styles = stylesheet({
   buttons: {
@@ -25,9 +24,9 @@ const styles = stylesheet({
   },
 })
 
-export type ButtonOption = string | { value: string; content: ReactNode }
+export type ButtonOption = string | { value: string; content: string | Element }
 
-export const ButtonSelect: FC<{
+export const ButtonSelect: Component<{
   selected: string
   options: ButtonOption[]
   className?: string
@@ -35,42 +34,55 @@ export const ButtonSelect: FC<{
   title: string
   tooltip?: string
   onSelect: (name: string) => unknown
-}> = ({ selected, options, className, columns = 2, title, tooltip, onSelect }) => {
-  return div({ className }, [
-    title && label({ key: 'title', className: styles.label, title: tooltip }, [title]),
-    div(
-      { key: 'options', className: classes(styles.buttons, style({ columnCount: columns })) },
-      options.map((opt) => {
-        const value = typeof opt === 'string' ? opt : opt.value
-        return button(
-          {
-            key: value,
-            onClick: onSelect.bind(null, value),
-            value,
-            type: 'button',
-            className: classes(styles.option, selected === value && styles.selected),
-          },
-          [typeof opt === 'string' ? opt : opt.content],
-        )
-      }),
-    ),
+}> = (signal, { selected, options, className, columns = 2, title, tooltip, onSelect }) => {
+  const buttonElements = options.map((opt) => {
+    const value = typeof opt === 'string' ? opt : opt.value
+    const content = typeof opt === 'string' ? opt : opt.content
+    return hx(
+      'button',
+      {
+        signal,
+        props: { value, type: 'button', className: classes(styles.option, selected === value && styles.selected) },
+        on: { click: () => onSelect(value) },
+      },
+      [content],
+    )
+  })
+
+  return h('div', { className }, [
+    title && h('label', { className: styles.label, title: tooltip }, [title]),
+    h('div', { className: classes(styles.buttons, style({ columnCount: columns })) }, buttonElements),
   ])
 }
 
-export const FunButtonSelect: FC<{
+export const FunButtonSelect: Component<{
   $: FunState<string>
   options: ButtonOption[]
   className?: string
   columns?: number
   label: string
   tooltip?: string
-}> = ({ $, options, className, columns, label, tooltip }) =>
-  ButtonSelect({
-    className,
-    columns,
-    title: label,
-    tooltip,
-    onSelect: (value) => $.mod((oldValue) => (oldValue === value ? '' : value)),
-    options,
-    selected: $.get(),
+}> = (signal, { $, options, className, columns = 2, label, tooltip }) => {
+  const buttonElements = options.map((opt) => {
+    const value = typeof opt === 'string' ? opt : opt.value
+    const content = typeof opt === 'string' ? opt : opt.content
+    const button = hx('button', { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => $.mod((oldValue) => (oldValue === value ? '' : value)) } }, [content])
+    return { button, value }
   })
+
+  // Watch state and update button styling
+  $.watch(signal, (selected) => {
+    buttonElements.forEach(({ button, value }) => {
+      button.className = classes(styles.option, selected === value && styles.selected)
+    })
+  })
+
+  return h('div', { className }, [
+    label && h('label', { className: styles.label, title: tooltip }, [label]),
+    h(
+      'div',
+      { className: classes(styles.buttons, style({ columnCount: columns })) },
+      buttonElements.map((el) => el.button),
+    ),
+  ])
+}

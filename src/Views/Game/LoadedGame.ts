@@ -7,23 +7,22 @@ import {
   query,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import useFunState from '@fun-land/use-fun-state'
+import { funState, merge } from '@fun-land/fun-state'
+import { Component, h, hx, bindListChildren } from '@fun-land/fun-web'
 import { important } from 'csx'
-import { mergeRight } from 'ramda'
-import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import Icon from 'react-icons-kit'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 import { classes, stylesheet } from 'typestyle'
+import { Icon } from '../../components/Icon'
 import { LoadedGameState, LogItem } from '../../Models/GameModel'
 import { playCritSound, playMessageSound, playRollSound, playWarnSound, playWinSound } from '../../sounds'
-import { button, div, e, h } from '../../util'
 import { AshworldForm } from './AshworldForm/AshworldForm'
 import { MIForm } from './MIForm/MIForm'
 import { RollForm } from './RollForm/RollForm'
 import { RollLogItem } from './RollLog'
 import { RollMessage } from './RollMessage'
 import { valuateActionRoll } from './RollValuation'
+import { prop } from '@fun-land/accessor'
 
 const styles = stylesheet({
   Game: {},
@@ -189,113 +188,187 @@ const updateLogItems =
     return newRolls
   }
 
-export const LoadedGame: FC<{
+export const LoadedGame: Component<{
   initialState: LoadedGameState
   gameId: string
   gdoc: DocumentReference
   uid: string
   userDisplayName: string
-}> = ({ initialState, gameId, gdoc, uid, userDisplayName }) => {
-  const state = useFunState<LoadedGameState>(initialState)
-  const [hidden, setHidden] = useState(false)
-  const { rolls, title, rollsLoaded, miroId, rollConfig, theme } = state.get()
-  const scrollRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    onSnapshot(gdoc, (ss) => {
-      const data = ss.data()
-      setPageTitle((data?.title as string) ?? '')
-      data && mergeRight(state)(data)
+}> = (signal, { initialState, gameId, gdoc, uid, userDisplayName }) => {
+  const state = funState<LoadedGameState>(initialState)
+  const hidden = funState(false)
+  const scrollContainer = h('div', {})
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      scrollContainer.scrollTo({ top: scrollContainer.scrollHeight })
     })
-    return onSnapshot(query(collection(gdoc, 'rolls'), orderBy('date')), (snapshot) => {
-      state.prop('rollsLoaded').set(true)
-      state.prop('rolls').mod(updateLogItems(snapshot.docs))
-    })
-  }, [])
-  const scrollToBottom = useCallback(() => {
-    scrollRef.current?.scrollTo({ top: 99999999999 })
-  }, [])
-  // stay scrolled to the bottom
-  useLayoutEffect(() => {
+  }
+
+  // Subscribe to game document
+  onSnapshot(gdoc, (ss) => {
+    const data = ss.data()
+    setPageTitle((data?.title as string) ?? '')
+    data && merge(state)(data)
+  })
+
+  // Subscribe to rolls collection
+  onSnapshot(query(collection(gdoc, 'rolls'), orderBy('date')), (snapshot) => {
+    state.prop('rollsLoaded').set(true)
+    state.prop('rolls').mod(updateLogItems(snapshot.docs))
+  })
+
+  // Stay scrolled to the bottom when rolls change
+  state.prop('rolls').watch(signal, () => {
     scrollToBottom()
-  }, [rolls])
+  })
 
-  useEffect(() => {
-    document.documentElement.classList.add(theme)
-    return () => document.documentElement.classList.remove(theme)
-  }, [theme])
+  // Handle theme changes
+  state.prop('theme').watch(signal, (theme) => {
+    document.documentElement.className = theme
+  })
 
-  return div({ className: styles.Game }, [
-    div({ key: 'body', className: styles.body }, [
-      div({ key: 'left', className: styles.left }, [
-        miroId &&
-          h('iframe', {
-            className: styles.canvas,
-            src: `https://miro.com/app/live-embed/${miroId}/`,
-            frameBorder: '0',
-            scrolling: 'no',
-            allowFullScreen: true,
-          }),
-      ]),
-      hidden
-        ? div({ key: 'diceColbutton', className: styles.showDiceCol }, [
-            button({ onClick: () => setHidden(false) }, [
-              h('span', { className: styles.showDiceApp }, ['Show Dice App']),
-            ]),
-          ])
-        : h('section', { key: 'diceCol', className: styles.right }, [
-            div({ key: 'head', className: styles.heading }, [
-              h('a', { key: 'back', href: '#/' }, [e(Icon, { key: 'backIcon', icon: chevronLeft, size: 28 })]),
-              h('h1', { key: 'heading', className: classes(styles.title, title.length > 14 && styles.title_small) }, [
-                title,
-              ]),
-              h(
-                'a',
-                {
-                  key: 'settingsButton',
-                  href: `#/game-settings/${gameId}`,
-                  className: styles.settingsButton,
-                  title: 'Game Settings',
-                },
-                [e(Icon, { key: 'gearicon', icon: gears, size: 28 })],
-              ),
-              state.prop('miroId').get()
-                ? button(
-                    {
-                      key: 'minimizeButton',
-                      className: styles.minimize,
-                      onClick: () => setHidden(true),
-                      title: 'Click to Minimize',
-                    },
-                    ['_'],
-                  )
-                : null,
-            ]),
-            div({ key: 'log', ref: scrollRef, className: styles.log }, [
-              !rollsLoaded
-                ? h('p', { key: 'loading' }, ['Loading...'])
-                : rolls.length
-                  ? div(
-                      { key: 'rolls', className: styles.rolls },
-                      rolls.map((r, i) =>
-                        h('article', { key: `roll_${r.id}` }, [
-                          r.kind === 'Message'
-                            ? e(RollMessage, { key: 'message', result: r })
-                            : r.kind === 'Roll'
-                              ? e(RollLogItem, { key: 'logItem', result: r, isLast: i === rolls.length - 1 })
-                              : null,
-                        ]),
-                      ),
-                    )
-                  : null,
-            ]),
-            div({ key: 'rollForm' }, [
-              rollConfig.system === 'mala-incognita'
-                ? e(MIForm, { key: 'miForm', gdoc, uid, scrollToBottom, userDisplayName })
-                : rollConfig.system === 'Ash World 0.1'
-                  ? e(AshworldForm, { key: 'form', uid, gdoc, scrollToBottom, userDisplayName })
-                  : e(RollForm, { key: 'oldForm', rollConfig, gdoc, uid, userDisplayName }),
-            ]),
-          ]),
+  const showDiceButton = hx(
+    'button',
+    { signal, props: { className: styles.showDiceApp }, on: { click: () => hidden.set(false) } },
+    [h('span', { className: styles.showDiceApp }, ['Show Dice App'])],
+  )
+  const minimizeButton = hx(
+    'button',
+    {
+      signal,
+      props: { className: styles.minimize, title: 'Click to Minimize' },
+      on: { click: () => hidden.set(true) },
+    },
+    ['_'],
+  )
+
+  const iframe = h('iframe', {
+    className: styles.canvas,
+    frameBorder: '0',
+    scrolling: 'no',
+    allowFullScreen: true,
+  })
+
+  const loadingP = h('p', {}, ['Loading...'])
+  const rollsContainer = h('div', { className: styles.rolls }, [])
+  const leftSection = h('div', { className: styles.left }, [])
+  const showDiceCol = h('div', { className: styles.showDiceCol }, [showDiceButton])
+  const titleH1 = h('h1', { className: styles.title }, [])
+  const rollFormContainer = h('div', {}, [])
+
+  const diceColSection = h('section', { className: styles.right }, [
+    h('div', { className: styles.heading }, [
+      h('a', { href: '#/' }, [Icon(signal, { icon: chevronLeft, size: 28 })]),
+      titleH1,
+      h(
+        'a',
+        {
+          href: `#/game-settings/${gameId}`,
+          className: styles.settingsButton,
+          title: 'Game Settings',
+        },
+        [Icon(signal, { icon: gears, size: 28 })],
+      ),
+      minimizeButton,
     ]),
+    scrollContainer,
+    rollFormContainer,
+  ])
+
+  scrollContainer.className = styles.log
+
+  // Create form container elements
+  const miFormContainer = h('div', {}, [MIForm(signal, { gdoc, uid, scrollToBottom, userDisplayName })])
+  const ashworldFormContainer = h('div', {}, [AshworldForm(signal, { uid, gdoc, scrollToBottom, userDisplayName })])
+  const oldRollFormContainer = h('div', {}, [])
+
+  miFormContainer.style.display = 'none'
+  ashworldFormContainer.style.display = 'none'
+  oldRollFormContainer.style.display = 'none'
+
+  rollFormContainer.appendChild(miFormContainer)
+  rollFormContainer.appendChild(ashworldFormContainer)
+  rollFormContainer.appendChild(oldRollFormContainer)
+
+  // Watch title
+  state.prop('title').watch(signal, (title) => {
+    titleH1.textContent = title
+    titleH1.className = classes(styles.title, title.length > 14 && styles.title_small)
+  })
+
+  // Watch miroId
+  state.prop('miroId').watch(signal, (miroId) => {
+    if (miroId) {
+      iframe.setAttribute('src', `https://miro.com/app/live-embed/${miroId}/`)
+      leftSection.replaceChildren(iframe)
+      minimizeButton.style.display = ''
+    } else {
+      leftSection.replaceChildren()
+      minimizeButton.style.display = 'none'
+    }
+  })
+
+  // Watch rolls with keyedChildren
+  state.prop('rollsLoaded').watch(signal, (loaded) => {
+    if (!loaded) {
+      scrollContainer.replaceChildren(loadingP)
+    } else {
+      scrollContainer.replaceChildren(rollsContainer)
+    }
+  })
+
+  bindListChildren({
+    signal,
+    key: prop<LogItem>()('id'),
+    state: state.prop('rolls'),
+    row: ({ state: rollState, signal: childSignal }) => {
+      const roll = rollState.get()
+      const rolls = state.prop('rolls').get()
+      const index = rolls.findIndex((r) => r.id === roll.id)
+      const isLast = index === rolls.length - 1
+
+      return h('article', {}, [
+        roll.kind === 'Message'
+          ? RollMessage(childSignal, { result: roll })
+          : roll.kind === 'Roll'
+            ? RollLogItem(childSignal, { result: roll, isLast })
+            : null,
+      ])
+    },
+  })(rollsContainer)
+
+  // Watch rollConfig and update form
+  state.prop('rollConfig').watch(signal, (rollConfig) => {
+    if (rollConfig.system === 'mala-incognita') {
+      miFormContainer.style.display = ''
+      ashworldFormContainer.style.display = 'none'
+      oldRollFormContainer.style.display = 'none'
+    } else if (rollConfig.system === 'Ash World 0.1') {
+      miFormContainer.style.display = 'none'
+      ashworldFormContainer.style.display = ''
+      oldRollFormContainer.style.display = 'none'
+    } else {
+      miFormContainer.style.display = 'none'
+      ashworldFormContainer.style.display = 'none'
+      oldRollFormContainer.style.display = ''
+      // Replace old roll form since it changes completely based on config
+      oldRollFormContainer.replaceChildren(RollForm(signal, { rollConfig, gdoc, uid, userDisplayName }))
+    }
+  })
+
+  // Watch hidden state
+  hidden.watch(signal, (isHidden) => {
+    if (isHidden) {
+      showDiceCol.style.display = ''
+      diceColSection.style.display = 'none'
+    } else {
+      showDiceCol.style.display = 'none'
+      diceColSection.style.display = ''
+    }
+  })
+
+  return h('div', { className: styles.Game }, [
+    h('div', { className: styles.body }, [leftSection, showDiceCol, diceColSection]),
   ])
 }

@@ -1,8 +1,7 @@
-import useFunState from '@fun-land/use-fun-state'
 import { hsla } from 'csx'
-import { ReactNode } from 'react'
 import { stylesheet } from 'typestyle'
-import { button, div, label } from '../../../util'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, h, hx } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   Builder: {
@@ -28,51 +27,79 @@ const styles = stylesheet({
     gap: 5,
     gridTemplateColumns: '1fr 1fr',
   },
+  hidden: {
+    display: 'none',
+  },
 })
 
-export const SubForm = ({
-  onDone,
-  onCancel,
-  title,
-  disabled,
-  children,
-}: {
+export const SubForm: Component<{
   onDone: () => unknown
   onCancel: () => unknown
-  title: ReactNode
+  title: string | Element
   disabled: boolean
-  children: ReactNode
-}) => {
-  const state = useFunState(false)
-  const isOpen = state.get()
-  const setOpen = state.set
-  return isOpen
-    ? div({ className: styles.Builder }, [
-        label({ key: 'title' }, [title]),
-        children,
-        div({ key: 'footer', className: styles.footer }, [
-          button(
-            {
-              key: 'done',
-              onClick: (): void => {
-                onDone()
-                setOpen(false)
-              },
-              disabled,
-            },
-            ['Done'],
-          ),
-          button(
-            {
-              key: 'clear',
-              onClick: (): void => {
-                onCancel()
-                setOpen(false)
-              },
-            },
-            ['Clear'],
-          ),
-        ]),
-      ])
-    : button({ className: styles.expander, onClick: () => setOpen(true) }, [title])
+  children: Element[]
+}> = (signal, { onDone, onCancel, title, disabled, children }) => {
+  const openState = funState(false)
+
+  const expanderButton = hx(
+    'button',
+    { signal, props: { className: styles.expander }, on: { click: () => openState.set(true) } },
+    [title],
+  )
+
+  const openForm = OpenForm(signal, { onDone, onCancel, title, disabled, children, openState })
+  openForm.classList.add(styles.hidden)
+
+  // Toggle visibility based on state
+  openState.watch(signal, (isOpen) => {
+    expanderButton.classList.toggle(styles.hidden, isOpen)
+    openForm.classList.toggle(styles.hidden, !isOpen)
+  })
+
+  return h('div', {}, [expanderButton, openForm])
+}
+
+const OpenForm: Component<{
+  onDone: () => unknown
+  onCancel: () => unknown
+  title: string | Element
+  disabled: boolean
+  children: Element[]
+  openState: FunState<boolean>
+}> = (signal, { onDone, onCancel, title, disabled, children, openState }) => {
+  const doneButton = hx(
+    'button',
+    {
+      signal,
+      props: { disabled, type: 'button' },
+      on: {
+        click: () => {
+          onDone()
+          openState.set(false)
+        },
+      },
+    },
+    ['Done'],
+  )
+
+  const clearButton = hx(
+    'button',
+    {
+      signal,
+      props: { type: 'button' },
+      on: {
+        click: () => {
+          onCancel()
+          openState.set(false)
+        },
+      },
+    },
+    ['Clear'],
+  )
+
+  return h('div', { className: styles.Builder }, [
+    h('label', {}, [title]),
+    ...children,
+    h('div', { className: styles.footer }, [doneButton, clearButton]),
+  ])
 }
