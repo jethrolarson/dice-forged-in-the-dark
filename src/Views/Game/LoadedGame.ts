@@ -225,10 +225,7 @@ export const LoadedGame: Component<{
 
   // Handle theme changes
   state.prop('theme').watch(signal, (theme) => {
-    document.documentElement.classList.add(theme)
-    signal.addEventListener('abort', () => {
-      document.documentElement.classList.remove(theme)
-    })
+    document.documentElement.className = theme
   })
 
   const showDiceButton = hx(

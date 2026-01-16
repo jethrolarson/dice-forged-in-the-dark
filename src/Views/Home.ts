@@ -19,7 +19,7 @@ export const UserHome: Component<{ user: FSUser }> = (signal, { user }) => {
   const firestore = getFirestore()
   const userDoc = getDocRef(`users/${user.uid}`)
 
-  document.documentElement.classList.add(defaultTheme)
+  document.documentElement.className = defaultTheme
 
   // Load user games
   getDoc(userDoc)
