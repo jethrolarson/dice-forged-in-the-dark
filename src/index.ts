@@ -1,7 +1,7 @@
-import { App } from './App'
+import { Home } from './Views/Home'
 import './index.css'
 import initFirebase from './initFirebase'
 import { mount } from '@fun-land/fun-web'
 
 initFirebase()
-mount(App, {}, document.getElementById('root')!)
+mount((signal) => Home(signal, {}), {}, document.getElementById('root')!)

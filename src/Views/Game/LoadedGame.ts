@@ -149,12 +149,12 @@ export const LoadedGame: Component<{
 
   const diceColSection = h('section', { className: styles.right }, [
     h('div', { className: styles.heading }, [
-      h('a', { href: '#/' }, [Icon(signal, { icon: chevronLeft, size: 28 })]),
+      h('a', { href: 'index.html' }, [Icon(signal, { icon: chevronLeft, size: 28 })]),
       titleH1,
       h(
         'a',
         {
-          href: `#/game-settings/${gameId}`,
+          href: `settings.html?id=${gameId}`,
           className: styles.settingsButton,
           title: 'Game Settings',
         },

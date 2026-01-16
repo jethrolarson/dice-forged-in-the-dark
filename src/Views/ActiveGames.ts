@@ -23,7 +23,7 @@ const createGame = (uid: string, title: string, state: FunState<boolean>) => ():
   }
   addDoc(collection(getFirestore(), 'games'), gameState)
     .then((value) => {
-      window.location.hash = `#/game-settings/${value.id}`
+      window.location.href = `settings.html?id=${value.id}`
       state.set(false)
     })
     .catch((e) => {
@@ -50,7 +50,7 @@ export const ActiveGames: Component<{ games: GameState[]; user: FSUser }> = (sig
     h(
       'ul',
       { className: styles.list },
-      games.map((game) => h('li', {}, [h('a', { href: `#/game/${game.id}` }, [game.title || 'untitled'])])),
+      games.map((game) => h('li', {}, [h('a', { href: `game.html?id=${game.id}` }, [game.title || 'untitled'])])),
     ),
   ])
 }

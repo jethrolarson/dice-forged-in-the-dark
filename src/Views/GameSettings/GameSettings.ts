@@ -21,6 +21,8 @@ import { TextInput } from '../../components/TextInput'
 import { validateTitle } from './validate'
 import { funState, merge } from '@fun-land/fun-state'
 import {  Component, h, hx, renderWhen } from '@fun-land/fun-web'
+import { getUser } from '../../services/getUser'
+import { Login } from '../Login/Login'
 
 const deleteGame = (gdoc: DocumentReference): void => {
   if (window.confirm('Are you sure you want to delete this game permanently?')) {
@@ -28,7 +30,7 @@ const deleteGame = (gdoc: DocumentReference): void => {
       console.error(e)
       alert('delete failed')
     })
-    document.location.hash = '#'
+    window.location.href = 'index.html'
   }
 }
 
@@ -55,7 +57,7 @@ export const LoadedGameSettings: Component<{
         state.prop('rollConfigError').set('')
         setDoc(gdoc, { rollConfig, title, miroId, theme, system }, { merge: true })
           .then(() => {
-            document.location.hash = `#/game/${gameId}`
+            window.location.href = `game.html?id=${gameId}`
           })
           .catch((e) => {
             console.error(e)
@@ -142,7 +144,7 @@ export const LoadedGameSettings: Component<{
     h('footer', { className: styles.footer }, [
       h('div', { className: styles.leftButtons }, [
         saveButton,
-        hx('button', { signal, props: { type: 'button' }, on: { click: () => location.assign(`#/game/${gameId}`) } }, [
+        hx('button', { signal, props: { type: 'button' }, on: { click: () => location.assign(`game.html?id=${gameId}`) } }, [
           'Cancel',
         ]),
       ]),
@@ -164,7 +166,7 @@ const setRollConfig = (gs: LoadedGameState): GameSettingsState => {
   return { ...gs, rollConfigText, rollConfigError: '' }
 }
 
-export const GameSettings: Component<{ gameId: string }> = (signal, { gameId }) => {
+const GameSettingsWithAuth: Component<{ gameId: string }> = (signal, { gameId }) => {
   const gameState = funState<GameState>(initialGameState)
   const gdoc = getDocRef(`games/${gameId}`)
 
@@ -200,6 +202,19 @@ export const GameSettings: Component<{ gameId: string }> = (signal, { gameId }) 
         container.replaceChildren(h('h1', {}, ['Error loading game. Try refreshing the page.']))
         break
     }
+  })
+
+  return container
+}
+
+export const GameSettings: Component<{ gameId: string }> = (signal, { gameId }) => {
+  const userState = getUser(signal)
+  const container = h('div', {}, [])
+
+  userState.watch(signal, (user) => {
+    container.replaceChildren(
+      user ? GameSettingsWithAuth(signal, { gameId }) : Login(signal, {}),
+    )
   })
 
   return container
