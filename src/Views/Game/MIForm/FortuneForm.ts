@@ -77,13 +77,12 @@ export const FortuneForm: Component<{
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
     disableAdd$: funState(false),
+    active$,
   })
-
-  const diceApi = dicePool.$api
 
   // Watch state to manage dice scene enabled/disabled
   $.watch(signal, ({ note }) => {
-    note ? diceApi.enable() : diceApi.disable()
+    note ? dicePool.$api.enable() : dicePool.$api.disable()
   })
 
   // Create all components once

@@ -80,26 +80,44 @@ export const AssistForm: Component<{
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
     disableAdd$: funState(false),
+    active$,
   })
-
-  const diceApi = dicePool.$api
 
   // Watch state to manage dice and enable/disable
   $.watch(signal, ({ username, note, pool, tier }) => {
     const shouldEnable = username && note && pool
-    shouldEnable ? diceApi.enable() : diceApi.disable()
+    shouldEnable ? dicePool.$api.enable() : dicePool.$api.disable()
 
     // Manage dice based on tier (only when active)
     if (active$.get()) {
       if (tier === Tier.T0) {
-        diceApi.addDie(dieColors.black, 'zero')
-        diceApi.addDie(dieColors.black, 'zero2')
-        diceApi.removeDie('assist')
+        dicePool.$api.addDie(dieColors.black, 'zero')
+        dicePool.$api.addDie(dieColors.black, 'zero2')
+        dicePool.$api.removeDie('assist')
       } else {
-        diceApi.addDie(tierColor(tier), 'assist')
-        diceApi.removeDie('zero')
-        diceApi.removeDie('zero2')
+        dicePool.$api.addDie(tierColor(tier), 'assist')
+        dicePool.$api.removeDie('zero')
+        dicePool.$api.removeDie('zero2')
       }
+    }
+  })
+  
+  // Sync dice when scene becomes active
+  active$.watch(signal, (active) => {
+    if (active) {
+      // Defer sync to ensure scene is created (may be async if dimensions not ready)
+      requestAnimationFrame(() => {
+        const { tier } = $.get()
+        if (tier === Tier.T0) {
+          dicePool.$api.addDie(dieColors.black, 'zero')
+          dicePool.$api.addDie(dieColors.black, 'zero2')
+          dicePool.$api.removeDie('assist')
+        } else {
+          dicePool.$api.addDie(tierColor(tier), 'assist')
+          dicePool.$api.removeDie('zero')
+          dicePool.$api.removeDie('zero2')
+        }
+      })
     }
   })
 

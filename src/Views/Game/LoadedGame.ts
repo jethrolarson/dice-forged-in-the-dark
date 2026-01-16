@@ -200,7 +200,9 @@ export const LoadedGame: Component<{
   const scrollRef = h('div', {}) as HTMLDivElement
 
   const scrollToBottom = () => {
-    scrollRef.scrollTo({ top: 99999999999 })
+    requestAnimationFrame(() => {
+      scrollRef.scrollTo({ top: scrollRef.scrollHeight })
+    })
   }
 
   // Subscribe to game document

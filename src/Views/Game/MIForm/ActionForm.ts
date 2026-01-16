@@ -10,7 +10,7 @@ import { Character } from '../../../components/Character'
 import { Factor, FactorSelect } from './FactorSelect'
 import { init_Power$, Power$, PowerSelect } from './PowerSelect'
 import { Approach$, init_Approach$, ApproachSelect } from './ApproachSelect'
-import { Tier } from './TierSelect'
+import { Tier, tierColor } from './TierSelect'
 import { hideUnless } from '../../../util'
 
 const styles = stylesheet({
@@ -88,31 +88,67 @@ export const ActionForm: Component<{
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
     disableAdd$: funState(false),
+    active$,
   })
 
-  const diceApi = dicePool.$api
-
   const addDie = (color: number, id?: string) => {
-    diceApi.addDie(color, id)
+    dicePool.$api.addDie(color, id)
   }
   const removeDie = (id: string) => {
-    diceApi.removeDie(id)
+    dicePool.$api.removeDie(id)
   }
 
   // Watch state to manage dice scene enabled/disabled and zero dice
   $.watch(signal, ({ username, note, approach$, power$, factor$ }) => {
     const shouldEnable = username && note
-    shouldEnable ? diceApi.enable() : diceApi.disable()
-
-    // Manage zero dice (only when active)
-    if (active$.get()) {
-      if (approach$.tier === Tier.T0 && power$.tier === Tier.T0 && factor$ === Factor.Disadvantaged) {
-        addDie(dieColors.black, 'zero')
-        addDie(dieColors.black, 'zero2')
-      } else {
-        removeDie('zero')
-        removeDie('zero2')
-      }
+    shouldEnable ? dicePool.$api.enable() : dicePool.$api.disable()
+  
+    if (approach$.tier === Tier.T0 && power$.tier === Tier.T0 && factor$ === Factor.Disadvantaged) {
+      addDie(dieColors.black, 'zero')
+      addDie(dieColors.black, 'zero2')
+    } else {
+      removeDie('zero')
+      removeDie('zero2')
+    }
+  })
+  
+  // Sync Select component dice when scene becomes active
+  active$.watch(signal, (active) => {
+    if (active) {
+      // Defer sync to ensure scene is created (may be async if dimensions not ready)
+      requestAnimationFrame(() => {
+        const { approach$, power$, factor$ } = $.get()
+        
+        // Approach dice
+        approach$.tier !== Tier.T0 ? addDie(tierColor(approach$.tier), 'approach') : removeDie('approach')
+        
+        // Power dice
+        power$.tier !== Tier.T0 ? addDie(tierColor(power$.tier), 'power') : removeDie('power')
+        
+        // Factor dice
+        switch (factor$) {
+          case Factor.Even:
+            addDie(0xffffff, 'factor1')
+            removeDie('factor2')
+            break
+          case Factor.Dominant:
+            addDie(0xffffff, 'factor1')
+            addDie(0xffffff, 'factor2')
+            break
+          case Factor.Disadvantaged:
+            removeDie('factor1')
+            removeDie('factor2')
+        }
+        
+        // Zero dice
+        if (approach$.tier === Tier.T0 && power$.tier === Tier.T0 && factor$ === Factor.Disadvantaged) {
+          addDie(dieColors.black, 'zero')
+          addDie(dieColors.black, 'zero2')
+        } else {
+          removeDie('zero')
+          removeDie('zero2')
+        }
+      })
     }
   })
 

@@ -8,7 +8,7 @@ import { DicePool } from '../../../components/DicePool'
 import { Character } from '../../../components/Character'
 import { TextInput } from '../../../components/TextInput'
 import { FormHeading } from '../../../components/FormHeading'
-import { bindClass, hideUnless, notAcc } from '../../../util'
+import { hideUnless } from '../../../util'
 
 const styles = stylesheet({
   QualityForm: {
@@ -78,13 +78,12 @@ export const QualityForm: Component<{
   const dicePool = DicePool(signal, {
     sendRoll: rollIt(roll, uid, $),
     disableAdd$: funState(false),
+    active$,
   })
-
-  const diceApi = dicePool.$api
 
   // Watch state to manage dice scene enabled/disabled
   $.watch(signal, ({ note }) => {
-    note ? diceApi.enable() : diceApi.disable()
+    note ? dicePool.$api.enable() : dicePool.$api.disable()
   })
 
   // Create all components once
