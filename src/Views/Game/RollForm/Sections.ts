@@ -1,6 +1,6 @@
 import { index } from '@fun-land/accessor'
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { hsla } from 'csx'
 import { always, not } from 'ramda'
 import { stylesheet } from 'typestyle'
@@ -83,15 +83,15 @@ const Builder: Component<{
     ...section.optionGroups.map((og, i) =>
       OptGroup(signal, { optionGroup: og, state: builderState.prop('values').focus(index(i)), setDice }),
     ),
-    enhance(
-      h('button', {}, ['Done']),
-      on('click', () => builderState.prop('isOpen').set(false), signal),
-    ),
+    hx('button', { signal, props: { type: 'button' }, on: { click: () => builderState.prop('isOpen').set(false) } }, [
+      'Done',
+    ]),
   ])
 
-  const expanderButton = enhance(
-    h('button', { className: styles.expander }, []),
-    on('click', () => builderState.prop('isOpen').set(true), signal),
+  const expanderButton = hx(
+    'button',
+    { signal, props: { className: styles.expander }, on: { click: () => builderState.prop('isOpen').set(true) } },
+    [],
   )
 
   builderDiv.classList.add(styles.hidden)
@@ -137,7 +137,7 @@ export const Sections: Component<{
   h(
     'div',
     { style: { display: 'contents' } },
-    sections.map((section, i) =>
+    sections.map((section) =>
       section.sectionType === 'builder'
         ? Builder(signal, { state: state.focus(index(section.line)), section, setDice })
         : section.sectionType === 'modifier'

@@ -1,6 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
 
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 
 const styles = stylesheet({
@@ -41,13 +41,16 @@ const actionMap = [
 ] as const
 
 export const RollTypes: Component<{ $: FunState<RollType> }> = (signal, { $ }) => {
-  const buttons = actionMap.map(([type, label]) => {
-    const button = enhance(
-      h('button', { className: styles.tab }, [label]),
-      on('click', () => $.mod((t) => (t === type ? RollType.none : type)), signal),
-    )
-    return { button, type }
-  })
+  const buttons = actionMap.map(([type, label]) => ({ button: hx(
+      'button',
+      {
+        signal,
+        props: { className: styles.tab },
+        on: { click: () => $.mod((t) => (t === type ? RollType.none : type)) },
+      },
+      [label],
+    ), type }),
+  )
 
   // Watch state and update button styling
   $.watch(signal, (selectedType) => {

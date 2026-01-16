@@ -1,7 +1,7 @@
 import { hsla } from 'csx'
 import { stylesheet } from 'typestyle'
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   Builder: {
@@ -41,9 +41,10 @@ export const SubForm: Component<{
 }> = (signal, { onDone, onCancel, title, disabled, children }) => {
   const openState = funState(false)
 
-  const expanderButton = enhance(
-    h('button', { className: styles.expander }, [title]),
-    on('click', () => openState.set(true), signal),
+  const expanderButton = hx(
+    'button',
+    { signal, props: { className: styles.expander }, on: { click: () => openState.set(true) } },
+    [title],
   )
 
   const openForm = OpenForm(signal, { onDone, onCancel, title, disabled, children, openState })
@@ -66,28 +67,34 @@ const OpenForm: Component<{
   children: Element[]
   openState: FunState<boolean>
 }> = (signal, { onDone, onCancel, title, disabled, children, openState }) => {
-  const doneButton = enhance(
-    h('button', { disabled }, ['Done']),
-    on(
-      'click',
-      () => {
-        onDone()
-        openState.set(false)
-      },
+  const doneButton = hx(
+    'button',
+    {
       signal,
-    ),
+      props: { disabled, type: 'button' },
+      on: {
+        click: () => {
+          onDone()
+          openState.set(false)
+        },
+      },
+    },
+    ['Done'],
   )
 
-  const clearButton = enhance(
-    h('button', {}, ['Clear']),
-    on(
-      'click',
-      () => {
-        onCancel()
-        openState.set(false)
-      },
+  const clearButton = hx(
+    'button',
+    {
       signal,
-    ),
+      props: { type: 'button' },
+      on: {
+        click: () => {
+          onCancel()
+          openState.set(false)
+        },
+      },
+    },
+    ['Clear'],
   )
 
   return h('div', { className: styles.Builder }, [

@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 import { RollOption } from '../Models/RollConfig'
 
@@ -37,16 +37,14 @@ export const ButtonSelect: Component<{
 }> = (signal, { selected, options, className, columns = 2, label: title, tooltip, onSelect }) => {
   const buttonElements = options.map((opt) => {
     const optName = typeof opt === 'string' ? opt : opt.name
-    return enhance(
-      h(
-        'button',
-        {
-          type: 'button',
-          className: classes(styles.option, selected === optName && styles.selected),
-        },
-        [optName],
-      ),
-      on('click', () => onSelect(optName), signal),
+    return hx(
+      'button',
+      {
+        props: { type: 'button', className: classes(styles.option, selected === optName && styles.selected) },
+        signal,
+        on: { click: () => onSelect(optName) },
+      },
+      [optName],
     )
   })
 
@@ -66,10 +64,12 @@ export const FunButtonSelect: Component<{
 }> = (signal, { $, options, className, columns = 2, label: title, tooltip }) => {
   const buttonElements = options.map((opt) => {
     const optName = typeof opt === 'string' ? opt : opt.name
-    const button = enhance(
-      h('button', { type: 'button', className: styles.option }, [optName]),
-      on('click', () => $.set(optName), signal),
+    const button = hx(
+      'button',
+      { props: { type: 'button', className: styles.option }, signal, on: { click: () => $.set(optName) } },
+      [optName],
     )
+
     return { button, optName }
   })
 

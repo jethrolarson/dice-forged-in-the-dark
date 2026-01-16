@@ -1,9 +1,9 @@
-import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, bindListChildren, on } from '@fun-land/fun-web'
+import { funState, FunState } from '@fun-land/fun-state'
+import { Component, h, hx, bindListChildren, enhance } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { DieColor, DieType } from '../../../Models/Die'
-import { Die } from '../Die'
+import { Die, DieProps } from '../Die'
 import { prop } from '@fun-land/accessor'
 
 export interface Rollable {
@@ -50,10 +50,7 @@ export const DicePool: Component<{
   changeColor: (index: number) => void
   disabled$: FunState<boolean>
 }> = (signal, { dicePool$, roll, removeDie, changeColor, disabled$ }) => {
-  const rollButton = enhance(
-    h('button', { className: styles.rollButton }, ['ROLL 0']),
-    on('click', () => roll(), signal),
-  )
+  const rollButton = hx('button', { signal, props: { className: styles.rollButton, type: 'button' }, on: { click: () => roll() } }, ['ROLL 0'])
 
   const diceBox = enhance(
     h('div', { className: styles.diceBox }, []),
@@ -71,25 +68,23 @@ export const DicePool: Component<{
         const dicePool = dicePool$.get()
         const index = dicePool.findIndex((d) => d.id === die.id)
 
+        const dieVisualState: DieProps['$'] = funState({
+          dieColor: DieColor[c],
+          dotColor: '#000',
+        })
+
+        // Watch for color changes on this die
+        dieState.watch(childSignal, (die) => {
+          dieVisualState.prop('dieColor').set(DieColor[die.color])
+        })
+
         const btn = h('button', { className: styles.dieButton }, [
           d === 'd6'
-            ? Die(childSignal, { dieColor: DieColor[c], dotColor: '#000', value: 6, size: 38 })
+            ? Die(childSignal, { value: 6, size: 38, $: dieVisualState })
             : h('div', { style: { color: c } }, [d]),
         ])
 
-        return enhance<HTMLButtonElement>(
-          btn,
-          on('click', () => removeDie(index), childSignal),
-          on(
-            'contextmenu',
-            (e) => {
-              const x = e.currentTarget
-              e.preventDefault()
-              changeColor(index)
-            },
-            childSignal,
-          ),
-        )
+        return hx('button', { signal: childSignal, props: { className: styles.dieButton, type: 'button' }, on: { click: () => removeDie(index), contextmenu: (e) => { e.preventDefault(); changeColor(index) } } }, btn)
       },
     }),
   )

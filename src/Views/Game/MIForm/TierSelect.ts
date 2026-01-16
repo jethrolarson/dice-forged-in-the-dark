@@ -1,7 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 import { classes, style, stylesheet } from 'typestyle'
 import { dieColors, DieColorType } from '../../../Models/Die'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   TierSelect: {
@@ -93,13 +93,20 @@ export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
     [],
   )
 
-  const tierButton = h(
+  const tierButton = hx(
     'button',
     {
-      className: styles.tierButton,
-      type: 'button',
-      'aria-haspopup': 'menu',
-      'aria-expanded': 'false',
+      signal,
+      props: { className: styles.tierButton, type: 'button' },
+      attrs: { 'aria-haspopup': 'menu', 'aria-expanded': 'false' },
+      on: {
+        click: () => {
+          if (popover.matches(':popover-open')) {
+            popover.hidePopover()
+          } else popover.showPopover()
+          syncExpanded()
+        },
+      },
     },
     [],
   )
@@ -111,20 +118,6 @@ export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
 
   popover.addEventListener('toggle', syncExpanded, { signal })
 
-  enhance(
-    tierButton,
-    on(
-      'click',
-      () => {
-        if (popover.matches(':popover-open')) popover.hidePopover()
-        else popover.showPopover()
-        // (toggle event will also fire; this is fine either way)
-        syncExpanded()
-      },
-      signal,
-    ),
-  )
-
   const onSelect = (val: Tier) => {
     popover.hidePopover()
     $.set(val)
@@ -133,9 +126,10 @@ export const TierSelect: Component<{ $: FunState<Tier> }> = (signal, { $ }) => {
   const tierButtonLabel = h('span', {}, [])
 
   const optionButtons = tierOpts.map((value) => {
-    const button = enhance(
-      h('button', { value, type: 'button', className: styles.option }, []),
-      on('click', () => onSelect(value), signal),
+    const button = hx(
+      'button',
+      { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => onSelect(value) } },
+      [],
     )
     const label = h('span', {}, [])
     button.appendChild(label)

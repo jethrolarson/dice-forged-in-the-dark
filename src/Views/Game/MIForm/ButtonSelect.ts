@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 
 const styles = stylesheet({
@@ -38,17 +38,14 @@ export const ButtonSelect: Component<{
   const buttonElements = options.map((opt) => {
     const value = typeof opt === 'string' ? opt : opt.value
     const content = typeof opt === 'string' ? opt : opt.content
-    return enhance(
-      h(
-        'button',
-        {
-          value,
-          type: 'button',
-          className: classes(styles.option, selected === value && styles.selected),
-        },
-        [content],
-      ),
-      on('click', () => onSelect(value), signal),
+    return hx(
+      'button',
+      {
+        signal,
+        props: { value, type: 'button', className: classes(styles.option, selected === value && styles.selected) },
+        on: { click: () => onSelect(value) },
+      },
+      [content],
     )
   })
 
@@ -69,10 +66,7 @@ export const FunButtonSelect: Component<{
   const buttonElements = options.map((opt) => {
     const value = typeof opt === 'string' ? opt : opt.value
     const content = typeof opt === 'string' ? opt : opt.content
-    const button = enhance(
-      h('button', { value, type: 'button', className: styles.option }, [content]),
-      on('click', () => $.mod((oldValue) => (oldValue === value ? '' : value)), signal),
-    )
+    const button = hx('button', { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => $.mod((oldValue) => (oldValue === value ? '' : value)) } }, [content])
     return { button, value }
   })
 

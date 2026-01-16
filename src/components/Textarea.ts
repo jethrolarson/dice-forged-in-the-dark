@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, on, h, enhance, bindProperty } from '@fun-land/fun-web'
+import { Component, hx } from '@fun-land/fun-web'
 
 export interface TextareaProps {
   $: FunState<string>
@@ -7,8 +7,9 @@ export interface TextareaProps {
 }
 
 export const Textarea: Component<TextareaProps, HTMLTextAreaElement> = (signal, { $, passThroughProps }) =>
-  enhance(
-    h('textarea', { ...passThroughProps }),
-    bindProperty('value', $, signal),
-    on('input', ({ currentTarget: { value } }) => $.set(value), signal),
-  )
+  hx('textarea', {
+    signal,
+    props: passThroughProps,
+    bind: { value: $ },
+    on: { input: ({ currentTarget: { value } }) => $.set(value) },
+  })

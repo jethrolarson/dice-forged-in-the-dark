@@ -1,7 +1,7 @@
 import { DocumentReference } from '@firebase/firestore'
 import { removeAt } from '@fun-land/accessor'
 import { funState, FunState, merge } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, enhance, h, hx, on } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { Icon } from '../../../components/Icon'
@@ -139,20 +139,22 @@ export const RollForm: Component<{
   // Create roll type selector
   const rollTypesContainer = h('div', { className: styles.rollTypes }, [])
   const rollTypeButtons = rollTypes.map((rt) => {
-    const btn = h('button', {}, [rt.name, ' '])
-    enhance(
-      btn,
-      on(
-        'click',
-        () => {
-          s.prop('rollType').set(rt.name)
-          const vt = rollTypes.find(({ name }) => name === rt.name)?.valuationType
-          if (vt) {
-            s.prop('valuationType').set(vt === 'Ask' ? 'Action' : vt)
-          }
-        },
+    const btn = hx(
+      'button',
+      {
         signal,
-      ),
+        props: { type: 'button' },
+        on: {
+          click: () => {
+            s.prop('rollType').set(rt.name)
+            const vt = rollTypes.find(({ name }) => name === rt.name)?.valuationType
+            if (vt) {
+              s.prop('valuationType').set(vt === 'Ask' ? 'Action' : vt)
+            }
+          },
+        },
+      },
+      [rt.name, ' '],
     )
     return btn
   })
@@ -174,19 +176,20 @@ export const RollForm: Component<{
     const currentConfig = rollTypes.find((rt) => rt.name === rollType)
 
     if (currentConfig) {
-      const backButton = h('button', { className: styles.backButton }, [
-        Icon(signal, { icon: chevronLeft, size: 18 }),
-      ])
-      enhance(
-        backButton,
-        on(
-          'click',
-          (e: Event) => {
-            e.preventDefault()
-            reset(s)
-          },
+      const backButton = h('button', { className: styles.backButton }, [Icon(signal, { icon: chevronLeft, size: 18 })])
+      hx(
+        'button',
+        {
           signal,
-        ),
+          props: { type: 'button' },
+          on: {
+            click: (e: Event) => {
+              e.preventDefault()
+              reset(s)
+            },
+          },
+        },
+        [backButton],
       )
 
       const characterLabel = !currentConfig.excludeCharacter
@@ -207,38 +210,36 @@ export const RollForm: Component<{
       const valuationSelect =
         currentConfig?.valuationType === 'Ask'
           ? (() => {
-              const select = h('select', {}, [
-                h('option', { value: 'Action' }, ['Action']),
-                h('option', { value: 'Resist' }, ['Resist']),
-                h('option', { value: 'Sum' }, ['Sum']),
-                h('option', { value: 'Highest' }, ['Highest']),
-                h('option', { value: 'Lowest' }, ['Lowest']),
-              ])
-              enhance(
-                select,
-                on(
-                  'change',
-                  (e) => s.prop('valuationType').set((e.target as HTMLSelectElement).value as ValuationType),
+              const select = hx(
+                'select',
+                {
                   signal,
-                ),
+                  on: {
+                    change: (e) => s.prop('valuationType').set((e.target as HTMLSelectElement).value as ValuationType),
+                  },
+                  // TODO fix this type once FunRead is published
+                  bind: { value: s.prop('valuationType') as FunState<string> },
+                },
+                [
+                  h('option', { value: 'Action' }, ['Action']),
+                  h('option', { value: 'Resist' }, ['Resist']),
+                  h('option', { value: 'Sum' }, ['Sum']),
+                  h('option', { value: 'Highest' }, ['Highest']),
+                  h('option', { value: 'Lowest' }, ['Lowest']),
+                ],
               )
-              s.prop('valuationType').watch(signal, (value) => {
-                ;(select as HTMLSelectElement).value = value
-              })
               valuationLabel.appendChild(select)
               return valuationLabel
             })()
           : null
-
-      const textareaEl = Textarea(signal, {
-        passThroughProps: {
-          placeholder: 'Description',
-          className: styles.noteInput,
-        },
-        $: s.prop('note'),
-      })
-      enhance(
-        textareaEl,
+      const textareaEl = enhance(
+        Textarea(signal, {
+          passThroughProps: {
+            placeholder: 'Description',
+            className: styles.noteInput,
+          },
+          $: s.prop('note'),
+        }),
         on(
           'input',
           (e: Event) => {
@@ -275,11 +276,5 @@ export const RollForm: Component<{
     }
   })
 
-  const form = h('form', { className: styles.form }, [formContent, rollTypesContainer])
-  enhance(
-    form,
-    on('submit', (e: Event) => e.preventDefault(), signal),
-  )
-
-  return form
+  return hx('form', { signal, on: { submit: (e: Event) => e.preventDefault() } }, [formContent, rollTypesContainer])
 }

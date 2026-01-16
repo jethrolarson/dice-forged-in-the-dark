@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import {  Component, h, hx } from '@fun-land/fun-web'
 import { classes, keyframes, stylesheet } from 'typestyle'
 import { DieColor } from '../../../Models/Die'
 
@@ -80,14 +80,20 @@ export const FactorSelect: Component<{
     [],
   )
 
-  const factorButton = h(
+  const factorButton = hx(
     'button',
     {
-      className: classes(styles.button, styles.factorButton),
-      type: 'button',
-      anchorName: '--factor-anchor',
-      'aria-haspopup': 'menu',
-      'aria-expanded': 'false',
+      signal,
+      props: { className: classes(styles.button, styles.factorButton), type: 'button' },
+      attrs: { anchorName: '--factor-anchor', 'aria-haspopup': 'menu', 'aria-expanded': 'false' },
+      on: {
+        click: () => {
+          if (popover.matches(':popover-open')) {
+            popover.hidePopover()
+          } else popover.showPopover()
+          syncExpanded()
+        },
+      },
     },
     [],
   )
@@ -99,29 +105,16 @@ export const FactorSelect: Component<{
 
   popover.addEventListener('toggle', syncExpanded, { signal })
 
-  enhance(
-    factorButton,
-    on(
-      'click',
-      () => {
-        if (popover.matches(':popover-open')) popover.hidePopover()
-        else popover.showPopover()
-        // (toggle event will also fire; this is fine either way)
-        syncExpanded()
-      },
-      signal,
-    ),
-  )
-
   const onSelect = (val: Factor) => {
     popover.hidePopover()
     $.set(val)
   }
 
   const optionButtons = [Factor.Disadvantaged, Factor.Even, Factor.Dominant].map((value) => {
-    const button = enhance(
-      h('button', { value, type: 'button', className: styles.option }, value),
-      on('click', () => onSelect(value), signal),
+    const button = hx(
+      'button',
+      { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => onSelect(value) } },
+      [value],
     )
     return { button, value }
   })

@@ -1,10 +1,8 @@
 import { FunState } from '@fun-land/fun-state'
-import { identity } from 'fp-ts/lib/function'
 import { trim } from 'fp-ts/lib/string'
-import { Component, h, enhance, attrs } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { style } from 'typestyle'
 import { ButtonSelect } from '../../../components/ButtonSelect'
-import { TextInput } from '../../../components/TextInput'
 import { DieColor, DieType } from '../../../Models/Die'
 import { BuilderOptionGroup } from '../../../Models/RollConfig'
 import { toArray } from '../../../util'
@@ -53,16 +51,12 @@ export const OptGroup: Component<{
       })
     : h('label', { title: og.tooltip }, [
         dl,
-        enhance(
-          TextInput(signal, {
-            passThroughProps: {
-              placeholder: og.name,
-              type: 'text',
-              name: og.name,
-            },
-            $: state,
-          }),
-          dl ? attrs({ list: listId }) : identity,
-        ),
+        hx('input', {
+          signal,
+          attrs: { list: dl ? listId : '' },
+          props: { placeholder: og.name, type: 'text', name: og.name },
+          bind: { value: state },
+          on: { change: ({ currentTarget: { value } }) => state.set(value) },
+        }),
       ])
 }

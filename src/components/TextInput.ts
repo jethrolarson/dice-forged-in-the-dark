@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, on, bindProperty, h } from '@fun-land/fun-web'
+import { Component, hx } from '@fun-land/fun-web'
 
 export interface TextInputProps {
   $: FunState<string>
@@ -7,8 +7,9 @@ export interface TextInputProps {
 }
 
 export const TextInput: Component<TextInputProps> = (signal, { $, passThroughProps }) =>
-  enhance(
-    h('input', { ...passThroughProps, value: $.get() }),
-    bindProperty('value', $, signal),
-    on('change', ({ currentTarget: { value } }) => $.set(value), signal),
-  )
+  hx('input', {
+    signal,
+    props: passThroughProps,
+    bind: { value: $ },
+    on: { change: ({ currentTarget: { value } }) => $.set(value) },
+  })

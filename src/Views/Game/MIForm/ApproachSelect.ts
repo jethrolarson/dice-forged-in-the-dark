@@ -1,5 +1,5 @@
 import { FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
@@ -93,14 +93,24 @@ export const ApproachSelect: Component<{
     [],
   )
 
-  const approachButton = h(
+  const approachButton = hx(
     'button',
     {
-      className: styles.approachButton,
-      type: 'button',
-      anchorName: '--approach-anchor',
-      'aria-haspopup': 'menu',
-      'aria-expanded': 'false',
+      signal,
+      props: { className: styles.approachButton, type: 'button' },
+      attrs: {
+        anchorName: '--approach-anchor',
+        'aria-haspopup': 'menu',
+        'aria-expanded': 'false',
+      },
+      on: {
+        click: () => {
+          if (popover.matches(':popover-open')) popover.hidePopover()
+          else popover.showPopover()
+          // (toggle event will also fire; this is fine either way)
+          syncExpanded()
+        },
+      },
     },
     [],
   )
@@ -112,29 +122,16 @@ export const ApproachSelect: Component<{
 
   popover.addEventListener('toggle', syncExpanded, { signal })
 
-  enhance(
-    approachButton,
-    on(
-      'click',
-      () => {
-        if (popover.matches(':popover-open')) popover.hidePopover()
-        else popover.showPopover()
-        // (toggle event will also fire; this is fine either way)
-        syncExpanded()
-      },
-      signal,
-    ),
-  )
-
   const onSelect = (value: string) => {
     popover.hidePopover()
     $.prop('approach').mod((a) => (a === value ? '' : value))
   }
 
   const optionButtons = approaches.map((value) => {
-    const button = enhance(
-      h('button', { value, type: 'button', className: styles.option }, []),
-      on('click', () => onSelect(value), signal),
+    const button = hx(
+      'button',
+      { signal, props: { value, type: 'button', className: styles.option }, on: { click: () => onSelect(value) } },
+      [value],
     )
     return { button, value }
   })

@@ -5,7 +5,7 @@ import { funState, FunState } from '@fun-land/fun-state'
 import { stylesheet } from 'typestyle'
 import { defaultTheme, PersistedState } from '../Models/GameModel'
 import { presets } from '../Models/rollConfigPresets'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 
 type GameState = PersistedState & { id: string }
 
@@ -54,17 +54,16 @@ const styles = stylesheet({
 
 export const ActiveGames: Component<{ games: GameState[]; user: FSUser }> = (signal, { games, user }) => {
   const state = funState(false)
+  const newGameButton = hx(
+    'button',
+    { signal, props: { className: 'primary' }, on: { click: () => createGame(user.uid, 'New Game', state) } },
+    ['New Game'],
+  )
+  const logoutButton = hx('button', { signal, props: { className: 'primary' }, on: { click: () => logout() } }, [
+    'Logout',
+  ])
   return h('div', {}, [
-    h('div', { className: styles.actions }, [
-      enhance(
-        h('button', { className: 'primary' }, ['New Game']),
-        on('click', createGame(user.uid, 'New Game', state), signal),
-      ),
-      enhance(
-        h('button', {}, ['Logout']),
-        on('click', () => void logout(), signal),
-      ),
-    ]),
+    h('div', { className: styles.actions }, [newGameButton, logoutButton]),
     h('h2', {}, ['Active Games']),
     h(
       'ul',

@@ -1,4 +1,6 @@
 import * as O from 'fp-ts/lib/Option'
+import { Component, h } from '@fun-land/fun-web'
+import { funState } from '@fun-land/fun-state'
 import {
   GameState,
   GameView,
@@ -13,7 +15,6 @@ import { LoadedGame } from './LoadedGame'
 import { getUser } from '../../services/getUser'
 import { User } from '../../Models/User'
 import { Login } from '../Login/Login'
-import { Component, funState, h } from '@fun-land/fun-web'
 
 export const gamePath = (path: string): O.Option<GameView> => {
   const m = /^\/game\/([^/?]+)/.exec(path)

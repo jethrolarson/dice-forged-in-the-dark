@@ -2,8 +2,9 @@ import { DocumentReference, addDoc, collection } from '@firebase/firestore'
 import { style, stylesheet } from 'typestyle'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
-import { Component, FunState, funState, h } from '@fun-land/fun-web'
+import { Component, h } from '@fun-land/fun-web'
 import { hideUnless } from '../../util'
+import { funState, FunState } from '@fun-land/fun-state'
 
 const styles = stylesheet({
   MessageForm: {

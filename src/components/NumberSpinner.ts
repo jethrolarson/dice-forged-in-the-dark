@@ -1,6 +1,6 @@
 import { FunState } from '@fun-land/fun-state'
 import { decrement, increment } from 'fp-ts/lib/function'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
 
 const styles = stylesheet({
@@ -25,13 +25,12 @@ export const NumberSpinner: Component<{ state: FunState<number>; min: number; ma
   { state, min, max },
 ) => {
   const label = h('label', {}, [String(state.get())])
-  const decButton = enhance(
-    h('button', {}, ['-']),
-    on('click', () => state.get() > min && state.mod(decrement), signal),
-  )
-  const incButton = enhance(
-    h('button', {}, ['+']),
-    on('click', () => state.get() < max && state.mod(increment), signal),
+  const decButton = hx(
+      'button', { signal, on: { click: () => state.get() > min && state.mod(decrement) } }, ['-'],
+    )
+  
+  const incButton = hx(
+    'button', { signal, on: { click: () => state.get() < max && state.mod(increment) } }, ['+'],
   )
 
   // Watch state and update label

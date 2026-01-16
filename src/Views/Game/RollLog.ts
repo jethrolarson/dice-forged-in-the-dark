@@ -3,7 +3,8 @@ import { Component, h } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 import { DieColor, DieColorType, DieResult } from '../../Models/Die'
 import { RollResult } from '../../Models/GameModel'
-import { Die } from './Die'
+import { Die, DieProps } from './Die'
+import { funState } from '@fun-land/fun-state'
 import { Note } from './Note'
 import { RollValuation, valuationMap } from './RollValuation'
 
@@ -143,8 +144,10 @@ const ResultDie: Component<{
   excluded: boolean
   isLast: boolean
   dieColor: string
-}> = (signal, { value, size, highest, excluded, isLast, dieColor }) =>
-  Die(signal, { value, size, ...dieStyles(value, excluded, highest, isLast, dieColor) })
+}> = (signal, { value, size, highest, excluded, isLast, dieColor }) => {
+  const $: DieProps['$'] = funState(dieStyles(value, excluded, highest, isLast, dieColor))
+  return Die(signal, { value, size, $ })
+}
 
 const getResults = map((d: DieResult) => d.value)
 
@@ -194,7 +197,7 @@ export const RollLogItem: Component<{ result: RollResult; isLast: boolean }> = (
       h('div', { className: styles.meta }, [
         username && h('span', { className: styles.name }, [username, ':']),
         h('div', { className: title.length > 12 ? styles.smallRollType : styles.rollType }, [title]),
-        ...moreLines.map((line, i) => h('div', { className: styles.line }, [line])),
+        ...moreLines.map((line) => h('div', { className: styles.line }, [line])),
         note && Note(signal, { text: note }),
       ]),
       h('em', { className: styles.time }, [

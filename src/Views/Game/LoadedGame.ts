@@ -8,7 +8,7 @@ import {
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
 import { funState, merge } from '@fun-land/fun-state'
-import { Component, enhance, h, bindListChildren, on } from '@fun-land/fun-web'
+import { Component, h, hx, bindListChildren } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
@@ -231,15 +231,19 @@ export const LoadedGame: Component<{
     })
   })
 
-  // Create static elements
-  const showDiceButton = enhance(
-    h('button', {}, [h('span', { className: styles.showDiceApp }, ['Show Dice App'])]),
-    on('click', () => hidden.set(false), signal),
+  const showDiceButton = hx(
+    'button',
+    { signal, props: { className: styles.showDiceApp }, on: { click: () => hidden.set(false) } },
+    [h('span', { className: styles.showDiceApp }, ['Show Dice App'])],
   )
-
-  const minimizeButton = enhance(
-    h('button', { className: styles.minimize, title: 'Click to Minimize' }, ['_']),
-    on('click', () => hidden.set(true), signal),
+  const minimizeButton = hx(
+    'button',
+    {
+      signal,
+      props: { className: styles.minimize, title: 'Click to Minimize' },
+      on: { click: () => hidden.set(true) },
+    },
+    ['_'],
   )
 
   const iframe = h('iframe', {

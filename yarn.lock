@@ -790,15 +790,15 @@
   resolved "https://registry.yarnpkg.com/@fun-land/accessor/-/accessor-4.0.2.tgz#8b8b2bc401458188111b255ae06949607187b62e"
   integrity sha512-vyscihnCQP5n+0eFkdwWptzwJEieQh3FtY9Yeq/OPjLvjZP2j0YIzPyMH4GvcztlA9mNBEgpvtKbQhj5b1mnag==
 
-"@fun-land/fun-state@^9.0.1":
-  version "9.0.1"
-  resolved "https://registry.yarnpkg.com/@fun-land/fun-state/-/fun-state-9.0.1.tgz#93fb160fa01f7c0480d5050336b127d998fd7863"
-  integrity sha512-V+ibtki2EeVyAnVTOkxuTZL4lTQfEmIlIkh6m3wXqfhnDOQPv1rNBhRASxDkukLNx+P++/hkfOVWnorDrN169Q==
+"@fun-land/fun-state@^9.1.0":
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/@fun-land/fun-state/-/fun-state-9.1.0.tgz#26a1a46734351197191ec35f5fc81637d59fd327"
+  integrity sha512-ae9rWtWr8EfkZKaKCyukJmfreFDJcu+tMz9xOCTwRbeCjeP/pzsysMDfOXLHK0pLHYRygejRJemZ43GZPhXlhQ==
 
-"@fun-land/fun-web@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@fun-land/fun-web/-/fun-web-0.5.0.tgz#f4d6b8d1b3341afb7d0ed4d5669c9eef820b0fc0"
-  integrity sha512-hxF0dnbRNAOoYfhvLqE8rj9y+yrCCh54kYTSkUGTWk12yqWPgFqI9Age3f3UbQAfWGJKcnJb9vudeOzn49FvAA==
+"@fun-land/fun-web@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@fun-land/fun-web/-/fun-web-0.6.0.tgz#9d50e37b56ed09a877b2c8fed6c431cb3eb96075"
+  integrity sha512-tC/psk/aXOIKbHc69TyZ7muUM9XUTlGRoIp4C9b1v2VHDjnazckZjha3Jg+ATs67v5NuA7tShHz2xWVNzH15MA==
 
 "@grpc/grpc-js@~1.9.0":
   version "1.9.15"

@@ -1,5 +1,5 @@
 import { funState, FunState } from '@fun-land/fun-state'
-import { Component, enhance, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { classes, stylesheet } from 'typestyle'
 
 const styles = stylesheet({
@@ -53,46 +53,43 @@ export const ComboBox: Component<{
   const openState = funState(false)
   const filterState = funState('')
 
-  const input = enhance(
-    h('input', {
+  const input = hx('input', {
+    props: {
       type: 'text',
       name,
       placeholder,
       className: classes(styles.input, className),
-    }),
-    on('focus', () => openState.set(true), signal),
-    on(
-      'blur',
-      () => {
+    },
+    on: {
+      focus: () => openState.set(true),
+      blur: () => {
         // Delay to allow click on option
         setTimeout(() => openState.set(false), 200)
       },
-      signal,
-    ),
-      on(
-        'input',
-        ({ currentTarget }) => {
-          filterState.set(currentTarget.value)
-          $.set(currentTarget.value)
-        },
-        signal,
-      ),
-  )
+      input: ({ currentTarget }) => {
+        filterState.set(currentTarget.value)
+        $.set(currentTarget.value)
+      },
+    },
+    signal,
+  })
 
   // Create option elements once with stable handlers
   const optionElements = data.map((item) => {
-    const option = h('div', { className: styles.option }, [item])
-    enhance(
-      option,
-      on(
-        'mousedown',
-        (e) => {
-          e.preventDefault() // Prevent blur
-          $.set(item)
-          openState.set(false)
-        },
+    const option = hx(
+      'div',
+      {
+        props: { className: styles.option },
         signal,
-      ),
+        on: {
+          mousedown: (e) => {
+            e.preventDefault() // Prevent blur
+            $.set(item)
+            openState.set(false)
+          },
+        },
+      },
+      item,
     )
     return { option, item }
   })

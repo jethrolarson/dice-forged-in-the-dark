@@ -19,7 +19,7 @@ import { presets } from '../../Models/rollConfigPresets'
 import { TextInput } from '../../components/TextInput'
 import { validateTitle } from './validate'
 import { funState, merge } from '@fun-land/fun-state'
-import { bindProperty, Component, enhance, h, on, renderWhen } from '@fun-land/fun-web'
+import {  Component, h, hx, renderWhen } from '@fun-land/fun-web'
 
 const styles = stylesheet({
   GameSettings: {
@@ -110,54 +110,47 @@ export const LoadedGameSettings: Component<{
   }
   const themeField = h('label', {}, [
     'Theme: ',
-    enhance(
-      h(
-        'select',
-        {
-          className: styles.loadPreset,
-        },
-        Object.values(Theme).map((theme) => h('option', {}, [theme])),
-      ),
-      bindProperty('value', state.prop('theme'), signal),
-      on('change', ({ currentTarget: { value } }) => state.prop('theme').set(value), signal),
+    hx(
+      'select',
+      {
+        signal,
+        props: { className: styles.loadPreset },
+        bind: { value: state.prop('theme') },
+        on: { change: ({ currentTarget: { value } }) => state.prop('theme').set(value) },
+      },
+      Object.values(Theme).map((theme) => h('option', {}, [theme])),
     ),
   ])
-  const saveButton = enhance(
-    h(
-      'button',
-      {
-        className: 'primary',
-      },
-      ['Save Settings'],
-    ),
-    on('click', () => gdoc && saveSettings(), signal),
+  const saveButton = hx(
+    'button',
+    { signal, props: { className: 'primary' }, on: { click: () => gdoc && saveSettings() } },
+    ['Save Settings'],
   )
   state.watch(signal, ({ title, rollConfigText }) => (saveButton.disabled = !title || !rollConfigText))
   const gameSystemField = h('label', {}, [
     'Game system: ',
-    enhance(
-      h(
-        'select',
-        {
+    hx(
+      'select',
+      {
+        signal,
+        props: {
           className: styles.loadPreset,
         },
-        presets.map((preset) => h('option', { value: preset.system }, [preset.system ?? 'Other'])),
-      ),
-      bindProperty('value', state.prop('system'), signal),
-      on(
-        'change',
-        ({ currentTarget: { value } }): void => {
-          merge(state)({
-            rollConfigText: JSON.stringify(
-              presets.find((preset) => preset.system === value),
-              null,
-              2,
-            ),
-            system: value,
-          })
+        bind: { value: state.prop('system') },
+        on: {
+          change: ({ currentTarget: { value } }): void => {
+            merge(state)({
+              rollConfigText: JSON.stringify(
+                presets.find((preset) => preset.system === value),
+                null,
+                2,
+              ),
+              system: value,
+            })
+          },
         },
-        signal,
-      ),
+      },
+      presets.map((preset) => h('option', { value: preset.system }, [preset.system ?? 'Other'])),
     ),
   ])
   const rootEl = h('div', {}, [
@@ -177,9 +170,10 @@ export const LoadedGameSettings: Component<{
     gameSystemField,
     renderWhen({
       component: (signal) =>
-        enhance(
-          h('div', { className: styles.error }, []),
-          bindProperty('textContent', state.prop('rollConfigError'), signal),
+        hx(
+          'div',
+          { signal, props: { className: styles.error }, bind: { textContent: state.prop('rollConfigError') } },
+          [],
         ),
       signal,
       state,
@@ -190,14 +184,14 @@ export const LoadedGameSettings: Component<{
     h('footer', { className: styles.footer }, [
       h('div', { className: styles.leftButtons }, [
         saveButton,
-        enhance(
-          h('button', {}, ['Cancel']),
-          on('click', () => location.assign(`#/game/${gameId}`), signal),
-        ),
+        hx('button', { signal, props: { type: 'button' }, on: { click: () => location.assign(`#/game/${gameId}`) } }, [
+          'Cancel',
+        ]),
       ]),
-      enhance(
-        h('button', { className: 'dangerous' }, ['Delete Game']),
-        on('click', () => gdoc && deleteGame(gdoc), signal),
+      hx(
+        'button',
+        { signal, props: { type: 'button', className: 'dangerous' }, on: { click: () => gdoc && deleteGame(gdoc) } },
+        ['Delete Game'],
       ),
     ]),
   ])

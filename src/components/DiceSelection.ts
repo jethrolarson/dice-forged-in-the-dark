@@ -1,8 +1,9 @@
-import { Component, enhance, funState, h, on } from '@fun-land/fun-web'
+import { Component, h, hx } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { DieColor, DieColorType } from '../Models/Die'
-import { Die, nextColor } from '../Views/Game/Die'
+import { Die, DieProps, nextColor } from '../Views/Game/Die'
+import { funState } from '@fun-land/fun-state'
 
 const styles = stylesheet({
   dieButton: {
@@ -31,71 +32,62 @@ export const DiceSelection: Component<{
   add0Dice: () => unknown
   reset: () => unknown
 }> = (signal, { addDie, add0Dice, reset }) => {
-  const s = funState<{ dieColor: keyof typeof DieColor }>({
-    dieColor: 'white',
+  const dieState: DieProps['$'] = funState({
+    dieColor: DieColor.white,
+    dotColor: '#000',
   })
-  const { dieColor } = s.get()
 
-  const addDieButton = enhance(
-    h(
-      'button',
-      {
-        key: 'd6',
+  let currentColorKey: DieColorType = 'white'
+
+  const addDieButton = hx(
+    'button',
+    {
+      signal,
+      props: {
         className: styles.dieButton,
         type: 'button',
         title: 'Add Die. Right-click to change color',
       },
-      Die(signal, {
-        value: 6,
-        dieColor: DieColor[dieColor],
-        glow: false,
-        pulse: false,
-        dotColor: '#000',
-        size: 28,
-      }),
-    ),
-    on(
-      'contextmenu',
-      (e): void => {
-        s.prop('dieColor').mod(nextColor)
-        e.preventDefault()
+      on: {
+        contextmenu: (e) => {
+          currentColorKey = nextColor(currentColorKey)
+          dieState.prop('dieColor').set(DieColor[currentColorKey])
+          e.preventDefault()
+        },
+        click: () => addDie(currentColorKey),
       },
-      signal,
-    ),
-    on('click', () => addDie(s.prop('dieColor').get()), signal),
+    },
+    Die(signal, { value: 6, $: dieState, size: 28 }),
   )
 
-  const roll0Button = enhance(
-    h(
-      'button',
-      {
-        key: '0d6',
+  const roll0State: DieProps['$'] = funState({
+    dieColor: DieColor.black,
+    dotColor: '#000',
+  })
+
+  const roll0Button = hx(
+    'button',
+    {
+      signal,
+      props: {
         className: styles.dieButton,
         type: 'button',
         title: '0d (roll 2 take lowest)',
       },
-      Die(signal, {
-        value: 6,
-        dieColor: DieColor['black'],
-        glow: false,
-        pulse: false,
-        dotColor: '#000',
-        size: 28,
-      }),
-    ),
-    on('click', add0Dice, signal),
+      on: { click: () => add0Dice() },
+    },
+    Die(signal, { value: 6, $: roll0State, size: 28 }),
   )
 
   return h('div', { className: styles.diceButtons }, [
     addDieButton,
     roll0Button,
-    h(
+    hx(
       'button',
       {
-        key: 'reset',
-        className: styles.dieButton,
-        type: 'button',
-        onClick: reset,
+        props: { type: 'button', className: styles.dieButton },
+        signal,
+        on: { click: () => reset() },
       },
       'reset',
     ),
