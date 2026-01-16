@@ -8,8 +8,8 @@
   "main": "src/index.js",
   "dependencies": {
     "@fun-land/accessor": "^4.0.2",
-    "@fun-land/fun-state": "^9.1.0",
-    "@fun-land/fun-web": "^0.6.0",
+    "@fun-land/fun-state": "^9.2.0",
+    "@fun-land/fun-web": "^1.0.0",
     "cannon-es": "^0.20.0",
     "csx": "^10.0.2",
     "firebase": "^10.0.0",

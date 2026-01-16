@@ -2,7 +2,7 @@ import { Component, h } from '@fun-land/fun-web'
 import { classes, keyframes, style, stylesheet } from 'typestyle'
 import { NestedCSSProperties } from 'typestyle/lib/types'
 import { DieColorType } from '../../Models/Die'
-import { FunState } from '@fun-land/fun-state'
+import { FunRead } from '@fun-land/fun-state'
 
 const styles = stylesheet({
   Die: {
@@ -84,16 +84,18 @@ export const nextColor = (c: DieColorType): Exclude<DieColorType, 'black'> => {
   return availableDieColors[i === availableDieColors.length ? 0 : i]!
 }
 
+export interface DieVisualState {
+  dieColor: string
+  dotColor: string
+  glow?: boolean
+  pulse?: boolean
+}
+
 export interface DieProps {
   value: number
   border?: boolean
   size?: number
-  $: FunState<{
-    dieColor: string
-    dotColor: string
-    glow?: boolean
-    pulse?: boolean
-  }>
+  $: FunRead<DieVisualState>
 }
 export const Die: Component<DieProps> = (
   signal,

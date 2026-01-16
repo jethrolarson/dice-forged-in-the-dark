@@ -2,8 +2,8 @@ import { Component, h, hx } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { DieColor, DieColorType } from '../Models/Die'
-import { Die, DieProps, nextColor } from '../Views/Game/Die'
-import { funState } from '@fun-land/fun-state'
+import { Die, DieVisualState, nextColor } from '../Views/Game/Die'
+import { funState, FunState } from '@fun-land/fun-state'
 
 const styles = stylesheet({
   dieButton: {
@@ -32,7 +32,7 @@ export const DiceSelection: Component<{
   add0Dice: () => unknown
   reset: () => unknown
 }> = (signal, { addDie, add0Dice, reset }) => {
-  const dieState: DieProps['$'] = funState({
+  const dieState: FunState<DieVisualState> = funState({
     dieColor: DieColor.white,
     dotColor: '#000',
   })
@@ -60,7 +60,7 @@ export const DiceSelection: Component<{
     Die(signal, { value: 6, $: dieState, size: 28 }),
   )
 
-  const roll0State: DieProps['$'] = funState({
+  const roll0State: FunState<DieVisualState> = funState({
     dieColor: DieColor.black,
     dotColor: '#000',
   })

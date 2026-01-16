@@ -1,5 +1,5 @@
 import { index } from '@fun-land/accessor'
-import { funState, FunState } from '@fun-land/fun-state'
+import { funState, FunState, mapRead } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
 import { hsla } from 'csx'
 import { always, not } from 'ramda'
@@ -90,7 +90,12 @@ const Builder: Component<{
 
   const expanderButton = hx(
     'button',
-    { signal, props: { className: styles.expander }, on: { click: () => builderState.prop('isOpen').set(true) } },
+    {
+      signal,
+      props: { className: styles.expander },
+      bind: { textContent: mapRead(state, (value) => value || section.name) },
+      on: { click: () => builderState.prop('isOpen').set(true) },
+    },
     [],
   )
 
@@ -119,11 +124,6 @@ const Builder: Component<{
       builderDiv.classList.add(styles.hidden)
       expanderButton.classList.remove(styles.hidden)
     }
-  })
-
-  // Watch state for expander button text
-  state.watch(signal, (value) => {
-    expanderButton.textContent = value || section.name
   })
 
   return h('div', {}, [builderDiv, expanderButton])

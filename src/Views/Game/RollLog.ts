@@ -3,7 +3,7 @@ import { Component, h } from '@fun-land/fun-web'
 import { classes, style, stylesheet } from 'typestyle'
 import { DieColor, DieColorType, DieResult } from '../../Models/Die'
 import { RollResult } from '../../Models/GameModel'
-import { Die, DieProps } from './Die'
+import { Die, DieVisualState } from './Die'
 import { funState } from '@fun-land/fun-state'
 import { Note } from './Note'
 import { RollValuation, valuationMap } from './RollValuation'
@@ -146,7 +146,7 @@ const ResultDie: Component<{
   dieColor: string
 }> = (signal, { value, size, highest, excluded, isLast, dieColor }) => {
   const { border, ...stateProps } = dieStyles(value, excluded, highest, isLast, dieColor)
-  const $: DieProps['$'] = funState(stateProps)
+  const $ = funState<DieVisualState>(stateProps)
   return Die(signal, { value, size, border, $ })
 }
 

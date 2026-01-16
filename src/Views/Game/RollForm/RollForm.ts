@@ -1,6 +1,6 @@
 import { DocumentReference } from '@firebase/firestore'
 import { removeAt } from '@fun-land/accessor'
-import { funState, FunState, merge } from '@fun-land/fun-state'
+import { funState, FunState, merge, mapRead } from '@fun-land/fun-state'
 import { Component, enhance, h, hx, on } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
@@ -215,10 +215,9 @@ export const RollForm: Component<{
                 {
                   signal,
                   on: {
-                    change: (e) => s.prop('valuationType').set((e.target as HTMLSelectElement).value as ValuationType),
+                    change: (e) => s.prop('valuationType').set(e.currentTarget.value as ValuationType),
                   },
-                  // TODO fix this type once FunRead is published
-                  bind: { value: s.prop('valuationType') as FunState<string> },
+                  bind: { value: mapRead(s.prop('valuationType'), String) },
                 },
                 [
                   h('option', { value: 'Action' }, ['Action']),
@@ -249,7 +248,7 @@ export const RollForm: Component<{
           signal,
         ),
       )
-      
+
       // TODO replaceChildren causes memory leaks
       formContent.replaceChildren(
         h('div', { className: styles.formWrap }, [

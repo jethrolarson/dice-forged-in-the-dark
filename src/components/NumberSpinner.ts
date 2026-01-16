@@ -1,4 +1,4 @@
-import { FunState } from '@fun-land/fun-state'
+import { FunState, mapRead } from '@fun-land/fun-state'
 import { decrement, increment } from 'fp-ts/lib/function'
 import { Component, h, hx } from '@fun-land/fun-web'
 import { stylesheet } from 'typestyle'
@@ -24,7 +24,7 @@ export const NumberSpinner: Component<{ state: FunState<number>; min: number; ma
   signal,
   { state, min, max },
 ) => {
-  const label = hx('label', { signal, props: { }, bind: { textContent: state as unknown as FunState<string> } }, [])
+  const label = hx('label', { signal, props: { }, bind: { textContent: mapRead(state, String) } }, [])
   const decButton = hx(
       'button', { signal, on: { click: () => state.get() > min && state.mod(decrement) } }, ['-'],
     )
