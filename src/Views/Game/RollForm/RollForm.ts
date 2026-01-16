@@ -129,8 +129,8 @@ export const RollForm: Component<{
   const removeDie = (idx: number): void => s.prop('dicePool').mod(removeAt(idx))
   const setDice = (id: string, dice: DieType[], color: keyof typeof DieColor): void => {
     s.prop('dicePool').mod((ds) => {
-      const newDice = dice.map((type): Rollable => ({ type, color, id }))
-      const xs: Rollable[] = ds.filter((d) => d.id !== id).concat(newDice)
+      const newDice = dice.map((type, idx): Rollable => ({ type, color, id: `${id}_${idx}` }))
+      const xs: Rollable[] = ds.filter((d) => !d.id.startsWith(id)).concat(newDice)
       return xs
     })
   }
@@ -249,7 +249,8 @@ export const RollForm: Component<{
           signal,
         ),
       )
-
+      
+      // TODO replaceChildren causes memory leaks
       formContent.replaceChildren(
         h('div', { className: styles.formWrap }, [
           DicePool(signal, {

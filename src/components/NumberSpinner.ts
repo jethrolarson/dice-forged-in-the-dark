@@ -24,7 +24,7 @@ export const NumberSpinner: Component<{ state: FunState<number>; min: number; ma
   signal,
   { state, min, max },
 ) => {
-  const label = h('label', {}, [String(state.get())])
+  const label = hx('label', { signal, props: { }, bind: { textContent: state as unknown as FunState<string> } }, [])
   const decButton = hx(
       'button', { signal, on: { click: () => state.get() > min && state.mod(decrement) } }, ['-'],
     )
