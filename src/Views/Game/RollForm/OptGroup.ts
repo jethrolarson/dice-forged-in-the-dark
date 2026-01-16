@@ -1,6 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
+import { identity } from 'fp-ts/lib/function'
 import { trim } from 'fp-ts/lib/string'
-import { Component, h } from '@fun-land/fun-web'
+import { Component, h, enhance, attrs } from '@fun-land/fun-web'
 import { style } from 'typestyle'
 import { ButtonSelect } from '../../../components/ButtonSelect'
 import { TextInput } from '../../../components/TextInput'
@@ -38,7 +39,8 @@ export const OptGroup: Component<{
       })
     }
   }
-  const dl = og.rollOptions ? DataList(signal, { id: `list${og.name}`, values: og.rollOptions.join(',') }) : undefined
+  const listId = `list${og.name}`
+  const dl = og.rollOptions ? DataList(signal, { id: listId, values: og.rollOptions.join(',') }) : undefined
   return og.fixedOptions && og.rollOptions
     ? ButtonSelect(signal, {
         selected: state.get(),
@@ -50,14 +52,17 @@ export const OptGroup: Component<{
         className: style({ flexGrow: 1 }),
       })
     : h('label', { title: og.tooltip }, [
-        TextInput(signal, {
-          passThroughProps: {
-            placeholder: og.name,
-            type: 'text',
-            name: og.name,
-            list: dl,
-          },
-          $: state,
-        }),
+        dl,
+        enhance(
+          TextInput(signal, {
+            passThroughProps: {
+              placeholder: og.name,
+              type: 'text',
+              name: og.name,
+            },
+            $: state,
+          }),
+          dl ? attrs({ list: listId }) : identity,
+        ),
       ])
 }

@@ -6,7 +6,7 @@ import { MessageForm } from '../MessageForm'
 import { funState, FunState } from '@fun-land/fun-state'
 import { ResistForm } from './ResistForm'
 import { FortuneForm } from './FortuneForm'
-import { renderWhen, h, Component } from '@fun-land/fun-web'
+import { h, Component } from '@fun-land/fun-web'
 
 type FormState = RollType
 
@@ -19,37 +19,33 @@ export const Form: Component<{
 }> = (signal, { $, gdoc, uid, scrollToBottom, userDisplayName }) => {
   const roll = (newRoll: NewRoll) => {
     sendRoll(gdoc, userDisplayName, newRoll)
+    $.set(RollType.none)
   }
-  requestAnimationFrame(scrollToBottom)
-  return h('div', { style: { display: 'contents' } }, [
-    renderWhen({
-      signal,
-      state: $,
-      props: { roll, uid },
-      predicate: (rt) => rt === RollType.action,
-      component: ActionForm,
-    }),
-    renderWhen({
-      signal,
-      component: ResistForm,
-      state: $,
-      props: { roll, uid },
-      predicate: (rt) => rt === RollType.resist,
-    }),
-    renderWhen({
-      signal,
-      component: FortuneForm,
-      state: $,
-      props: { roll, uid },
-      predicate: (rt) => rt === RollType.fortune,
-    }),
-    renderWhen({
-      signal,
-      component: MessageForm,
-      state: $,
-      props: { gdoc },
-      predicate: (rt) => rt === RollType.message,
-    }),
+
+  // Watch roll type changes and scroll to bottom
+  $.watch(signal, () => {
+    scrollToBottom()
+  })
+
+  // Create derived active states for each form
+  const actionActive$ = funState(false)
+  const resistActive$ = funState(false)
+  const fortuneActive$ = funState(false)
+  const messageActive$ = funState(false)
+
+  // Update active states when roll type changes
+  $.watch(signal, (rollType) => {
+    actionActive$.set(rollType === RollType.action)
+    resistActive$.set(rollType === RollType.resist)
+    fortuneActive$.set(rollType === RollType.fortune)
+    messageActive$.set(rollType === RollType.message)
+  })
+
+  return h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } }, [
+    ActionForm(signal, { roll, uid, active$: actionActive$ }),
+    ResistForm(signal, { roll, uid, active$: resistActive$ }),
+    FortuneForm(signal, { roll, uid, active$: fortuneActive$ }),
+    MessageForm(signal, { gdoc, active$: messageActive$ }),
   ])
 }
 

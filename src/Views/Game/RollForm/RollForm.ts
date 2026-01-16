@@ -5,7 +5,7 @@ import { Component, enhance, h, on } from '@fun-land/fun-web'
 import { important } from 'csx'
 import { stylesheet } from 'typestyle'
 import { Icon } from '../../../components/Icon'
-import icons from 'react-icons-kit/fa/chevronLeft'
+import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { Textarea } from '../../../components/Textarea'
 import { TextInput } from '../../../components/TextInput'
 import { DieColor, DieResult, DieType } from '../../../Models/Die'
@@ -175,7 +175,7 @@ export const RollForm: Component<{
 
     if (currentConfig) {
       const backButton = h('button', { className: styles.backButton }, [
-        Icon(signal, { icon: icons.chevronLeft, size: 18 }),
+        Icon(signal, { icon: chevronLeft, size: 18 }),
       ])
       enhance(
         backButton,

@@ -197,11 +197,11 @@ export const LoadedGame: Component<{
 }> = (signal, { initialState, gameId, gdoc, uid, userDisplayName }) => {
   const state = funState<LoadedGameState>(initialState)
   const hidden = funState(false)
-  const scrollRef = h('div', {}) as HTMLDivElement
+  const scrollContainer = h('div', {})
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
-      scrollRef.scrollTo({ top: scrollRef.scrollHeight })
+      scrollContainer.scrollTo({ top: scrollContainer.scrollHeight })
     })
   }
 
@@ -271,11 +271,11 @@ export const LoadedGame: Component<{
       ),
       minimizeButton,
     ]),
-    scrollRef,
+    scrollContainer,
     rollFormContainer,
   ])
 
-  scrollRef.className = styles.log
+  scrollContainer.className = styles.log
 
   // Create form container elements
   const miFormContainer = h('div', {}, [MIForm(signal, { gdoc, uid, scrollToBottom, userDisplayName })])
@@ -311,9 +311,9 @@ export const LoadedGame: Component<{
   // Watch rolls with keyedChildren
   state.prop('rollsLoaded').watch(signal, (loaded) => {
     if (!loaded) {
-      scrollRef.replaceChildren(loadingP)
+      scrollContainer.replaceChildren(loadingP)
     } else {
-      scrollRef.replaceChildren(rollsContainer)
+      scrollContainer.replaceChildren(rollsContainer)
     }
   })
 
