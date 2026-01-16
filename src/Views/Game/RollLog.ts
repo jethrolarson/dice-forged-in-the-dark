@@ -1,117 +1,26 @@
 import { map } from 'ramda'
 import { Component, h } from '@fun-land/fun-web'
-import { classes, style, stylesheet } from 'typestyle'
+import { classes } from '../../util'
 import { DieColor, DieColorType, DieResult } from '../../Models/Die'
 import { RollResult } from '../../Models/GameModel'
 import { Die, DieVisualState } from './Die'
 import { funState } from '@fun-land/fun-state'
 import { Note } from './Note'
 import { RollValuation, valuationMap } from './RollValuation'
-
-const circleSize = 120
-
-const styles = stylesheet({
-  RollLog: {
-    listStyle: 'none',
-    display: 'flex',
-    margin: '18px 12px',
-    fontSize: '1rem',
-  },
-  metaWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    flexGrow: 1,
-  },
-  meta: {
-    border: `solid var(--border-color)`,
-    borderWidth: '1px 1px 1px 0',
-    minHeight: circleSize,
-    borderRadius: '0 var(--br) var(--br) 0',
-    padding: '4px 8px 8px',
-    marginTop: 6,
-    background: 'var(--bg-log-meta)',
-  },
-  time: {
-    textAlign: 'right',
-    color: 'var(--fc-deem)',
-    fontSize: '0.9rem',
-    display: 'block',
-    margin: '4px 16px 0',
-  },
-  name: {
-    marginTop: 6,
-    lineHeight: 1,
-  },
-  dice: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignContent: 'center',
-    background: 'var(--bg-dice)',
-    flexWrap: 'wrap',
-    flexGrow: 1,
-    padding: 10,
-    borderRadius: 'calc(var(--br) - 2px) calc(var(--br) - 2px) 0 0',
-    $nest: {
-      '&>*': {
-        margin: 3,
-      },
-    },
-  },
-  line: { fontWeight: 500 },
-  rollType: {
-    fontSize: '1.7rem',
-    fontFamily: 'var(--ff-heading)',
-  },
-  smallRollType: {
-    fontSize: '1.17rem',
-  },
-  result: {
-    display: 'flex',
-    flexShrink: 0,
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    border: `2px solid var(--border-color)`,
-    borderRadius: 'var(--br)',
-    width: circleSize,
-    minHeight: circleSize,
-    marginBottom: 4,
-  },
-  resultLabel: {
-    textAlign: 'center',
-    display: 'inline-block',
-    color: 'hsl(200, 60%, 8%)',
-    textTransform: 'uppercase',
-    padding: '4px 8px',
-    lineHeight: '1',
-    borderRadius: '0 0 var(--br) var(--br)',
-    margin: '0 -2px -2px',
-    fontSize: '1.5rem',
-  },
-  note: {
-    marginTop: 2,
-    fontStyle: 'italic',
-    $nest: {
-      img: {
-        maxWidth: '100%',
-      },
-    },
-  },
-})
+import { styles } from './RollLog.css'
 
 const rollResultStyle = (result: RollValuation): string => {
   switch (result) {
     case 'Crit':
-      return style({ background: 'var(--bg-result-crit)', boxShadow: 'var(--bs-result-crit)' })
+      return classes(styles.resultLabel, styles.resultCrit)
     case 'Success':
-      return style({ background: 'var(--bg-result-success)', boxShadow: 'var(--bs-result-success)' })
+      return classes(styles.resultLabel, styles.resultSuccess)
     case 'MixedSuccess':
-      return style({ background: 'var(--bg-result-mixed)', boxShadow: 'var(--bs-result-mixed)' })
+      return classes(styles.resultLabel, styles.resultMixed)
     case 'Miss':
-      return style({ background: 'var(--bg-result-miss)', color: '#fff', boxShadow: 'var(--bs-result-miss)' })
+      return classes(styles.resultLabel, styles.resultMiss)
     case 'CritFail':
-      return style({ background: 'var(--bg-result-critfail)', color: '#fff', boxShadow: 'var(--bs-result-critfail)' })
+      return classes(styles.resultLabel, styles.resultCritFail)
   }
 }
 

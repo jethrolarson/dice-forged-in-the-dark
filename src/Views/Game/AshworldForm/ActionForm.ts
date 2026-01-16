@@ -1,6 +1,5 @@
 import { Component, h, enhance } from '@fun-land/fun-web'
 import { FunState, funState } from '@fun-land/fun-state'
-import { stylesheet } from 'typestyle'
 import { DieResult, dieColors } from '../../../Models/Die'
 import { Character } from '../../../components/Character'
 import { CheckDie, CheckDieState } from '../../../components/CheckDie'
@@ -9,31 +8,7 @@ import { FormHeading } from '../../../components/FormHeading'
 import { Note } from '../../../components/Note'
 import { NewRoll } from '../RollForm/FormCommon'
 import { hideUnless } from '../../../util'
-
-const styles = stylesheet({
-  ActionForm: {
-    minHeight: 200,
-    display: 'grid',
-    gap: 12,
-    padding: 12,
-    margin: 0,
-    overflowY: 'auto',
-    background: 'var(--bg-game)',
-    flex: 1,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1.17rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-})
+import { styles } from './ActionForm.css'
 
 interface ActionForm$ {
   note: string

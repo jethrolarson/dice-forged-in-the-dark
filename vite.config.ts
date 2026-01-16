@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -7,5 +8,5 @@ export default defineConfig({
   build: {
     outDir: 'build',
   },
-  plugins: [],
+  plugins: [vanillaExtractPlugin()],
 })

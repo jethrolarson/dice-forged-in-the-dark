@@ -2,10 +2,10 @@ import type { User as FSUser } from '@firebase/auth'
 import { getAuth } from '@firebase/auth'
 import { addDoc, collection, getFirestore } from '@firebase/firestore'
 import { funState, FunState } from '@fun-land/fun-state'
-import { stylesheet } from 'typestyle'
 import { defaultTheme, PersistedState } from '../Models/GameModel'
 import { presets } from '../Models/rollConfigPresets'
 import { Component, h, hx } from '@fun-land/fun-web'
+import { styles } from './ActiveGames.css'
 
 type GameState = PersistedState & { id: string }
 
@@ -33,24 +33,6 @@ const createGame = (uid: string, title: string, state: FunState<boolean>) => ():
 }
 
 const logout = (): Promise<void> => getAuth().signOut()
-
-const styles = stylesheet({
-  actions: {
-    display: 'flex',
-    justifyContent: 'flex-start',
-    gap: 10,
-    marginBottom: 30,
-  },
-  list: {
-    listStyle: 'none',
-    padding: 0,
-    $nest: {
-      li: {
-        margin: '4px 0',
-      },
-    },
-  },
-})
 
 export const ActiveGames: Component<{ games: GameState[]; user: FSUser }> = (signal, { games, user }) => {
   const state = funState(false)

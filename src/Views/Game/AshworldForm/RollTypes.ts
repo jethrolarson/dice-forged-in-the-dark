@@ -1,29 +1,7 @@
 import { FunState } from '@fun-land/fun-state'
 
 import { Component, h, hx } from '@fun-land/fun-web'
-import { stylesheet } from 'typestyle'
-
-const styles = stylesheet({
-  rollTypes: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr',
-    gridGap: 10,
-    margin: 10,
-  },
-  active: {
-    background: 'var(--bg-button-selected)',
-    color: 'var(--fc-button-selected)',
-    borderColor: 'var(--bc-button-selected)',
-    borderBottomColor: 'var(--bc-button) !important',
-  },
-  tab: {
-    borderWidth: '0 0 2px',
-    borderBottom: '2px solid transparent',
-    background: 'transparent',
-    color: 'var(--fc)',
-    fontWeight: 'bold',
-  },
-})
+import { styles } from './RollTypes.css'
 
 export enum RollType {
   none = 'none',

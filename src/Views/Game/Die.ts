@@ -1,16 +1,8 @@
 import { Component, h } from '@fun-land/fun-web'
-import { classes, keyframes, style, stylesheet } from 'typestyle'
-import { NestedCSSProperties } from 'typestyle/lib/types'
+import { classes } from '../../util'
 import { DieColorType } from '../../Models/Die'
 import { FunRead } from '@fun-land/fun-state'
-
-const styles = stylesheet({
-  Die: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    gridGap: 2,
-  },
-})
+import { styles } from './Die.css'
 
 // prettier-ignore
 const dots = [
@@ -45,36 +37,6 @@ const dots = [
     1, 0, 1,
   ],
 ]
-const pulseAnimation = keyframes({
-  '0%': {
-    opacity: 0.6,
-  },
-
-  '70%': {
-    opacity: 0.1,
-  },
-
-  '100%': {
-    opacity: 0.6,
-  },
-})
-const dropShadow = (dieColor: string): NestedCSSProperties => ({
-  position: 'relative',
-  $nest: {
-    '&::after': {
-      content: "''",
-      position: 'absolute',
-      zIndex: 0,
-      width: '100%',
-      height: '100%',
-      borderRadius: '5px',
-      opacity: 0,
-      boxShadow: `0 0 10px 5px ${dieColor}`,
-      animationDuration: '1s',
-      animationIterationCount: 'infinite',
-    },
-  },
-})
 
 export const availableDieColors = ['white', 'green', 'blue', 'purple', 'yellow', 'red'] as const
 
@@ -111,25 +73,29 @@ export const Die: Component<DieProps> = (
   $.watch(signal, ({ dieColor, dotColor, glow, pulse }) => {
     dieElement.className = classes(
       styles.Die,
-      style(
-        {
-          background: dieColor,
-          width: size,
-          height: size,
-          borderRadius: size / 8,
-          padding: Math.floor(size / 8),
-          border: border ? `2px solid ${dotColor.toString()}` : 'none',
-        },
-        dropShadow(dieColor),
-        glow ? { $nest: { '&::after': { opacity: 1 } } } : {},
-        pulse ? { $nest: { '&::after': { animationName: pulseAnimation } } } : {},
-      ),
+      styles.dieGlow,
+      glow && styles.dieGlowActive,
+      pulse && styles.diePulse,
     )
+    dieElement.style.cssText = `
+      background: ${dieColor};
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: ${size / 8}px;
+      padding: ${Math.floor(size / 8)}px;
+      border: ${border ? `2px solid ${dotColor.toString()}` : 'none'};
+      --die-color: ${dieColor};
+    `
     
     dotElements?.forEach((dotElement, j) => {
       const d = dots[value - 1]?.[j]
-      dotElement.className =
-        d === 1 ? style({ background: dotColor.toString(), borderRadius: 100 }) : style({ visibility: 'hidden' })
+      if (d === 1) {
+        dotElement.className = ''
+        dotElement.style.cssText = `background: ${dotColor.toString()}; border-radius: 100%;`
+      } else {
+        dotElement.className = ''
+        dotElement.style.cssText = 'visibility: hidden;'
+      }
     })
   })
 

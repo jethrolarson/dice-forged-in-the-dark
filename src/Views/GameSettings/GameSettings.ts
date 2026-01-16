@@ -1,5 +1,6 @@
 import { DocumentReference, getDoc, deleteDoc, setDoc } from '@firebase/firestore'
-import { classes, stylesheet } from 'typestyle'
+import { classes } from '../../util'
+import { styles } from './GameSettings.css'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
 import { getDocRef } from '../../services/getDoc'
@@ -20,49 +21,6 @@ import { TextInput } from '../../components/TextInput'
 import { validateTitle } from './validate'
 import { funState, merge } from '@fun-land/fun-state'
 import {  Component, h, hx, renderWhen } from '@fun-land/fun-web'
-
-const styles = stylesheet({
-  GameSettings: {
-    background: 'var(--bg-game)',
-    color: 'var(--fc)',
-    padding: '10px 34px 34px',
-    flex: 1,
-    display: 'grid',
-    gridGap: 10,
-    alignContent: 'start',
-  },
-  heading: {
-    display: 'flex',
-    alignItems: 'center',
-    $nest: {
-      h1: {
-        margin: 0,
-        marginLeft: 4,
-        fontWeight: 'normal',
-      },
-    },
-  },
-  loadPreset: {
-    display: 'inline-block',
-    width: 'auto',
-    marginBottom: 2,
-  },
-  rollConfigLabel: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    $nest: {
-      button: {
-        marginLeft: 5,
-      },
-    },
-  },
-  rollConfig: {
-    height: 600,
-  },
-  error: { color: 'red' },
-  leftButtons: { display: 'flex', gap: 10 },
-  footer: { display: 'flex', justifyContent: 'space-between' },
-})
 
 const deleteGame = (gdoc: DocumentReference): void => {
   if (window.confirm('Are you sure you want to delete this game permanently?')) {

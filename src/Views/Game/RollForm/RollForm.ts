@@ -2,8 +2,6 @@ import { DocumentReference } from '@firebase/firestore'
 import { removeAt } from '@fun-land/accessor'
 import { funState, FunState, merge, mapRead } from '@fun-land/fun-state'
 import { Component, enhance, h, hx, on } from '@fun-land/fun-web'
-import { important } from 'csx'
-import { stylesheet } from 'typestyle'
 import { Icon } from '../../../components/Icon'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { Textarea } from '../../../components/Textarea'
@@ -16,60 +14,7 @@ import { DicePool, Rollable } from './DicePool'
 import { sendRoll } from './FormCommon'
 import { accessDieColor, RollFormState } from './RollForm.state'
 import { Sections } from './Sections'
-
-const styles = stylesheet({
-  form: {
-    padding: 10,
-  },
-  formWrap: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 2fr',
-    gap: 10,
-  },
-  formGrid: {
-    display: 'grid',
-    gridGap: 10,
-    flexGrow: 2,
-  },
-  backButton: {
-    border: 0,
-    padding: '4px',
-    marginRight: 4,
-  },
-  backButtonIcon: { $nest: { svg: { margin: '-2px 2px 0 0' } } },
-  heading: {},
-  rollTypes: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    gridGap: 10,
-  },
-  note: {},
-  noteInput: {
-    width: '100%',
-    height: 28,
-    display: 'block',
-    maxHeight: 200,
-    resize: 'none',
-  },
-  dieButton: {
-    cursor: 'pointer',
-    appearance: 'none',
-    opacity: 1,
-    padding: 0,
-    backgroundColor: important('transparent'),
-    border: 'none',
-  },
-  diceButtons: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  character: {},
-  rollButton: {
-    fontWeight: 'bold',
-    borderWidth: '2px 0 0',
-    borderRadius: '0 0 5px 5px',
-  },
-})
+import { styles } from './RollForm.css'
 
 const rollDie = (): number => Math.floor(Math.random() * 6) + 1
 

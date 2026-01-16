@@ -1,17 +1,10 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, h } from '@fun-land/fun-web'
 import { repeat } from 'ramda'
-import { stylesheet } from 'typestyle'
 import { NumberSpinner } from '../../../components/NumberSpinner'
 import { DieColor, DieType } from '../../../Models/Die'
 import { ModifierT } from '../../../Models/RollConfig'
-
-const styles = stylesheet({
-  label: {
-    margin: '0 0 4px',
-    fontSize: '1.17rem',
-  },
-})
+import { styles } from './Modifier.css'
 
 export const Modifier: Component<{
   section: ModifierT

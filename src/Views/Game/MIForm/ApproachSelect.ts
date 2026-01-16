@@ -1,8 +1,9 @@
 import { FunState } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { classes, keyframes, style, stylesheet } from 'typestyle'
+import { classes } from '../../../util'
 
 import { Tier, tierColorMap, tierColor, TierSelect } from './TierSelect'
+import { styles } from './ApproachSelect.css'
 
 export interface Approach$ {
   approach: string
@@ -13,67 +14,6 @@ export const init_Approach$: Approach$ = {
   approach: '',
   tier: Tier.T0,
 }
-
-const textPulse = keyframes({
-  from: {
-    textShadow: ' 0 0 6px',
-  },
-})
-
-const styles = stylesheet({
-  popover: {
-    position: 'absolute',
-    width: 135,
-    gap: 5,
-    zIndex: 2,
-    backgroundColor: '#061318',
-    padding: 7,
-    outline: `1px solid var(--bc-focus)`,
-    // (typestyle doesn't know these props, but it will still emit them)
-    positionAnchor: '--approach-anchor',
-    positionArea: 'top center',
-    display: 'none',
-    $nest: {
-      '&:popover-open': {
-        display: 'grid',
-      },
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any,
-  active: {
-    fontWeight: 'bold',
-    animation: '0.8s infinite alternate',
-    animationName: textPulse,
-  },
-  Approach: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    $nest: {
-      label: {
-        flexGrow: 1,
-      },
-    },
-  },
-  option: {
-    display: 'block',
-    borderWidth: 0,
-    width: '100%',
-  },
-  selected: {
-    backgroundColor: 'var(--bg-button-selected) !important',
-    borderColor: 'var(--bc-button-selected) !important',
-    color: 'var(--fc-button-selected) !important',
-  },
-  approachButton: {
-    width: 135,
-    anchorName: '--approach-anchor',
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any,
-  required: {
-    borderColor: 'red !important',
-  },
-})
 
 export const approaches = ['Charm', 'Deceit', 'Force', 'Focus', 'Ingenuity'] as const
 
@@ -148,12 +88,10 @@ export const ApproachSelect: Component<{
     // Update label styling
     approachLabel.className = ''
     if (isActive) {
-      approachLabel.classList.add(
-        styles.active,
-        style({
-          color: `var(--bg-die-${tierColorMap[tier]})`,
-        }),
-      )
+      approachLabel.classList.add(styles.active)
+      approachLabel.style.color = `var(--bg-die-${tierColorMap[tier]})`
+    } else {
+      approachLabel.style.color = ''
     }
 
     // Update button text

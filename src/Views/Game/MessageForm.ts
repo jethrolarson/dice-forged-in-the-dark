@@ -1,25 +1,10 @@
 import { DocumentReference, addDoc, collection } from '@firebase/firestore'
-import { style, stylesheet } from 'typestyle'
 import { TextInput } from '../../components/TextInput'
 import { Textarea } from '../../components/Textarea'
 import { Component, h } from '@fun-land/fun-web'
 import { hideUnless } from '../../util'
 import { funState, FunState } from '@fun-land/fun-state'
-
-const styles = stylesheet({
-  MessageForm: {
-    display: 'grid',
-    gridGap: 10,
-    margin: 10,
-    $nest: {
-      p: {
-        margin: 0,
-        fontSize: '1.17rem',
-        fontStyle: 'italic',
-      },
-    },
-  },
-})
+import { styles } from './MessageForm.css'
 
 interface MessageFormState {
   note: string
@@ -55,7 +40,7 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active$: FunState
           passThroughProps: {
             required: true,
             placeholder: 'Note',
-            className: style({ width: '100%', height: 44, display: 'block', maxHeight: 200, resize: 'vertical' }),
+            className: styles.textarea,
           },
           $: state.prop('note'),
         }),

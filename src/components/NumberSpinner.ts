@@ -1,24 +1,7 @@
 import { FunState, mapRead } from '@fun-land/fun-state'
 import { decrement, increment } from 'fp-ts/lib/function'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { stylesheet } from 'typestyle'
-
-const styles = stylesheet({
-  NumberSpinner: {
-    display: 'flex',
-    $nest: {
-      label: {
-        border: 'solid var(--border-color)',
-        borderWidth: '2px 0',
-        padding: '3px 8px',
-      },
-      button: {
-        fontSize: '1.17rem',
-        padding: '3px 8px',
-      },
-    },
-  },
-})
+import { styles } from './NumberSpinner.css'
 
 export const NumberSpinner: Component<{ state: FunState<number>; min: number; max: number }> = (
   signal,

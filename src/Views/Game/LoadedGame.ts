@@ -9,10 +9,10 @@ import {
 } from '@firebase/firestore'
 import { funState, merge } from '@fun-land/fun-state'
 import { Component, h, hx, bindListChildren } from '@fun-land/fun-web'
-import { important } from 'csx'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
-import { classes, stylesheet } from 'typestyle'
+import { classes } from '../../util'
+import { styles } from './LoadedGame.css'
 import { Icon } from '../../components/Icon'
 import { LoadedGameState, LogItem } from '../../Models/GameModel'
 import { playCritSound, playMessageSound, playRollSound, playWarnSound, playWinSound } from '../../sounds'
@@ -23,116 +23,6 @@ import { RollLogItem } from './RollLog'
 import { RollMessage } from './RollMessage'
 import { valuateActionRoll } from './RollValuation'
 import { prop } from '@fun-land/accessor'
-
-const styles = stylesheet({
-  Game: {},
-  body: {
-    display: 'flex',
-  },
-  left: {
-    flexGrow: 1,
-  },
-  right: {
-    display: 'flex',
-    borderLeft: 'var(--border-game)',
-    flexGrow: 1,
-    flexDirection: 'column',
-    height: '100vh',
-    maxWidth: 400,
-    background: 'var(--bg-game)',
-    backgroundRepeat: 'no-repeat',
-    color: 'var(--fc)',
-  },
-  heading: {
-    display: 'flex',
-    alignItems: 'center',
-    borderBottom: '1px solid var(--border-color)',
-  },
-  title: {
-    background: 'transparent',
-    verticalAlign: 'bottom',
-    fontSize: '2.2rem',
-    margin: 0,
-    appearance: 'none',
-    border: '2px solid transparent',
-    padding: '5px',
-    flexGrow: 1,
-    $nest: {
-      '&:focus': {
-        borderColor: '#fff',
-        outline: 'none',
-      },
-    },
-  },
-  title_small: {
-    fontSize: '1.5rem',
-  },
-  settingsButton: {
-    border: 'none',
-    padding: 10,
-    background: 'transparent',
-    textDecoration: 'none',
-    color: important('var(--c-icon-button)'),
-    transition: 'color 0.2s',
-    $nest: {
-      '&:hover': {
-        color: important('var(--c-icon-button-hover)'),
-        transition: 'color 0.2s',
-      },
-    },
-  },
-  log: {
-    borderBottom: '1px solid var(--border-color)',
-    borderWidth: '1px 0',
-    flex: 1,
-    flexDirection: 'column',
-    display: 'flex',
-    overflowY: 'scroll',
-  },
-  rolls: {
-    marginTop: 'auto',
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
-  },
-  tabs: {
-    display: 'flex',
-    $nest: {
-      '&>*': {
-        flex: '1 0',
-        borderColor: 'transparent',
-        borderWidth: '2px 0 0 ',
-        background: important('transparent'),
-        color: important('var(--border-color)'),
-      },
-    },
-  },
-  tabOn: {
-    borderColor: 'var(--border-color)',
-  },
-  canvas: {
-    width: '100%',
-    height: '100vh',
-    display: 'block',
-  },
-  showDiceCol: {
-    display: 'flex',
-    minWidth: 15,
-    background: 'var(--bg-scrollbar)',
-    $nest: {
-      '&:hover span': {
-        display: 'block',
-      },
-    },
-  },
-  showDiceApp: {
-    writingMode: 'vertical-rl',
-  },
-  minimize: {
-    marginRight: 5,
-    textDecoration: important('none'),
-  },
-})
 
 const inLastTenSeconds = (date: number): boolean => Date.now() - date < 10_000
 

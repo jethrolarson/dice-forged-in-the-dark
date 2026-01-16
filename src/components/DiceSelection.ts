@@ -1,31 +1,8 @@
 import { Component, h, hx } from '@fun-land/fun-web'
-import { important } from 'csx'
-import { stylesheet } from 'typestyle'
 import { DieColor, DieColorType } from '../Models/Die'
 import { Die, DieVisualState, nextColor } from '../Views/Game/Die'
 import { funState, FunState } from '@fun-land/fun-state'
-
-const styles = stylesheet({
-  dieButton: {
-    cursor: 'pointer',
-    appearance: 'none',
-    opacity: 0.6,
-    padding: 0,
-    backgroundColor: important('transparent'),
-    border: 'none',
-    $nest: {
-      '&:hover': {
-        opacity: 1,
-      },
-    },
-  },
-  diceButtons: {
-    justifySelf: 'center',
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-})
+import { styles } from './DiceSelection.css'
 
 export const DiceSelection: Component<{
   addDie: (color: DieColorType) => unknown

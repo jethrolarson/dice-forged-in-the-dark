@@ -1,46 +1,7 @@
 import { funState, FunState } from '@fun-land/fun-state'
 import { Component, h, hx } from '@fun-land/fun-web'
-import { classes, stylesheet } from 'typestyle'
-
-const styles = stylesheet({
-  ComboBox: {
-    position: 'relative',
-  },
-  input: {
-    width: '100%',
-  },
-  required: {
-    borderColor: 'red !important',
-  },
-  dropdown: {
-    position: 'absolute',
-    bottom: '100%',
-    left: 0,
-    right: 0,
-    maxHeight: 200,
-    overflowY: 'auto',
-    backgroundColor: '#061318',
-    border: '1px solid var(--border-color)',
-    zIndex: 1000,
-    marginBottom: 2,
-  },
-  option: {
-    padding: '8px 12px',
-    cursor: 'pointer',
-    $nest: {
-      '&:hover': {
-        backgroundColor: 'var(--bg-button-hover)',
-      },
-    },
-  },
-  selected: {
-    backgroundColor: 'var(--bg-button-selected)',
-    color: 'var(--fc-button-selected)',
-  },
-  hidden: {
-    display: 'none',
-  },
-})
+import { classes } from '../util'
+import { styles } from './ComboBox.css'
 
 export const ComboBox: Component<{
   $: FunState<string>

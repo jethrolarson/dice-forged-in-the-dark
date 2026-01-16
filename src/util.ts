@@ -14,3 +14,7 @@ export const hideWhen =
   }
 
 export const hideUnless = (state: FunRead<boolean>, signal: AbortSignal) => hideWhen(state.focus(notAcc), signal)
+
+// Helper for combining CSS class names
+export const classes = (...args: (string | false | undefined | null)[]): string =>
+  args.filter((arg): arg is string => Boolean(arg)).join(' ')
