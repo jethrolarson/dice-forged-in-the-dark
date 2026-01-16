@@ -1,8 +1,7 @@
 import { App } from './App'
 import './index.css'
 import initFirebase from './initFirebase'
+import { mount } from '@fun-land/fun-web'
 
 initFirebase()
-const rootEl = document.getElementById('root')!
-const ctrl = new AbortController()
-rootEl.appendChild(App(ctrl.signal, {}))
+mount(App, {}, document.getElementById('root')!)
