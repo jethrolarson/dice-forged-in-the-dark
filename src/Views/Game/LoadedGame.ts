@@ -19,8 +19,7 @@ import { playCritSound, playMessageSound, playRollSound, playWarnSound, playWinS
 import { AshworldForm } from './AshworldForm/AshworldForm'
 import { MIForm } from './MIForm/MIForm'
 import { RollForm } from './RollForm/RollForm'
-import { RollLogItem } from './RollLog'
-import { RollMessage } from './RollMessage'
+import { RollLogItem, RollMessage } from './Log'
 import { valuateActionRoll } from './RollValuation'
 import { prop } from '@fun-land/accessor'
 
