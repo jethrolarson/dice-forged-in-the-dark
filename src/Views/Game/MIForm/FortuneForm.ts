@@ -12,13 +12,13 @@ import { styles } from './FortuneForm.css'
 interface FortuneForm$ {
   pool: string
   note: string
-  username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<FortuneForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<FortuneForm$>, username$: FunState<string>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, pool, username } = state.get()
+    const { note, pool } = state.get()
+    const username = username$.get()
     const n = diceRolled.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
@@ -34,24 +34,24 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set({ ...init_FortuneForm$(), username })
+    state.set(init_FortuneForm$())
   }
 
 const init_FortuneForm$ = (): FortuneForm$ => ({
   note: '',
   pool: '',
-  username: '',
 })
 
 export const FortuneForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active$: FunState<boolean>
-}> = (signal, { uid, roll, active$ }) => {
+  username$: FunState<string>
+}> = (signal, { uid, roll, active$, username$ }) => {
   const $ = funState<FortuneForm$>(init_FortuneForm$())
 
   const dicePool = DicePool(signal, {
-    sendRoll: rollIt(roll, uid, $),
+    sendRoll: rollIt(roll, uid, $, username$),
     disableAdd$: funState(false),
     active$,
   })
@@ -81,7 +81,7 @@ export const FortuneForm: Component<{
             type: 'text',
             name: 'username',
           },
-          $: $.prop('username'),
+          $: username$,
         }),
         Note(signal, { $: $.prop('note') }),
       ]),

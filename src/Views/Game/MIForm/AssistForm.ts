@@ -16,13 +16,13 @@ interface AssistForm$ {
   pool: string
   tier: Tier
   note: string
-  username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>, username$: FunState<string>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, tier, pool, username } = state.get()
+    const { note, tier, pool } = state.get()
+    const username = username$.get()
     const isZero = diceRolled.some((d) => d.dieColor === 'black')
     roll({
       note,
@@ -36,31 +36,32 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set({ ...init_AssistForm$(), username })
+    state.set(init_AssistForm$())
   }
 
 const init_AssistForm$ = (): AssistForm$ => ({
   note: '',
   pool: '',
   tier: Tier.T0,
-  username: '',
 })
 
 export const AssistForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active$: FunState<boolean>
-}> = (signal, { uid, roll, active$ }) => {
+  username$: FunState<string>
+}> = (signal, { uid, roll, active$, username$ }) => {
   const $ = funState<AssistForm$>(init_AssistForm$())
 
   const dicePool = DicePool(signal, {
-    sendRoll: rollIt(roll, uid, $),
+    sendRoll: rollIt(roll, uid, $, username$),
     disableAdd$: funState(false),
     active$,
   })
 
   // Watch state to manage dice and enable/disable
-  $.watch(signal, ({ username, note, pool, tier }) => {
+  $.watch(signal, ({ note, pool, tier }) => {
+    const username = username$.get()
     const shouldEnable = username && note && pool
     shouldEnable ? dicePool.$api.enable() : dicePool.$api.disable()
 
@@ -114,7 +115,7 @@ export const AssistForm: Component<{
           required: true,
         }),
       ]),
-      Character(signal, { $: $.prop('username'), passThroughProps: { required: true } }),
+      Character(signal, { $: username$, passThroughProps: { required: true } }),
       Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
     ]),
   ])

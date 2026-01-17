@@ -18,13 +18,13 @@ interface ActionForm$ {
   power$: Power$
   factor$: Factor
   note: string
-  username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>, username$: FunState<string>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, approach$, power$, username } = state.get()
+    const { note, approach$, power$ } = state.get()
+    const username = username$.get()
 
     const isZero = diceRolled.some((d) => d.dieColor === 'black')
     roll({
@@ -43,7 +43,7 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set({ ...init_ActionForm$(), username })
+    state.set(init_ActionForm$())
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({
@@ -51,18 +51,18 @@ const init_ActionForm$ = (): ActionForm$ => ({
   note: '',
   power$: init_Power$,
   factor$: Factor.Even,
-  username: '',
 })
 
 export const ActionForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active$: FunState<boolean>
-}> = (signal, { uid, roll, active$ }) => {
+  username$: FunState<string>
+}> = (signal, { uid, roll, active$, username$ }) => {
   const $ = funState<ActionForm$>(init_ActionForm$())
 
   const dicePool = DicePool(signal, {
-    sendRoll: rollIt(roll, uid, $),
+    sendRoll: rollIt(roll, uid, $, username$),
     disableAdd$: funState(false),
     active$,
   })
@@ -75,7 +75,8 @@ export const ActionForm: Component<{
   }
 
   // Watch state to manage dice scene enabled/disabled and zero dice
-  $.watch(signal, ({ username, note, approach$, power$, factor$ }) => {
+  $.watch(signal, ({ note, approach$, power$, factor$ }) => {
+    const username = username$.get()
     const shouldEnable = username && note
     shouldEnable ? dicePool.$api.enable() : dicePool.$api.disable()
   
@@ -153,7 +154,7 @@ export const ActionForm: Component<{
           addDie,
           removeDie,
         }),
-        Character(signal, { $: $.prop('username'), passThroughProps: { required: true } }),
+        Character(signal, { $: username$, passThroughProps: { required: true } }),
         Note(signal, { $: $.prop('note'), passThroughProps: { required: true } }),
       ]),
     ]),

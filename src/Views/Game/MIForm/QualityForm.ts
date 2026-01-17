@@ -13,13 +13,13 @@ import { styles } from './QualityForm.css'
 interface QualityForm$ {
   pool: string
   note: string
-  username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<QualityForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<QualityForm$>, username$: FunState<string>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, pool, username } = state.get()
+    const { note, pool } = state.get()
+    const username = username$.get()
     const n = diceRolled.length
     const isZero = n === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
@@ -35,24 +35,24 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set({ ...init_QualityForm$(), username })
+    state.set(init_QualityForm$())
   }
 
 const init_QualityForm$ = (): QualityForm$ => ({
   note: '',
   pool: '',
-  username: '',
 })
 
 export const QualityForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active$: FunState<boolean>
-}> = (signal, { uid, roll, active$ }) => {
+  username$: FunState<string>
+}> = (signal, { uid, roll, active$, username$ }) => {
   const $ = funState<QualityForm$>(init_QualityForm$())
 
   const dicePool = DicePool(signal, {
-    sendRoll: rollIt(roll, uid, $),
+    sendRoll: rollIt(roll, uid, $, username$),
     disableAdd$: funState(false),
     active$,
   })
@@ -76,7 +76,7 @@ export const QualityForm: Component<{
             passThroughProps: { name: 'pool', placeholder: 'Approach or Power' },
           }),
         ]),
-        Character(signal, { $: $.prop('username') }),
+        Character(signal, { $: username$ }),
         Note(signal, { $: $.prop('note') }),
       ]),
     ]),
