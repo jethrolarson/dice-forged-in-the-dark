@@ -178,6 +178,7 @@ export const RollLogItem: Component<{
               ]),
               h('em', { className: styles.time }, [
                 user,
+                ' ',
                 !isToday(date) ? new Date(date).toLocaleDateString() : '',
                 ' ',
                 new Date(date).toLocaleTimeString(),
