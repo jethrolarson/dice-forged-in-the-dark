@@ -48,7 +48,7 @@ export const Form: Component<{
     ActionForm(signal, { roll, uid, active$: actionActive$, username$: sharedUsername$ }),
     ResistForm(signal, { roll, uid, active$: resistActive$, username$: sharedUsername$ }),
     FortuneForm(signal, { roll, uid, active$: fortuneActive$, username$: sharedUsername$ }),
-    MessageForm(signal, { gdoc, active$: messageActive$, username$: sharedUsername$ }),
+    MessageForm(signal, { gdoc, active$: messageActive$, username$: sharedUsername$, userDisplayName, uid }),
   ])
 }
 

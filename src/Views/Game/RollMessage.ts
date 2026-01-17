@@ -1,7 +1,7 @@
 import { Message } from '../../Models/GameModel'
 import { Component, h, hx, bindView } from '@fun-land/fun-web'
 import { Note } from './Note'
-import { messageStyle, redactedMessageStyle } from './RollMessage.css'
+import { messageStyle, messageWrap, redactedMessageStyle } from './RollMessage.css'
 import * as rollLogStyles from './RollLog.css'
 import { DocumentReference, doc, updateDoc, collection } from '@firebase/firestore'
 import { FunState } from '@fun-land/fun-state'
@@ -22,11 +22,13 @@ const unredactMessage = (gdoc: DocumentReference, messageId: string): void => {
   })
 }
 
+const isToday = (ms: number): boolean => new Date(ms).toDateString() === new Date().toDateString()
+
 export const RollMessage: Component<{
   result: Message
   gdoc: DocumentReference
   rollState: FunState<Message>
-}> = (signal, { result: { username, note, id }, gdoc, rollState }) => {
+}> = (signal, { result: { username, note, id, date, user }, gdoc, rollState }) => {
   const redactionButton = hx(
     'button',
     {
@@ -56,13 +58,18 @@ export const RollMessage: Component<{
 
   return bindView(signal, rollState.prop('redacted'), (_contentSignal, redactedValue) => {
     const isRedacted = redactedValue === true
-    return h(
-      'div',
-      { className: isRedacted ? `${messageStyle} ${redactedMessageStyle}` : messageStyle },
-      [
+    return h('div', { className: messageWrap }, [
+      h('div', { className: isRedacted ? `${messageStyle} ${redactedMessageStyle}` : messageStyle }, [
         redactionButton,
         isRedacted ? h('span', {}, ['[Redacted]']) : h('span', {}, [username, ':', Note(signal, { text: note })]),
-      ],
-    )
+      ]),
+      h('em', { className: rollLogStyles.time }, [
+        user,
+        ' ',
+        !isToday(date) ? new Date(date).toLocaleDateString() : '',
+        ' ',
+        new Date(date).toLocaleTimeString(),
+      ]),
+    ])
   })
 }

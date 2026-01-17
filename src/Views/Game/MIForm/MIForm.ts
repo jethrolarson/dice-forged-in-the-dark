@@ -52,7 +52,7 @@ export const Form: Component<{
     AssistForm(signal, { roll, uid, active$: assistActive$, username$: sharedUsername$ }),
     QualityForm(signal, { roll, uid, active$: qualityActive$, username$: sharedUsername$ }),
     FortuneForm(signal, { roll, uid, active$: fortuneActive$, username$: sharedUsername$ }),
-    MessageForm(signal, { gdoc, active$: messageActive$, username$: sharedUsername$ }),
+    MessageForm(signal, { gdoc, active$: messageActive$, username$: sharedUsername$, userDisplayName, uid }),
   ])
 }
 

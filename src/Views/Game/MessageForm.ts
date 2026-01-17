@@ -14,7 +14,9 @@ export const MessageForm: Component<{
   gdoc: DocumentReference
   active$: FunState<boolean>
   username$: FunState<string>
-}> = (signal, { gdoc, active$, username$ }) => {
+  userDisplayName: string
+  uid: string
+}> = (signal, { gdoc, active$, username$, userDisplayName, uid }) => {
   const state = funState<MessageFormState>({ note: '' })
   
   const postMessage = (e: Event): void => {
@@ -24,6 +26,8 @@ export const MessageForm: Component<{
     addDoc(collection(gdoc, 'rolls'), {
       note,
       username,
+      user: userDisplayName,
+      uid,
       date: Date.now(),
       kind: 'Message',
     }).catch((e) => {
