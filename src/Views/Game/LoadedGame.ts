@@ -7,14 +7,14 @@ import {
   query,
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
-import { funState, merge } from '@fun-land/fun-state'
+import { funState, merge, FunState } from '@fun-land/fun-state'
 import { Component, h, hx, bindListChildren, bindView } from '@fun-land/fun-web'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 import { classes } from '../../util'
-import { styles } from './LoadedGame.css'
+import * as styles from './LoadedGame.css'
 import { Icon } from '../../components/Icon'
-import { LoadedGameState, LogItem } from '../../Models/GameModel'
+import { LoadedGameState, LogItem, Message, RollResult } from '../../Models/GameModel'
 import { playCritSound, playMessageSound, playRollSound, playWarnSound, playWinSound } from '../../sounds'
 import { AshworldForm } from './AshworldForm/AshworldForm'
 import { MIForm } from './MIForm/MIForm'
@@ -213,9 +213,9 @@ export const LoadedGame: Component<{
 
       return h('article', {}, [
         roll.kind === 'Message'
-          ? RollMessage(childSignal, { result: roll })
+          ? RollMessage(childSignal, { result: roll, gdoc, rollState: rollState as unknown as FunState<Message> })
           : roll.kind === 'Roll'
-            ? RollLogItem(childSignal, { result: roll, isLast })
+            ? RollLogItem(childSignal, { result: roll, isLast, gdoc, rollState: rollState as unknown as FunState<RollResult> })
             : null,
       ])
     },
@@ -258,7 +258,7 @@ export const LoadedGame: Component<{
     }
   })
 
-  return h('div', { className: styles.Game }, [
+  return h('div', {}, [
     h('div', { className: styles.body }, [leftSection, showDiceCol, diceColSection]),
   ])
 }

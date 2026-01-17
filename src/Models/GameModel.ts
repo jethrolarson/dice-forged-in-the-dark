@@ -19,6 +19,7 @@ interface LogItemCommon {
   date: number
   id: string
   uid: string
+  redacted?: boolean
 }
 
 export interface RollResult extends LogItemCommon {

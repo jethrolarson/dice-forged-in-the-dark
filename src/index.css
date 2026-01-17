@@ -214,7 +214,7 @@ a:hover {
   --ff: 'Roboto Mono', monospace;
   --ff-heading: var(--ff);
   --border-color: #5d58a0;
-
+  --corner-shape: bevel;
   --bc-focus: #d1773b;
 
   --fc-button: #bb9deb;
@@ -325,40 +325,9 @@ a:hover {
   --bg-die-purple: hsl(221deg 95% 68%);
   font-family: var(--ff);
 }
-/* hacking react widgets */
-.rw-widget,
-.rw-widget-input {
-  color: inherit
-}
-.rw-state-focus .rw-widget-picker {
-  border-color: var(--bc-focus);
-  box-shadow: none;
-  transition: none;
-}
-.rw-widget-picker{
-  min-height: 28px;
-}
 
-.rw-list-option {
-  color: var(--fc);
-  border: 0;
-  padding-block: 8px;
-  font-size: var(--fs);
-}
-.rw-list-option:hover {
-  background: var(--bg-button-hover);
-  color: var(--fc-button-hover);
-}
-.rw-popup {
-  border-radius: 0;
-  background-color: #061318;
-  border-color: var(--bc-focus);
-}
-.rw-widget-container {
-  border-radius: 0;
-  background: transparent;
-  border-color: var(--bc-deem);
-}
+* {corner-shape: var(--corner-shape);}
+
 input::-webkit-input-placeholder {
   color: var(--fc-deem);
   font: inherit;

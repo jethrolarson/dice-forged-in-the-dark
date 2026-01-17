@@ -25,13 +25,10 @@ export const styles = {
   }),
   input: style({
     width: 135,
+    textAlign: 'center',
   }),
 };
 
 globalStyle(`${styles.Power} label`, {
   flexGrow: 1,
-});
-
-globalStyle(`${styles.input}&&`, {
-  textAlign: 'center',
 });

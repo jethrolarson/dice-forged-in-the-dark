@@ -33,7 +33,10 @@ service cloud.firestore {
     match /games/{game}/rolls/{roll} {
       allow read: if isLoggedIn();
       allow create: if isLoggedIn();
-      allow update, delete: if false;
+      // Allow updates only for redaction field
+      allow update: if isLoggedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['redacted']);
+      allow delete: if false;
     }
 
     // Rules for /users/{uid}

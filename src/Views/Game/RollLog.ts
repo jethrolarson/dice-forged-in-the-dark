@@ -1,13 +1,14 @@
 import { map } from 'ramda'
-import { Component, h } from '@fun-land/fun-web'
+import { Component, h, hx, bindView } from '@fun-land/fun-web'
 import { classes } from '../../util'
 import { DieColor, DieColorType, DieResult } from '../../Models/Die'
 import { RollResult } from '../../Models/GameModel'
 import { Die, DieVisualState } from './Die'
-import { funState } from '@fun-land/fun-state'
+import { funState, FunState } from '@fun-land/fun-state'
 import { Note } from './Note'
 import { RollValuation, valuationMap } from './RollValuation'
-import { styles } from './RollLog.css'
+import * as styles from './RollLog.css'
+import { DocumentReference, doc, updateDoc, collection } from '@firebase/firestore'
 
 const rollResultStyle = (result: RollValuation): string => {
   switch (result) {
@@ -74,8 +75,30 @@ const highestIndexes = (diceRolled: RollResult['diceRolled']): [number, number] 
   )
 }
 
-export const RollLogItem: Component<{ result: RollResult; isLast: boolean }> = (signal, { result, isLast }) => {
-  const { isZero, note, diceRolled, date, username, rollType, lines, user } = result
+// Firebase update functions
+const redactRoll = (gdoc: DocumentReference, rollId: string): void => {
+  const rollRef = doc(collection(gdoc, 'rolls'), rollId)
+  updateDoc(rollRef, { redacted: true }).catch((e) => {
+    console.error(e)
+    alert('Failed to redact roll')
+  })
+}
+
+const unredactRoll = (gdoc: DocumentReference, rollId: string): void => {
+  const rollRef = doc(collection(gdoc, 'rolls'), rollId)
+  updateDoc(rollRef, { redacted: false }).catch((e) => {
+    console.error(e)
+    alert('Failed to unredact roll')
+  })
+}
+
+export const RollLogItem: Component<{
+  result: RollResult
+  isLast: boolean
+  gdoc: DocumentReference
+  rollState: FunState<RollResult>
+}> = (signal, { result, isLast, gdoc, rollState }) => {
+  const { isZero, note, diceRolled, date, username, rollType, lines, user, id } = result
   const valuationMapItem = valuationMap[result.valuationType ?? 'Action']
   const valuation = valuationMapItem.valuation(result)
   const valuationLabel = valuationMapItem.label(result, valuation)
@@ -85,37 +108,90 @@ export const RollLogItem: Component<{ result: RollResult; isLast: boolean }> = (
   const title = lines?.[0] || rollType
   const moreLines = lines.slice(1)
   const len = diceRolled.length
-  return h('div', { className: styles.RollLog }, [
-    h('div', { className: styles.result }, [
-      h(
-        'div',
-        { className: styles.dice },
-        diceRolled.map(({ dieColor, value: d }, i) =>
-          ResultDie(signal, {
-            size: len > 4 ? 36 : len === 1 ? 50 : 36,
-            value: d,
-            highest: (isZero ? secondHighest : highest) === i,
-            excluded: excludedIndex === i,
-            isLast,
-            dieColor,
-          }),
-        ),
-      ),
-      RollMessage(signal, { result: valuation, label: valuationLabel }),
-    ]),
-    h('div', { className: styles.metaWrap }, [
-      h('div', { className: styles.meta }, [
-        username && h('span', { className: styles.name }, [username, ':']),
-        h('div', { className: title.length > 12 ? styles.smallRollType : styles.rollType }, [title]),
-        ...moreLines.map((line) => h('div', { className: styles.line }, [line])),
-        note && Note(signal, { text: note }),
-      ]),
-      h('em', { className: styles.time }, [
-        user,
-        !isToday(date) ? new Date(date).toLocaleDateString() : '',
-        ' ',
-        new Date(date).toLocaleTimeString(),
-      ]),
-    ]),
-  ])
+
+  // Redaction toggle button - watch redaction state for title
+  const redactionButton = hx(
+    'button',
+    {
+      signal,
+      props: { className: styles.redactionButton },
+      on: {
+        click: (e) => {
+          e.stopPropagation()
+          const isRedacted = rollState.prop('redacted').get() === true
+          if (isRedacted) {
+            unredactRoll(gdoc, id)
+          } else {
+            redactRoll(gdoc, id)
+          }
+        },
+      },
+    },
+    ['✕'],
+  )
+  
+  // Update button title when redaction state changes
+  rollState.prop('redacted').watch(signal, (isRedacted) => {
+    redactionButton.title = isRedacted 
+      ? 'Unredact (show for everyone)' 
+      : 'Redact (hide for everyone)'
+  })
+  
+  // Set initial title
+  redactionButton.title = rollState.prop('redacted').get() === true
+    ? 'Unredact (show for everyone)'
+    : 'Redact (hide for everyone)'
+
+  // Make content reactive to redaction state
+  const content = bindView(
+    signal,
+    rollState.prop('redacted'),
+    (contentSignal, redactedValue) => {
+      const isRedacted = redactedValue === true
+
+      return !isRedacted
+        ? h('div', { className: styles.RollLog }, [
+            h('div', { className: styles.result }, [
+              h(
+                'div',
+                { className: styles.dice },
+                diceRolled.map(({ dieColor, value: d }, i) =>
+                  ResultDie(contentSignal, {
+                    size: len > 4 ? 36 : len === 1 ? 50 : 36,
+                    value: d,
+                    highest: (isZero ? secondHighest : highest) === i,
+                    excluded: excludedIndex === i,
+                    isLast,
+                    dieColor,
+                  }),
+                ),
+              ),
+              RollMessage(contentSignal, { result: valuation, label: valuationLabel }),
+            ]),
+            h('div', { className: styles.metaWrap }, [
+              h('div', { className: styles.meta }, [
+                redactionButton,
+                username && h('span', { className: styles.name }, [username, ':']),
+                h('div', { className: title.length > 12 ? styles.smallRollType : styles.rollType }, [title]),
+                ...moreLines.map((line) => h('div', { className: styles.line }, [line])),
+                note && Note(contentSignal, { text: note }),
+              ]),
+              h('em', { className: styles.time }, [
+                user,
+                !isToday(date) ? new Date(date).toLocaleDateString() : '',
+                ' ',
+                new Date(date).toLocaleTimeString(),
+              ]),
+            ]),
+          ])
+        : h('div', { className: classes(styles.RollLog, styles.redactedCard) }, [
+            h('div', { className: styles.redactedPlaceholder }, [
+              redactionButton,
+              h('span', {}, ['[Redacted]']),
+            ]),
+          ])
+    },
+  )
+
+  return content
 }
