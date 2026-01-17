@@ -14,7 +14,7 @@
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "cannon-es": "^0.20.0",
     "csx": "^10.0.2",
-    "firebase": "^10.0.0",
+    "firebase": "^12.8.0",
     "firebaseui": "^6.1.0",
     "fp-ts": "^2.16.11",
     "io-ts": "^2.2.22",

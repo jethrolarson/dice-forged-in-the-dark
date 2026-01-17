@@ -1,4 +1,4 @@
-import { Component, h } from '@fun-land/fun-web'
+import { Component, h, ElementChild } from '@fun-land/fun-web'
 import { Note } from '../Note'
 import * as styles from './RollLog.css'
 
@@ -7,7 +7,7 @@ export const RollMeta: Component<{
   title: string
   moreLines: string[]
   note?: string
-  redactionButton: HTMLElement
+  redactionButton: ElementChild
 }> = (signal, { username, title, moreLines, note, redactionButton }) =>
   h('div', { className: styles.meta }, [
     redactionButton,

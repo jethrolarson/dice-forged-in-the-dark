@@ -1,9 +1,8 @@
 import { map } from 'ramda'
 import { Component, h, bindView } from '@fun-land/fun-web'
-import { classes } from '../../../util'
 import { DieResult } from '../../../Models/Die'
 import { RollResult } from '../../../Models/GameModel'
-import { funState, FunState } from '@fun-land/fun-state'
+import { FunState } from '@fun-land/fun-state'
 import { DocumentReference } from '@firebase/firestore'
 import { valuationMap } from '../RollValuation'
 import { RedactionButton } from './RedactionButton'
@@ -45,7 +44,7 @@ export const RollLogItem: Component<{
   const moreLines = lines.slice(1)
   const highestIndex = isZero ? secondHighest : highest
 
-  const redactionButton = RedactionButton(signal, { gdoc, itemId: id, itemState: rollState })
+  const redactionButton = RedactionButton<RollResult>()(signal, { gdoc, itemId: id, itemState: rollState })
 
   const content = bindView(signal, rollState.prop('redacted'), (contentSignal, redactedValue) => {
     const isRedacted = redactedValue === true
@@ -72,7 +71,7 @@ export const RollLogItem: Component<{
             Timestamp(contentSignal, { user, date }),
           ]),
         ])
-      : h('div', { className: classes(styles.RollLog, styles.redactedCard) }, [
+      : h('div', { className: styles.RollLog }, [
           h('div', { className: styles.redactedPlaceholder }, [
             redactionButton,
             h('span', {}, ['[Redacted]']),

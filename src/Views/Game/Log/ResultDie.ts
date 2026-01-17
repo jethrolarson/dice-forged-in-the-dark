@@ -1,8 +1,7 @@
-import { Component, h } from '@fun-land/fun-web'
+import { Component } from '@fun-land/fun-web'
 import { funState } from '@fun-land/fun-state'
 import { DieColor, DieColorType } from '../../../Models/Die'
 import { Die, DieVisualState } from '../Die'
-import * as styles from './RollLog.css'
 
 const dieStyles = (
   value: number,

@@ -5,7 +5,7 @@ const circleSize = 120
 export const RollLog = style({
   listStyle: 'none',
   display: 'flex',
-  margin: '18px 12px',
+  margin: '0 12px',
   fontSize: '1rem',
 })
 
@@ -104,9 +104,6 @@ export const resultCritFail = style({
   background: 'var(--bg-result-critfail)',
   color: '#fff',
   boxShadow: 'var(--bs-result-critfail)',
-})
-export const redactedCard = style({
-  paddingTop: '6px',
 })
 export const redactionButton = style({
   position: 'absolute',

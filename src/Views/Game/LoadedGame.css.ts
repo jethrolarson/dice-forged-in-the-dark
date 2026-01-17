@@ -69,6 +69,8 @@ export const rolls = style({
   listStyle: 'none',
   margin: 0,
   padding: 0,
+  display: 'grid',
+  gap: '16px',
 })
 export const tabs = style({
   display: 'flex',

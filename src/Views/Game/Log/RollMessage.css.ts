@@ -2,7 +2,7 @@ import { style } from '@vanilla-extract/css';
 
 export const messageStyle = style({
   fontSize: '1rem',
-  margin: '24px 12px 0',
+  margin: '0 12px',
   border: `1px solid var(--border-color)`,
   borderRadius: 'var(--br)',
   padding: '8px 12px',

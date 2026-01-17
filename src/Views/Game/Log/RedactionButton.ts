@@ -19,11 +19,11 @@ const unredactItem = (gdoc: DocumentReference, itemId: string): void => {
   })
 }
 
-export const RedactionButton: Component<{
+export const RedactionButton = <T extends { redacted?: boolean }>(): Component<{
   gdoc: DocumentReference
   itemId: string
-  itemState: FunState<{ redacted?: boolean }>
-}> = (signal, { gdoc, itemId, itemState }) => {
+  itemState: FunState<T>
+}> => (signal, { gdoc, itemId, itemState }) => {
   const button = hx(
     'button',
     {

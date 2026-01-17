@@ -1,8 +1,7 @@
 import { Message } from '../../../Models/GameModel'
-import { Component, h, hx, bindView } from '@fun-land/fun-web'
+import { Component, h, bindView } from '@fun-land/fun-web'
 import { Note } from '../Note'
-import { messageStyle, messageWrap, redactedMessageStyle } from './Message.css'
-import * as rollLogStyles from './RollLog.css'
+import { messageStyle, messageWrap, redactedMessageStyle } from './RollMessage.css'
 import { FunState } from '@fun-land/fun-state'
 import { DocumentReference } from '@firebase/firestore'
 import { RedactionButton } from './RedactionButton'
@@ -13,7 +12,7 @@ export const RollMessage: Component<{
   gdoc: DocumentReference
   rollState: FunState<Message>
 }> = (signal, { result: { username, note, id, date, user }, gdoc, rollState }) => {
-  const redactionButton = RedactionButton(signal, { gdoc, itemId: id, itemState: rollState })
+  const redactionButton = RedactionButton<Message>()(signal, { gdoc, itemId: id, itemState: rollState })
 
   return bindView(signal, rollState.prop('redacted'), (_contentSignal, redactedValue) => {
     const isRedacted = redactedValue === true
