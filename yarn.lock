@@ -956,10 +956,10 @@
   resolved "https://registry.yarnpkg.com/@fun-land/fun-state/-/fun-state-9.2.0.tgz#bc4d0555097449a03737e3b455b2e33785f6d82a"
   integrity sha512-PsXe4Bq7eZGvEH75GhWWnEZpri8xxZJazA7cPD16lQyvkEmXJIyDGiPhx7vkOfPLzUePQ+Kbnlzrr5KDePeFWg==
 
-"@fun-land/fun-web@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@fun-land/fun-web/-/fun-web-1.0.0.tgz#8e37603c403e5a077c592c717374252cb722326c"
-  integrity sha512-lCBne+49yaIsaj962ZfKq7+GXcRZEXDOm20M2dGbufylaORhTeoNzBCB3viGWAbTiyGZKVRG9oSWNs/rNgedIA==
+"@fun-land/fun-web@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@fun-land/fun-web/-/fun-web-1.1.0.tgz#c2aaa9231c0f698d015d951b0c846722dfc6919d"
+  integrity sha512-vE+bHFIGI0NzKiC6q8GQFebH9Pzue9Crs4YCVeTVP94fPJENWtNpKvZxu6afruIQZtIlTYpPEkbRJDeICCxdag==
 
 "@grpc/grpc-js@~1.9.0":
   version "1.9.15"
@@ -3227,11 +3227,6 @@ p-locate@^5.0.0:
   integrity sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==
   dependencies:
     p-limit "^3.0.2"
-
-paper@^0.12.18:
-  version "0.12.18"
-  resolved "https://registry.yarnpkg.com/paper/-/paper-0.12.18.tgz#e024056217a35c36e2b5fda4629310fdc7025c91"
-  integrity sha512-ZSLIEejQTJZuYHhSSqAf4jXOnii0kPhCJGAnYAANtdS72aNwXJ9cP95tZHgq1tnNpvEwgQhggy+4OarviqTCGw==
 
 parent-module@^1.0.0:
   version "1.0.1"

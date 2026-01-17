@@ -1,12 +1,10 @@
 import { DocumentReference, getDoc, deleteDoc, setDoc } from '@firebase/firestore'
 import { classes } from '../../util'
 import { styles } from './GameSettings.css'
-import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
 import { getDocRef } from '../../services/getDoc'
 import {
   PersistedState,
-  GameSettingsView,
   LoadedGameState,
   initialGameState,
   GameState,
@@ -20,7 +18,7 @@ import { presets } from '../../Models/rollConfigPresets'
 import { TextInput } from '../../components/TextInput'
 import { validateTitle } from './validate'
 import { funState, merge } from '@fun-land/fun-state'
-import {  Component, h, hx, renderWhen } from '@fun-land/fun-web'
+import {  Component, h, hx, renderWhen, bindView } from '@fun-land/fun-web'
 import { getUser } from '../../services/getUser'
 import { Login } from '../Login/Login'
 
@@ -32,11 +30,6 @@ const deleteGame = (gdoc: DocumentReference): void => {
     })
     window.location.href = 'index.html'
   }
-}
-
-export const gameSettingsPath = (path: string): O.Option<GameSettingsView> => {
-  const m = /^\/game-settings\/([^/?]+)/.exec(path)
-  return m && m.length > 0 && m[1] ? O.some({ kind: 'GameSettingsView', id: m[1] }) : O.none
 }
 
 type GameSettingsState = PersistedState & { rollConfigText: string; rollConfigError: string }
@@ -185,37 +178,24 @@ const GameSettingsWithAuth: Component<{ gameId: string }> = (signal, { gameId })
       gameState.set({ kind: 'ErrorGameState' })
     })
 
-  const container = h('div', {}, [])
-
-  gameState.watch(signal, (state) => {
+  return bindView(signal, gameState, (regionSignal, state) => {
     switch (state.kind) {
       case 'LoadedGameState':
-        container.replaceChildren(LoadedGameSettings(signal, { initialState: setRollConfig(state), gameId, gdoc }))
-        break
+        return LoadedGameSettings(regionSignal, { initialState: setRollConfig(state), gameId, gdoc })
       case 'MissingGameState':
-        container.replaceChildren(h('h1', {}, ['Game not found. Check the url']))
-        break
+        return h('h1', {}, ['Game not found. Check the url'])
       case 'LoadingGameState':
-        container.replaceChildren(h('div', {}, ['Game Loading']))
-        break
+        return h('div', {}, ['Game Loading'])
       case 'ErrorGameState':
-        container.replaceChildren(h('h1', {}, ['Error loading game. Try refreshing the page.']))
-        break
+        return h('h1', {}, ['Error loading game. Try refreshing the page.'])
     }
   })
-
-  return container
 }
 
 export const GameSettings: Component<{ gameId: string }> = (signal, { gameId }) => {
   const userState = getUser(signal)
-  const container = h('div', {}, [])
 
-  userState.watch(signal, (user) => {
-    container.replaceChildren(
-      user ? GameSettingsWithAuth(signal, { gameId }) : Login(signal, {}),
-    )
-  })
-
-  return container
+  return bindView(signal, userState, (regionSignal, user) =>
+    user ? GameSettingsWithAuth(regionSignal, { gameId }) : Login(regionSignal, {}),
+  )
 }

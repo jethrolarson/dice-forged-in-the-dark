@@ -23,6 +23,9 @@ export const Form: Component<{
     $.set(RollType.none)
   }
 
+  // Shared username state across all forms
+  const sharedUsername$ = funState('')
+
   // Watch roll type changes and scroll to bottom
   $.watch(signal, () => {
     scrollToBottom()
@@ -45,11 +48,11 @@ export const Form: Component<{
   })
 
   return h('div', {}, [
-    ActionForm(signal, { roll, uid, active$: actionActive$ }),
-    AssistForm(signal, { roll, uid, active$: assistActive$ }),
-    QualityForm(signal, { roll, uid, active$: qualityActive$ }),
-    FortuneForm(signal, { roll, uid, active$: fortuneActive$ }),
-    MessageForm(signal, { gdoc, active$: messageActive$ }),
+    ActionForm(signal, { roll, uid, active$: actionActive$, username$: sharedUsername$ }),
+    AssistForm(signal, { roll, uid, active$: assistActive$, username$: sharedUsername$ }),
+    QualityForm(signal, { roll, uid, active$: qualityActive$, username$: sharedUsername$ }),
+    FortuneForm(signal, { roll, uid, active$: fortuneActive$, username$: sharedUsername$ }),
+    MessageForm(signal, { gdoc, active$: messageActive$, username$: sharedUsername$ }),
   ])
 }
 

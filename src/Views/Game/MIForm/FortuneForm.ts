@@ -34,7 +34,7 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set(init_FortuneForm$())
+    state.set({ ...init_FortuneForm$(), username })
   }
 
 const init_FortuneForm$ = (): FortuneForm$ => ({

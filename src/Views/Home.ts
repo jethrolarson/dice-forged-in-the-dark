@@ -7,7 +7,7 @@ import { getUser } from '../services/getUser'
 import { getDocRef } from '../services/getDoc'
 import { User } from '../Models/User'
 import { ActiveGames } from './ActiveGames'
-import { Component, h } from '@fun-land/fun-web'
+import { Component, h, bindView } from '@fun-land/fun-web'
 import { styles } from './Home.css'
 
 type GameState = PersistedState & { id: string }
@@ -47,22 +47,17 @@ export const UserHome: Component<{ user: FSUser }> = (signal, { user }) => {
       console.error(err)
     })
 
-  const container = h('div', {}, [h('div', {}, ['Loading...'])])
-
-  state.watch(signal, (games) => {
-    container.replaceChildren(firestore ? ActiveGames(signal, { games, user }) : h('div', {}, ['Loading...']))
-  })
-
-  return container
+  return bindView(signal, state, (regionSignal, games) =>
+    firestore ? ActiveGames(regionSignal, { games, user }) : h('div', {}, ['Loading...']),
+  )
 }
 
 export const Home: Component = (signal) => {
   const userState = getUser(signal)
-  const contentContainer = h('div', {}, [])
 
-  userState.watch(signal, (user) => {
-    contentContainer.replaceChildren(user ? UserHome(signal, { user }) : Login(signal, {}))
-  })
+  const contentContainer = bindView(signal, userState, (regionSignal, user) =>
+    user ? UserHome(regionSignal, { user }) : Login(regionSignal, {}),
+  )
 
   return h('div', { className: styles.Home }, [
     h('h1', {}, ['Dice Forged in the Dark']),

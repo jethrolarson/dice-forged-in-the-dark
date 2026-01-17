@@ -8,7 +8,7 @@ import {
   QueryDocumentSnapshot,
 } from '@firebase/firestore'
 import { funState, merge } from '@fun-land/fun-state'
-import { Component, h, hx, bindListChildren } from '@fun-land/fun-web'
+import { Component, h, hx, bindListChildren, bindView } from '@fun-land/fun-web'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { gears } from 'react-icons-kit/fa/gears'
 import { classes } from '../../util'
@@ -133,16 +133,19 @@ export const LoadedGame: Component<{
     ['_'],
   )
 
-  const iframe = h('iframe', {
-    className: styles.canvas,
-    frameBorder: '0',
-    scrolling: 'no',
-    allowFullScreen: true,
-  })
-
-  const loadingP = h('p', {}, ['Loading...'])
   const rollsContainer = h('div', { className: styles.rolls }, [])
-  const leftSection = h('div', { className: styles.left }, [])
+  const leftSection = bindView(signal, state.prop('miroId'), (regionSignal, miroId) => {
+    if (miroId) {
+      return h('iframe', {
+        className: styles.canvas,
+        frameBorder: '0',
+        scrolling: 'no',
+        allowFullScreen: true,
+        src: `https://miro.com/app/live-embed/${miroId}/`,
+      })
+    }
+    return h('div', {}, [])
+  })
   const showDiceCol = h('div', { className: styles.showDiceCol }, [showDiceButton])
   const titleH1 = h('h1', { className: styles.title }, [])
   const rollFormContainer = h('div', {}, [])
@@ -171,7 +174,12 @@ export const LoadedGame: Component<{
   // Create form container elements
   const miFormContainer = h('div', {}, [MIForm(signal, { gdoc, uid, scrollToBottom, userDisplayName })])
   const ashworldFormContainer = h('div', {}, [AshworldForm(signal, { uid, gdoc, scrollToBottom, userDisplayName })])
-  const oldRollFormContainer = h('div', {}, [])
+  const oldRollFormContainer = bindView(signal, state.prop('rollConfig'), (regionSignal, rollConfig) => {
+    if (rollConfig.system === 'mala-incognita' || rollConfig.system === 'Ash World 0.1') {
+      return h('div', {}, [])
+    }
+    return RollForm(regionSignal, { rollConfig, gdoc, uid, userDisplayName })
+  })
 
   miFormContainer.style.display = 'none'
   ashworldFormContainer.style.display = 'none'
@@ -187,27 +195,12 @@ export const LoadedGame: Component<{
     titleH1.className = classes(styles.title, title.length > 14 && styles.title_small)
   })
 
-  // Watch miroId
+  // Watch miroId to show/hide minimize button
   state.prop('miroId').watch(signal, (miroId) => {
-    if (miroId) {
-      iframe.setAttribute('src', `https://miro.com/app/live-embed/${miroId}/`)
-      leftSection.replaceChildren(iframe)
-      minimizeButton.style.display = ''
-    } else {
-      leftSection.replaceChildren()
-      minimizeButton.style.display = 'none'
-    }
+    minimizeButton.style.display = miroId ? '' : 'none'
   })
 
   // Watch rolls with keyedChildren
-  state.prop('rollsLoaded').watch(signal, (loaded) => {
-    if (!loaded) {
-      scrollContainer.replaceChildren(loadingP)
-    } else {
-      scrollContainer.replaceChildren(rollsContainer)
-    }
-  })
-
   bindListChildren({
     signal,
     key: prop<LogItem>()('id'),
@@ -228,7 +221,16 @@ export const LoadedGame: Component<{
     },
   })(rollsContainer)
 
-  // Watch rollConfig and update form
+  const scrollContent = bindView(signal, state.prop('rollsLoaded'), (_regionSignal, loaded) => {
+    if (!loaded) {
+      return h('p', {}, ['Loading...'])
+    }
+    return rollsContainer
+  })
+  
+  scrollContainer.replaceChildren(scrollContent)
+
+  // Watch rollConfig and update form visibility
   state.prop('rollConfig').watch(signal, (rollConfig) => {
     if (rollConfig.system === 'mala-incognita') {
       miFormContainer.style.display = ''
@@ -242,8 +244,6 @@ export const LoadedGame: Component<{
       miFormContainer.style.display = 'none'
       ashworldFormContainer.style.display = 'none'
       oldRollFormContainer.style.display = ''
-      // Replace old roll form since it changes completely based on config
-      oldRollFormContainer.replaceChildren(RollForm(signal, { rollConfig, gdoc, uid, userDisplayName }))
     }
   })
 

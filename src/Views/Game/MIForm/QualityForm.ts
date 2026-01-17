@@ -35,7 +35,7 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set(init_QualityForm$())
+    state.set({ ...init_QualityForm$(), username })
   }
 
 const init_QualityForm$ = (): QualityForm$ => ({

@@ -1,9 +1,7 @@
-import * as O from 'fp-ts/lib/Option'
-import { Component, h } from '@fun-land/fun-web'
+import { Component, h, bindView } from '@fun-land/fun-web'
 import { funState } from '@fun-land/fun-state'
 import {
   GameState,
-  GameView,
   initialGameState,
   initialLoadedGameState,
   missingGameState,
@@ -15,11 +13,6 @@ import { LoadedGame } from './LoadedGame'
 import { getUser } from '../../services/getUser'
 import { User } from '../../Models/User'
 import { Login } from '../Login/Login'
-
-export const gamePath = (path: string): O.Option<GameView> => {
-  const m = /^\/game\/([^/?]+)/.exec(path)
-  return m && m.length > 0 && m[1] ? O.some({ kind: 'GameView', id: m[1] }) : O.none
-}
 
 const saveGameToUser = (userDoc: DocumentReference, gameId: string): void => {
   getDoc(userDoc)
@@ -64,36 +57,26 @@ export const GameWithUID: Component<{ gameId: string; uid: string; userDisplayNa
       alert('failed to load game')
     })
 
-  const container = h('div', {}, [])
-
-  gameState.watch(signal, (state) => {
+  return bindView(signal, gameState, (regionSignal, state) => {
     switch (state.kind) {
       case 'LoadedGameState':
-        container.replaceChildren(LoadedGame(signal, { initialState: state, gameId, gdoc, uid, userDisplayName }))
-        break
+        return LoadedGame(regionSignal, { initialState: state, gameId, gdoc, uid, userDisplayName })
       case 'MissingGameState':
-        container.replaceChildren(h('h1', {}, ['Game not found. Check the url']))
-        break
+        return h('h1', {}, ['Game not found. Check the url'])
       case 'LoadingGameState':
-        container.replaceChildren(h('div', {}, ['Game Loading']))
-        break
+        return h('div', {}, ['Game Loading'])
+      case 'ErrorGameState':
+        return h('h1', {}, ['Error loading game. Try refreshing the page.'])
     }
   })
-
-  return container
 }
 
 export const Game: Component<{ gameId: string }> = (signal, { gameId }) => {
   const userState = getUser(signal)
-  const container = h('div', {}, [])
 
-  userState.watch(signal, (user) => {
-    container.replaceChildren(
-      user
-        ? GameWithUID(signal, { gameId, uid: user.uid, userDisplayName: user.displayName ?? '' })
-        : Login(signal, {}),
-    )
-  })
-
-  return container
+  return bindView(signal, userState, (regionSignal, user) =>
+    user
+      ? GameWithUID(regionSignal, { gameId, uid: user.uid, userDisplayName: user.displayName ?? '' })
+      : Login(regionSignal, {}),
+  )
 }

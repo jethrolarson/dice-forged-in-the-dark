@@ -43,7 +43,7 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set(init_ActionForm$())
+    state.set({ ...init_ActionForm$(), username })
   }
 
 const init_ActionForm$ = (): ActionForm$ => ({

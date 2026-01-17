@@ -9,7 +9,7 @@
   "dependencies": {
     "@fun-land/accessor": "^4.0.2",
     "@fun-land/fun-state": "^9.2.0",
-    "@fun-land/fun-web": "^1.0.0",
+    "@fun-land/fun-web": "^1.1.0",
     "@vanilla-extract/css": "^1.18.0",
     "@vanilla-extract/vite-plugin": "^5.1.4",
     "cannon-es": "^0.20.0",
@@ -20,7 +20,6 @@
     "io-ts": "^2.2.22",
     "lodash.debounce": "4.0.8",
     "markdown-it": "^14.1.0",
-    "paper": "^0.12.18",
     "prettier-eslint": "^16.4.2",
     "ramda": "0.32.0",
     "react-icons-kit": "2.0.0",

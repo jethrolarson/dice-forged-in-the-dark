@@ -18,13 +18,13 @@ interface ActionForm$ {
   hx: CheckDieState
   upperHand: CheckDieState
   amped: CheckDieState
-  username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<ActionForm$>, username$: FunState<string>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, username } = state.get()
+    const { note } = state.get()
+    const username = username$.get()
     const isZero = diceRolled.length === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
@@ -50,21 +50,21 @@ const init_ActionForm$ = (): ActionForm$ => ({
   upperHand: false,
   amped: false,
   note: '',
-  username: '',
 })
 
 export const ActionForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active$: FunState<boolean>
-}> = (signal, { uid, roll, active$ }) => {
+  username$: FunState<string>
+}> = (signal, { uid, roll, active$, username$ }) => {
   const $ = funState<ActionForm$>(init_ActionForm$())
   
   // Create a dummy dicePool$ for CheckDie components (they still use deprecated API)
   const dicePool$ = funState(init_DicePool$())
   
   const dicePool = DicePool(signal, {
-    sendRoll: rollIt(roll, uid, $),
+    sendRoll: rollIt(roll, uid, $, username$),
     disableAdd$: funState(true),
     active$,
   })
@@ -77,7 +77,13 @@ export const ActionForm: Component<{
   }
 
   // Watch state to manage dice scene enabled/disabled
-  $.watch(signal, ({ username, note }) => {
+  $.watch(signal, ({ note }) => {
+    const username = username$.get()
+    const shouldEnable = username && note
+    shouldEnable ? dicePool.$api.enable() : dicePool.$api.disable()
+  })
+  username$.watch(signal, (username) => {
+    const { note } = $.get()
     const shouldEnable = username && note
     shouldEnable ? dicePool.$api.enable() : dicePool.$api.disable()
   })
@@ -156,7 +162,7 @@ export const ActionForm: Component<{
           label: h('span', null, [`We're taking a `, h('b', null, ["Devil's Bargain"])]),
         }),
         h('p', {}, ['Emcee tells you ', h('b', null, 'good'), ' and ', h('b', null, 'bad'), ' stuff']),
-        Character(signal, { $: $.prop('username') }),
+        Character(signal, { $: username$ }),
         Note(signal, { $: $.prop('note') }),
       ]),
     ]),

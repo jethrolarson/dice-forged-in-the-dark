@@ -36,7 +36,7 @@ const rollIt =
       valuationType: 'Action',
       uid,
     })
-    state.set(init_AssistForm$())
+    state.set({ ...init_AssistForm$(), username })
   }
 
 const init_AssistForm$ = (): AssistForm$ => ({

@@ -13,13 +13,13 @@ import { styles } from './FortuneForm.css'
 interface AssistForm$ {
   dicePool: DicePool$
   note: string
-  username: string
 }
 
 const rollIt =
-  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>) =>
+  (roll: (rollResult: NewRoll) => unknown, uid: string, state: FunState<AssistForm$>, username$: FunState<string>) =>
   (diceRolled: DieResult[]): void => {
-    const { note, username } = state.get()
+    const { note } = state.get()
+    const username = username$.get()
     const isZero = diceRolled.length === 0
     if (isZero && !confirm('Roll 0 dice? (rolls 2 and takes lowest)')) return
     roll({
@@ -46,26 +46,26 @@ const ampDie: Rollable = {
 const init_ActionForm$ = (): AssistForm$ => ({
   dicePool: { ...init_DicePool$(), pool: [ampDie] },
   note: '',
-  username: '',
 })
 
 export const FortuneForm: Component<{
   uid: string
   roll: (rollResult: NewRoll) => unknown
   active$: FunState<boolean>
-}> = (signal, { uid, roll, active$ }) => {
+  username$: FunState<string>
+}> = (signal, { uid, roll, active$, username$ }) => {
   const $ = funState<AssistForm$>(init_ActionForm$())
   const container = enhance(
     h('div', { className: styles.AssistForm }, [
       DicePool(signal, {
-        sendRoll: rollIt(roll, uid, $),
+        sendRoll: rollIt(roll, uid, $, username$),
         disableAdd$: funState(false),
         active$,
       }),
       h('div', { key: 'form', className: styles.form }, [
         FormHeading(signal, { title: 'Fortune' }),
         h('p', { key: 'subhead' }, ['See what the universe does']),
-        Character(signal, { $: $.prop('username') }),
+        Character(signal, { $: username$ }),
         Note(signal, { $: $.prop('note') }),
       ]),
     ]),

@@ -1,6 +1,6 @@
 import { Acc, append, index } from '@fun-land/accessor'
-import { FunRead } from '@fun-land/fun-state'
-import { Component, h, bindClass } from '@fun-land/fun-web'
+import { FunRead, funState } from '@fun-land/fun-state'
+import { Component, h, bindClass, bindView } from '@fun-land/fun-web'
 import { reject } from 'ramda'
 import { colorNameFromHex, dieColors, DieColorType, DieResult, DieType } from '../Models/Die'
 import { playAddSound } from '../sounds'
@@ -81,6 +81,7 @@ export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { se
     enabled: false,
   }
 
+  const sceneReady$ = funState(false)
   const diceBox = h('div', { className: styles.diceBox })
 
   const container = h('div', { className: styles.DicePool }, [
@@ -109,11 +110,11 @@ export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { se
   const element = container as DicePoolElement
   element.$api = placeholderApi
 
-  const createScene = () => {
+  const createScene = (regionSignal: AbortSignal) => {
     const width = diceBox.clientWidth
     const height = diceBox.clientHeight
     if (width > 0 && height > 0) {
-      diceScene = DiceScene(signal, {
+      diceScene = DiceScene(regionSignal, {
         onDiceRollComplete: (results) => {
           sendRoll(
             results.map(({ value, color }): DieResult => ({ dieColor: colorNameFromHex(color), dieType: 'd6', value })),
@@ -123,14 +124,16 @@ export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { se
         height,
       })
       element.$api = diceScene.$api
+      sceneReady$.set(true)
       return diceScene
     }
     return null
   }
 
-  const waitForDimensions = (callback: (scene: HTMLElement) => void) => {
+  const waitForDimensions = (regionSignal: AbortSignal, callback: (scene: HTMLElement) => void) => {
     const check = () => {
-      const scene = createScene()
+      if (regionSignal.aborted) return
+      const scene = createScene(regionSignal)
       if (scene) {
         callback(scene)
       } else {
@@ -140,21 +143,30 @@ export const DicePool: Component<DicePoolProps, DicePoolElement> = (signal, { se
     requestAnimationFrame(check)
   }
 
-  active$.watch(signal, (active) => {
-    if (active && !diceScene) {
-      const scene = createScene()
-      if (scene) {
-        diceBox.appendChild(scene)
-      } else {
-        waitForDimensions((scene) => diceBox.appendChild(scene))
-      }
-    } else if (!active && diceScene) {
-      element.$api.reset()
-      diceBox.replaceChildren()
+  const sceneContainer = bindView(signal, active$, (regionSignal, active) => {
+    if (!active) {
       diceScene = null
       element.$api = placeholderApi
+      sceneReady$.set(false)
+      return h('div', {}, [])
     }
+
+    const scene = createScene(regionSignal)
+    if (scene) {
+      return scene
+    }
+
+    // Wait for dimensions asynchronously
+    const placeholder = h('div', {}, [])
+    waitForDimensions(regionSignal, (readyScene) => {
+      if (!regionSignal.aborted && placeholder.parentNode) {
+        placeholder.replaceWith(readyScene)
+      }
+    })
+    return placeholder
   })
+
+  diceBox.appendChild(sceneContainer)
 
   return element
 }

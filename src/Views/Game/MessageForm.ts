@@ -8,17 +8,19 @@ import { styles } from './MessageForm.css'
 
 interface MessageFormState {
   note: string
-  username: string
 }
 
-export const MessageForm: Component<{ gdoc: DocumentReference; active$: FunState<boolean> }> = (
-  signal,
-  { gdoc, active$ },
-) => {
-  const state = funState<MessageFormState>({ note: '', username: '' })
-  const { username, note } = state.get()
+export const MessageForm: Component<{
+  gdoc: DocumentReference
+  active$: FunState<boolean>
+  username$: FunState<string>
+}> = (signal, { gdoc, active$, username$ }) => {
+  const state = funState<MessageFormState>({ note: '' })
+  
   const postMessage = (e: Event): void => {
     e.preventDefault()
+    const note = state.prop('note').get()
+    const username = username$.get()
     addDoc(collection(gdoc, 'rolls'), {
       note,
       username,
@@ -28,8 +30,23 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active$: FunState
       console.error(e)
       alert('failed to send message')
     })
-    state.prop('username').set('')
+    state.prop('note').set('')
   }
+  
+  const note$ = state.prop('note')
+  const sendButton = h('button', { key: 'send', type: 'submit' }, ['Send'])
+  
+  // Watch states and update button disabled
+  const updateButtonDisabled = () => {
+    const note = note$.get()
+    const username = username$.get()
+    sendButton.disabled = note === '' || username === ''
+  }
+  
+  note$.watch(signal, updateButtonDisabled)
+  username$.watch(signal, updateButtonDisabled)
+  updateButtonDisabled() // Initial state
+  
   return hideUnless(
     active$,
     signal,
@@ -42,7 +59,7 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active$: FunState
             placeholder: 'Note',
             className: styles.textarea,
           },
-          $: state.prop('note'),
+          $: note$,
         }),
       ]),
       h('label', { key: 'character' }, [
@@ -53,10 +70,10 @@ export const MessageForm: Component<{ gdoc: DocumentReference; active$: FunState
             type: 'text',
             name: 'username',
           },
-          $: state.prop('username'),
+          $: username$,
         }),
       ]),
-      h('button', { key: 'send', type: 'submit', disabled: note === '' || username === '' }, ['Send']),
+      sendButton,
     ]),
   )
 }

@@ -1,7 +1,7 @@
 import { DocumentReference } from '@firebase/firestore'
 import { removeAt } from '@fun-land/accessor'
 import { funState, FunState, merge, mapRead } from '@fun-land/fun-state'
-import { Component, enhance, h, hx, on } from '@fun-land/fun-web'
+import { Component, enhance, h, hx, on, bindView } from '@fun-land/fun-web'
 import { Icon } from '../../../components/Icon'
 import { chevronLeft } from 'react-icons-kit/fa/chevronLeft'
 import { Textarea } from '../../../components/Textarea'
@@ -23,8 +23,11 @@ const zeroDicePool: Rollable[] = [
   { type: 'd6', color: 'red', id: 'zero_1' },
 ]
 
-const reset = (state: FunState<RollFormState>): void =>
+const reset = (state: FunState<RollFormState>): void => {
+  const currentUsername = state.prop('username').get()
   merge(state)({ note: '', rollType: '', rollState: ['', '', '', '', '', '', '', '', '', ''], dicePool: [] })
+  state.prop('username').set(currentUsername)
+}
 
 export const roll =
   (gdoc: DocumentReference, uid: string, state: FunState<RollFormState>, userDisplayName: string) => (): void => {
@@ -105,10 +108,6 @@ export const RollForm: Component<{
   })
   rollTypesContainer.append(...rollTypeButtons)
 
-  // Create form content container
-  const formContent = h('div', {}, [])
-  formContent.style.display = 'none'
-
   // Compute disabled state
   const disabled$ = funState(true)
   s.watch(signal, ({ rollType, username }) => {
@@ -116,103 +115,110 @@ export const RollForm: Component<{
     disabled$.set(!currentConfig?.excludeCharacter && !username.length)
   })
 
-  // Watch state and rebuild form when roll type changes
-  s.prop('rollType').watch(signal, (rollType) => {
+  // Create form content container using bindView to prevent memory leaks
+  const formContent = bindView(signal, s.prop('rollType'), (regionSignal, rollType) => {
     const currentConfig = rollTypes.find((rt) => rt.name === rollType)
 
-    if (currentConfig) {
-      const backButton = h('button', { className: styles.backButton }, [Icon(signal, { icon: chevronLeft, size: 18 })])
-      hx(
-        'button',
-        {
-          signal,
-          props: { type: 'button' },
-          on: {
-            click: (e: Event) => {
-              e.preventDefault()
-              reset(s)
-            },
+    if (!currentConfig) {
+      return h('div', {}, [])
+    }
+
+    const backButton = h('button', { className: styles.backButton }, [Icon(regionSignal, { icon: chevronLeft, size: 18 })])
+    hx(
+      'button',
+      {
+        signal: regionSignal,
+        props: { type: 'button' },
+        on: {
+          click: (e: Event) => {
+            e.preventDefault()
+            reset(s)
           },
         },
-        [backButton],
-      )
+      },
+      [backButton],
+    )
 
-      const characterLabel = !currentConfig.excludeCharacter
-        ? h('label', { className: styles.character }, [
-            TextInput(signal, {
-              passThroughProps: {
-                placeholder: 'Character',
-                type: 'text',
-                name: 'username',
-                required: true,
-              },
-              $: s.prop('username'),
-            }),
-          ])
-        : null
-
-      const valuationLabel = h('label', {}, ['Rules: '])
-      const valuationSelect =
-        currentConfig?.valuationType === 'Ask'
-          ? (() => {
-              const select = hx(
-                'select',
-                {
-                  signal,
-                  on: {
-                    change: (e) => s.prop('valuationType').set(e.currentTarget.value as ValuationType),
-                  },
-                  bind: { value: mapRead(s.prop('valuationType'), String) },
-                },
-                [
-                  h('option', { value: 'Action' }, ['Action']),
-                  h('option', { value: 'Resist' }, ['Resist']),
-                  h('option', { value: 'Sum' }, ['Sum']),
-                  h('option', { value: 'Highest' }, ['Highest']),
-                  h('option', { value: 'Lowest' }, ['Lowest']),
-                ],
-              )
-              valuationLabel.appendChild(select)
-              return valuationLabel
-            })()
-          : null
-      const textareaEl = enhance(
-        Textarea(signal, {
-          passThroughProps: {
-            placeholder: 'Description',
-            className: styles.noteInput,
-          },
-          $: s.prop('note'),
-        }),
-        on(
-          'input',
-          (e: Event) => {
-            const target = e.target as HTMLTextAreaElement
-            target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
-          },
-          signal,
-        ),
-      )
-
-      // TODO replaceChildren causes memory leaks
-      formContent.replaceChildren(
-        h('div', { className: styles.formWrap }, [
-          DicePool(signal, {
-            dicePool$: s.prop('dicePool'),
-            roll: roll(gdoc, uid, s, userDisplayName),
-            disabled$,
-            removeDie,
-            changeColor,
+    const characterLabel = !currentConfig.excludeCharacter
+      ? h('label', { className: styles.character }, [
+          TextInput(regionSignal, {
+            passThroughProps: {
+              placeholder: 'Character',
+              type: 'text',
+              name: 'username',
+              required: true,
+            },
+            $: s.prop('username'),
           }),
-          h('div', { className: styles.formGrid }, [
-            h('h3', { className: styles.heading }, [backButton, currentConfig.name]),
-            Sections(signal, { state: s.prop('rollState'), sections: currentConfig.sections, setDice }),
-            characterLabel,
-            valuationSelect,
-            h('label', { className: styles.note }, [textareaEl]),
-          ]),
-        ]),
-      )
+        ])
+      : null
+
+    const valuationLabel = h('label', {}, ['Rules: '])
+    const valuationSelect =
+      currentConfig?.valuationType === 'Ask'
+        ? (() => {
+            const select = hx(
+              'select',
+              {
+                signal: regionSignal,
+                on: {
+                  change: (e) => s.prop('valuationType').set(e.currentTarget.value as ValuationType),
+                },
+                bind: { value: mapRead(s.prop('valuationType'), String) },
+              },
+              [
+                h('option', { value: 'Action' }, ['Action']),
+                h('option', { value: 'Resist' }, ['Resist']),
+                h('option', { value: 'Sum' }, ['Sum']),
+                h('option', { value: 'Highest' }, ['Highest']),
+                h('option', { value: 'Lowest' }, ['Lowest']),
+              ],
+            )
+            valuationLabel.appendChild(select)
+            return valuationLabel
+          })()
+        : null
+    const textareaEl = enhance(
+      Textarea(regionSignal, {
+        passThroughProps: {
+          placeholder: 'Description',
+          className: styles.noteInput,
+        },
+        $: s.prop('note'),
+      }),
+      on(
+        'input',
+        (e: Event) => {
+          const target = e.target as HTMLTextAreaElement
+          target.style.height = `${target.scrollHeight + 2}px` // 2px is combined border width
+        },
+        regionSignal,
+      ),
+    )
+
+    return h('div', { className: styles.formWrap }, [
+      DicePool(regionSignal, {
+        dicePool$: s.prop('dicePool'),
+        roll: roll(gdoc, uid, s, userDisplayName),
+        disabled$,
+        removeDie,
+        changeColor,
+      }),
+      h('div', { className: styles.formGrid }, [
+        h('h3', { className: styles.heading }, [backButton, currentConfig.name]),
+        Sections(regionSignal, { state: s.prop('rollState'), sections: currentConfig.sections, setDice }),
+        characterLabel,
+        valuationSelect,
+        h('label', { className: styles.note }, [textareaEl]),
+      ]),
+    ])
+  })
+  formContent.style.display = 'none'
+
+  // Watch rollType to control visibility
+  s.prop('rollType').watch(signal, (rollType) => {
+    const currentConfig = rollTypes.find((rt) => rt.name === rollType)
+    if (currentConfig) {
       rollTypesContainer.style.display = 'none'
       formContent.style.display = ''
     } else {
